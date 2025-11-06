@@ -31,7 +31,7 @@ class ApiService {
     formData.append('username', username);
     formData.append('password', password);
 
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
       method: 'POST',
       body: formData,
     });
@@ -44,36 +44,36 @@ class ApiService {
   }
 
   async register(userData: any): Promise<User> {
-    return this.request<User>('/auth/register', {
+    return this.request<User>('/api/v1/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
   }
 
   async getCurrentUser(): Promise<User> { // Removed token parameter since we get it from localStorage
-    return this.request<User>('/auth/me');
+    return this.request<User>('/api/v1/auth/me');
   }
 
   async logout(): Promise<void> {
-    return this.request('/auth/logout', { method: 'POST' });
+    return this.request('/api/v1/auth/logout', { method: 'POST' });
   }
 
   async forgotPassword(email: string): Promise<void> {
-    return this.request('/auth/forgot-password', {
+    return this.request('/api/v1/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    return this.request('/auth/reset-password', {
+    return this.request('/api/v1/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ token, new_password: newPassword }),
     });
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    return this.request('/auth/change-password', {
+    return this.request('/api/v1/auth/change-password', {
       method: 'POST',
       body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
     });
@@ -86,7 +86,7 @@ class ApiService {
     formData.append('model_type', modelType);
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/classify/single`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -107,7 +107,7 @@ class ApiService {
     formData.append('model', model);
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/classify/batch`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -128,7 +128,7 @@ class ApiService {
     formData.append('model', model);
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/classify/batch/async`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/async`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -144,11 +144,11 @@ class ApiService {
   }
 
   async getBatchJobStatus(jobId: string): Promise<BatchJob> {
-    return this.request(`/classify/batch/status/${jobId}`);
+    return this.request(`/api/v1/classify/batch/status/${jobId}`);
   }
 
   async getModels(): Promise<{ models: ModelInfo[] }> {
-    return this.request('/models');
+    return this.request('/api/v1/models');
   }
 }
 

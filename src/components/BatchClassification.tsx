@@ -85,6 +85,8 @@ const BatchClassification: React.FC = () => {
     }
   };
 
+  
+
   return (
     <div className="batch-classification">
       <div className="page-header">

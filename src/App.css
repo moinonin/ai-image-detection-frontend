@@ -971,3 +971,30 @@ body {
   color: white;
   transform: translateY(-2px);
 }
+.prediction-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.prediction-badge.ai {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.prediction-badge.human {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.prediction-badge.unknown {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.probability {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-left: 8px;
+}
