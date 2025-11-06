@@ -84,7 +84,7 @@ const BatchClassification: React.FC = () => {
       default: return 'var(--text-secondary)';
     }
   };
-
+  const [isExpanded, setIsExpanded] = useState(false);
   
 
   return (
@@ -206,27 +206,44 @@ const BatchClassification: React.FC = () => {
                   ></div>
                 </div>
               </div>
-
-              {jobStatus.results && (
-                <div className="results-preview">
-                  <h4>Results Preview:</h4>
-                  <div className="results-grid">
-                    {jobStatus.results.slice(0, 5).map((result: any, index: number) => (
-                      <div key={index} className="result-item">
-                        <span className="filename">{result.filename || `Image ${index + 1}`}</span>
-                        <span className={`prediction ${result.is_ai ? 'ai' : 'human'}`}>
-                          {result.is_ai ? 'AI' : 'Human'}
-                        </span>
-                      </div>
-                    ))}
+                {jobStatus.results && (
+                  <div className="results-preview">
+                    <h4>Results Preview:</h4>
+                    <div className="results-grid">
+                      {jobStatus.results
+                        .slice(0, isExpanded ? jobStatus.results.length : 5)
+                        .map((result: any, index: number) => (
+                          <div key={index} className="result-item">
+                            <span className="filename">{result.filename || `Image ${index + 1}`}</span>
+                            <span className={`prediction ${result.is_ai ? 'ai' : 'human'}`}>
+                              {result.is_ai ? 'AI' : 'Human'}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                    
                     {jobStatus.results.length > 5 && (
-                      <div className="more-results">
-                        +{jobStatus.results.length - 5} more results
+                      <div className="results-expand">
+                        <button 
+                          className="expand-button"
+                          onClick={() => setIsExpanded(!isExpanded)}
+                        >
+                          {isExpanded ? (
+                            <>
+                              <span>Show less</span>
+                              <span className="expand-icon">▲</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Show all {jobStatus.results.length} results</span>
+                              <span className="expand-icon">▼</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     )}
                   </div>
-                </div>
-              )}
+                )}
 
               {jobStatus.error && (
                 <div className="error-message">
