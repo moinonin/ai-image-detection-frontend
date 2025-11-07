@@ -4,6 +4,8 @@ import { ClassificationResult } from '../types';
 
 const SingleClassification: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  /*const [modelType, setModelType] = useState('net');*/
+  const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [modelType, setModelType] = useState('ml');
   const [result, setResult] = useState<ClassificationResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -103,9 +105,11 @@ const SingleClassification: React.FC = () => {
                 onChange={(e) => setModelType(e.target.value)}
                 className="model-select"
               >
-                <option value="ml">Machine Learning Model</option>
-                <option value="net">Neural Network Model</option>
-                <option value="scalpel">Scalpel Model</option>
+              {MODEL_TYPES.map(type => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -157,12 +161,12 @@ const SingleClassification: React.FC = () => {
                   <span className="detail-label">Model Used:</span>
                   <span className="detail-value">{result.model.toUpperCase()}</span>
                 </div>
-                {result.probability && (
-                  <div className="detail-item">
-                    <span className="detail-label">Probability Score:</span>
-                    <span className="detail-value">{result.probability.toFixed(4)}</span>
-                  </div>
-                )}
+                  {result.probability != null && (
+                    <div className="detail-item">
+                      <span className="detail-label">Probability Score:</span>
+                      <span className="detail-value">{result.probability.toFixed(4)}</span>
+                    </div>
+                  )}
                 <div className="detail-item">
                   <span className="detail-label">Analysis Type:</span>
                   <span className="detail-value">Single Image</span>
