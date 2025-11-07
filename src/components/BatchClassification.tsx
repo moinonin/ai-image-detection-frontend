@@ -4,6 +4,8 @@ import { BatchJob } from '../types';
 
 const BatchClassification: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  /*const [model, setModel] = useState('ml');*/
+  const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [model, setModel] = useState('ml');
   const [loading, setLoading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -154,9 +156,11 @@ const BatchClassification: React.FC = () => {
                 onChange={(e) => setModel(e.target.value)}
                 className="model-select"
               >
-                <option value="ml">Machine Learning Model</option>
-                <option value="net">Neural Network Model</option>
-                <option value="scalpel">Scalpel Model</option>
+                {MODEL_TYPES.map(type => (
+                    <option key={type} value={type}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </option>
+                  ))}
               </select>
             </div>
 
