@@ -6,7 +6,7 @@ const SingleClassification: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   /*const [modelType, setModelType] = useState('net');*/
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
-  const [modelType, setModelType] = useState('ml');
+  const [modelType, setModelType] = useState(' ');
   const [result, setResult] = useState<ClassificationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);

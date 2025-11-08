@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard">
       <div className="dashboard-header">
-        <h1>AI Image Detection Platform</h1>
+        <h1>AI Media Detection Platform</h1>
         <p className="welcome-text">
           Welcome back, <span className="username">{user?.username}</span>! 
           Ready to analyze some images?

@@ -1,7 +1,7 @@
 {
   "name": "ai-image-detection-frontend",
   "version": "1.0.0",
-  "description": "Frontend for AI Image Detection Tool",
+  "description": "Frontend for AI Media Detection Tool",
   "type": "module",
   "scripts": {
     "dev": "vite",
