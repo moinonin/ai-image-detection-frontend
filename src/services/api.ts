@@ -93,7 +93,12 @@ class ApiService {
       },
       body: formData,
     });
-
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Backend error:', response.status, errorText);
+      throw new Error(`Classification failed (${response.status})`);
+}
     if (!response.ok) {
       throw new Error('Classification failed');
     }

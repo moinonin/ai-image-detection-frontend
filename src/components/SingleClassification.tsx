@@ -6,7 +6,7 @@ const SingleClassification: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   /*const [modelType, setModelType] = useState('net');*/
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
-  const [modelType, setModelType] = useState(' ');
+  const [modelType, setModelType] = useState('ml');
   const [result, setResult] = useState<ClassificationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -143,7 +143,11 @@ const SingleClassification: React.FC = () => {
               
               <div className="confidence-meter">
                 <div className="confidence-label">
-                  Confidence: {(result.confidence! * 100).toFixed(2)}%
+                  {/*Confidence: {(result.confidence! * 100).toFixed(2)}%*/}
+                  Confidence:{' '}
+                  {result.confidence != null
+                    ? `${(result.confidence * 100).toFixed(2)}%`
+                    : 'N/A'}
                 </div>
                 <div className="confidence-bar">
                   <div 
