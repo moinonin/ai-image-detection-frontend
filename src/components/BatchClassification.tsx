@@ -219,8 +219,8 @@ const BatchClassification: React.FC = () => {
                         .map((result: any, index: number) => (
                           <div key={index} className="result-item">
                             <span className="filename">{result.filename || `Image ${index + 1}`}</span>
-                            <span className={`prediction ${result.is_ai ? 'ai' : 'human'}`}>
-                              {result.is_ai ? 'AI' : 'Human'}
+                            <span className={`prediction ${result.predicted_class.includes('AI') ? 'ai' : 'human'}`}>
+                              {result.predicted_class}
                             </span>
                           </div>
                         ))}

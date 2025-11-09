@@ -143,11 +143,7 @@ const SingleClassification: React.FC = () => {
               
               <div className="confidence-meter">
                 <div className="confidence-label">
-                  {/*Confidence: {(result.confidence! * 100).toFixed(2)}%*/}
-                  Confidence:{' '}
-                  {result.confidence != null
-                    ? `${(result.confidence * 100).toFixed(2)}%`
-                    : 'N/A'}
+                  Confidence: {(result.confidence! * 100).toFixed(2)}%
                 </div>
                 <div className="confidence-bar">
                   <div 
