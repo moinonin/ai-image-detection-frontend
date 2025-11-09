@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { classificationService } from '../services/api';
-import { ClassificationResult } from '../types';
+import { ClassificationResult, EmailResultsParams } from '../types';
 
 const SingleClassification: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -57,6 +57,16 @@ const SingleClassification: React.FC = () => {
     if (confidence > 0.8) return '#00ff00';
     if (confidence > 0.6) return '#ffff00';
     return '#ff4444';
+  };
+
+
+  const handleEmailResults = (result: EmailResultsParams): void => {
+    console.log('Email results:', result);
+  };
+
+  const handleDownloadPDF = (result: ClassificationResult): void => {
+      // This function can handle both image and video results
+      console.log('Download PDF:', result);
   };
 
   return (
@@ -131,50 +141,73 @@ const SingleClassification: React.FC = () => {
         </div>
 
         {result && (
-          <div className="results-section">
-            <h2>Analysis Results</h2>
-            <div className={`result-card ${result.predicted_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
-              <div className="result-header">
-                <h3>{result.filename}</h3>
-                <span className="result-badge">
-                  {result.predicted_class}
-                </span>
-              </div>
-              
-              <div className="confidence-meter">
-                <div className="confidence-label">
-                  Confidence: {(result.confidence! * 100).toFixed(2)}%
+            <div className="results-section">
+              <h2>Analysis Results</h2>
+              <div className={`result-card ${result.predicted_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
+                <div className="result-header">
+                  <h3>{result.filename}</h3>
+                  <span className="result-badge">
+                    {result.predicted_class}
+                  </span>
                 </div>
-                <div className="confidence-bar">
-                  <div 
-                    className="confidence-fill"
-                    style={{ 
-                      width: `${result.confidence! * 100}%`,
-                      backgroundColor: getConfidenceColor(result.confidence!)
-                    }}
-                  ></div>
+                
+                <div className="confidence-meter">
+                  <div className="confidence-label">
+                    Confidence: {(result.confidence! * 100).toFixed(2)}%
+                  </div>
+                  <div className="confidence-bar">
+                    <div 
+                      className="confidence-fill"
+                      style={{ 
+                        width: `${result.confidence! * 100}%`,
+                        backgroundColor: getConfidenceColor(result.confidence!)
+                      }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="result-details">
-                <div className="detail-item">
-                  <span className="detail-label">Model Used:</span>
-                  <span className="detail-value">{result.model.toUpperCase()}</span>
+                <div className="result-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Model Used:</span>
+                    <span className="detail-value">{result.model.toUpperCase()}</span>
+                  </div>
+                    {result.probability != null && (
+                      <div className="detail-item">
+                        <span className="detail-label">Probability Score:</span>
+                        <span className="detail-value">{result.probability.toFixed(4)}</span>
+                      </div>
+                    )}
+                  <div className="detail-item">
+                    <span className="detail-label">Analysis Type:</span>
+                    <span className="detail-value">Single Image</span>
+                  </div>
                 </div>
-                  {result.probability != null && (
-                    <div className="detail-item">
-                      <span className="detail-label">Probability Score:</span>
-                      <span className="detail-value">{result.probability.toFixed(4)}</span>
-                    </div>
-                  )}
-                <div className="detail-item">
-                  <span className="detail-label">Analysis Type:</span>
-                  <span className="detail-value">Single Image</span>
+
+                {/* Futuristic Action Buttons - Reusing same structure */}
+                <div className="action-buttons">
+                  <button 
+                    className="email-btn futuristic-btn"
+                    onClick={() => handleEmailResults({
+                      confidence: result.confidence!,
+                      predicted_class: result.predicted_class,
+                      filename: result.filename,
+                      model: result.model,
+                      probability: result.probability,
+                    })}
+                  >
+                    <span className="btn-icon">✉️</span>
+                    Email Results
+                  </button>
+                  <button 
+                    className="pdf-btn futuristic-btn"
+                    onClick={() => handleDownloadPDF(result as ClassificationResult)}
+                  >
+                    <span className="btn-icon">📄</span>
+                    Download PDF Report
+                  </button>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+            </div>)}
       </div>
     </div>
   );

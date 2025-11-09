@@ -56,3 +56,57 @@ export interface VideoSummary {
   model: string;
   "analysis detail": string;
 }
+
+export  interface PDFResultProps {
+  filename: string;
+  dominant_class: string;
+  confidence_ai: number;
+  confidence_human: number;
+  model: string;
+  analysis_type: string;
+  'analysis detail': string;
+  total_frames_analyzed: number;
+  ai_frames: number;
+  human_frames: number;
+  average_ai_confidence: number;
+  average_human_confidence: number;
+}
+export interface EmailResultProps {
+  filename: string;
+  dominant_class: string;
+  confidence_ai: number;
+  confidence_human: number;
+  model: string;
+  analysis_type: string;
+  'analysis detail': string;
+  total_frames_analyzed: number;
+  ai_frames: number;
+  human_frames: number;
+  average_ai_confidence: number;
+  average_human_confidence: number;
+}
+
+export interface EmailResultsParams {
+  predicted_class: string;
+  filename: string;
+  confidence: number | undefined;
+  model: string;
+  probability?: number;
+}
+
+export interface EmailResultsParams {
+  filename: string;
+  predicted_class: string;
+  confidence: number | undefined;
+  model: string;
+  probability?: number;
+}
+
+export interface BatchResult {
+  filename?: string;
+  predicted_class: string;
+  confidence?: number;
+  model?: string;
+  probability?: number;
+  [key: string]: any;
+}
