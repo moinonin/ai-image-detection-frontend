@@ -88,6 +88,18 @@ const BatchClassification: React.FC = () => {
   };
   const [isExpanded, setIsExpanded] = useState(false);
   
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  const toggleExpand = (index: number) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
+
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence > 0.8) return '#00ff00';
+    if (confidence > 0.6) return '#ffff00';
+    return '#ff4444';
+  };
+
 
   return (
     <div className="batch-classification">
@@ -217,11 +229,63 @@ const BatchClassification: React.FC = () => {
                       {jobStatus.results
                         .slice(0, isExpanded ? jobStatus.results.length : 5)
                         .map((result: any, index: number) => (
-                          <div key={index} className="result-item">
-                            <span className="filename">{result.filename || `Image ${index + 1}`}</span>
-                            <span className={`prediction ${result.predicted_class.includes('AI') ? 'ai' : 'human'}`}>
-                              {result.predicted_class}
-                            </span>
+                          <div key={index} className="result-container">
+                            {/* Clickable summary item - maintains your current layout */}
+                            <div 
+                              className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
+                              onClick={() => toggleExpand(index)}
+                            >
+                              <span className="filename">{result.filename || `Image ${index + 1}`}</span>
+                              <span className={`prediction ${result.predicted_class.includes('AI') ? 'ai' : 'human'}`}>
+                                {result.predicted_class}
+                              </span>
+                            </div>
+                            
+                            {/* Expanded details card - appears below the item in grid */}
+                            {expandedIndex === index && (
+                              <div className="result-details-expanded">
+                                <div className={`result-card ${result.predicted_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
+                                  <div className="result-header">
+                                    <h3>{result.filename}</h3>
+                                    <span className="result-badge">
+                                      {result.predicted_class}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="confidence-meter">
+                                    <div className="confidence-label">
+                                      Confidence: {result.confidence != null ? `${(result.confidence * 100).toFixed(2)}%` : 'N/A'}
+                                    </div>
+                                    <div className="confidence-bar">
+                                      <div 
+                                        className="confidence-fill"
+                                        style={{ 
+                                          width: `${(result.confidence || 0) * 100}%`,
+                                          backgroundColor: getConfidenceColor(result.confidence || 0)
+                                        }}
+                                      ></div>
+                                    </div>
+                                  </div>
+
+                                  <div className="result-details">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Model Used:</span>
+                                      <span className="detail-value">{result.model?.toUpperCase()}</span>
+                                    </div>
+                                    {result.probability != null && (
+                                      <div className="detail-item">
+                                        <span className="detail-label">Probability Score:</span>
+                                        <span className="detail-value">{result.probability.toFixed(4)}</span>
+                                      </div>
+                                    )}
+                                    <div className="detail-item">
+                                      <span className="detail-label">Analysis Type:</span>
+                                      <span className="detail-value">Batch Analysis</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         ))}
                     </div>
