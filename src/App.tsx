@@ -6,6 +6,7 @@ import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import SingleClassification from './components/SingleClassification';
 import BatchClassification from './components/BatchClassification';
+import VideoClassification from './components/VideoClassification';
 import UserProfile from './components/UserProfile';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
@@ -45,6 +46,7 @@ const ProtectedLayout: React.FC = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/single" element={<SingleClassification />} />
           <Route path="/batch" element={<BatchClassification />} />
+          <Route path="/videos" element={<VideoClassification />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

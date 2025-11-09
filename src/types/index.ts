@@ -41,3 +41,18 @@ export interface ModelInfo {
   name: string;
   description: string;
 }
+
+export interface VideoSummary {
+  filename: string;
+  analysis_type: string;
+  confidence_ai: number;
+  confidence_human: number;
+  total_frames_analyzed: number;
+  ai_frames: number;
+  human_frames: number;
+  average_ai_confidence: number;
+  average_human_confidence: number;
+  dominant_class: string;
+  model: string;
+  "analysis detail": string;
+}

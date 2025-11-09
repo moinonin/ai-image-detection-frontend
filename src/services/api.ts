@@ -1,4 +1,4 @@
-import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo } from '../types';
+import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo, VideoSummary } from '../types';
 
 // Vite uses import.meta.env, not process.env
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
@@ -154,6 +154,41 @@ class ApiService {
 
   async getModels(): Promise<{ models: ModelInfo[] }> {
     return this.request('/api/v1/models');
+  }
+
+  async classifyVideo(file: File, model: string, partial: boolean): Promise<VideoSummary> {
+    const formData = new FormData();
+    formData.append('files', file);
+    formData.append('model', model);
+    
+    // FastAPI expects 'true'/'false' strings for boolean form fields
+    formData.append('partial', partial ? 'true' : 'false');
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // Remove Content-Type header when using FormData with fetch
+        // Let the browser set it automatically with boundary
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      // Get more detailed error information
+      let errorDetail = 'Unknown error';
+      try {
+        const errorData = await response.json();
+        errorDetail = errorData.detail || JSON.stringify(errorData);
+      } catch (e) {
+        errorDetail = response.statusText;
+      }
+      
+      throw new Error(`Video classification failed: ${response.status} - ${errorDetail}`);
+    }
+
+    return response.json();
   }
 }
 

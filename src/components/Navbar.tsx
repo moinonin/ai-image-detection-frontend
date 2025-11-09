@@ -40,6 +40,11 @@ const Navbar: React.FC = () => {
             </Link>
           </li>
           <li>
+            <Link to="/videos" className={isActive('/videos')}>
+              Video Analysis
+            </Link>
+          </li>
+          <li>
             <Link to="/profile" className={isActive('/profile')}>
               Profile
             </Link>

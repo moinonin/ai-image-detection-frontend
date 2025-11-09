@@ -46,6 +46,12 @@ const Dashboard: React.FC = () => {
           <h3>Batch Analysis</h3>
           <p>Process multiple images simultaneously with advanced models</p>
         </Link>
+
+        <Link to="/videos" className="action-card neon-purple">
+          <div className="action-icon">📊</div>
+          <h3>Video Analysis</h3>
+          <p>Conduct forensic analysis on video full lengths or sampled frames</p>
+        </Link>
       </div>
 
       <div className="models-section">
