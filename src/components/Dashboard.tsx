@@ -36,19 +36,19 @@ const Dashboard: React.FC = () => {
 
       <div className="quick-actions">
         <Link to="/single" className="action-card neon-blue">
-          <div className="action-icon">🔍</div>
+          <div className="action-icon">🖼️</div>
           <h3>Single Image Analysis</h3>
           <p>Upload and analyze a single image for AI generation detection</p>
         </Link>
 
         <Link to="/batch" className="action-card neon-purple">
-          <div className="action-icon">📊</div>
+          <div className="action-icon">🖼️📚</div>
           <h3>Batch Analysis</h3>
           <p>Process multiple images simultaneously with advanced models</p>
         </Link>
 
-        <Link to="/videos" className="action-card neon-purple">
-          <div className="action-icon">📊</div>
+        <Link to="/videos" className="action-card neon-green">
+          <div className="action-icon">📺</div>
           <h3>Video Analysis</h3>
           <p>Conduct forensic analysis on video full lengths or sampled frames</p>
         </Link>
