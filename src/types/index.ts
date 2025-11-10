@@ -1,3 +1,5 @@
+export type ReportFormat = 'json' | 'pdf';
+
 export interface User {
   username: string;
   email: string;
@@ -14,6 +16,7 @@ export interface AuthResponse {
 export interface ClassificationResult {
   filename: string;
   model: string;
+  report_format: string;
   probability?: number;
   predicted_class: string;
   ground_truth?: string;
@@ -22,6 +25,7 @@ export interface ClassificationResult {
   user: string;
   is_ai?: boolean;
   result?: any;
+  pdfBlob?: Blob;
 }
 
 export interface BatchJob {
@@ -55,6 +59,7 @@ export interface VideoSummary {
   dominant_class: string;
   model: string;
   "analysis detail": string;
+  pdfBlob?: Blob;
 }
 
 export  interface PDFResultProps {
@@ -109,4 +114,5 @@ export interface BatchResult {
   model?: string;
   probability?: number;
   [key: string]: any;
+  pdfBlob?: Blob;
 }

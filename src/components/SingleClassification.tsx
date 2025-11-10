@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { classificationService } from '../services/api';
-import { ClassificationResult, EmailResultsParams } from '../types';
+import { ClassificationResult, EmailResultsParams, ReportFormat } from '../types';
 
 const SingleClassification: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  /*const [modelType, setModelType] = useState('net');*/
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [modelType, setModelType] = useState('ml');
+  const [reportFormat, setReportFormat] = useState<ReportFormat>('pdf'); // Add report format state
   const [result, setResult] = useState<ClassificationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -43,7 +43,11 @@ const SingleClassification: React.FC = () => {
 
     setLoading(true);
     try {
-      const classificationResult = await classificationService.classifySingleImage(selectedFile, modelType);
+      const classificationResult = await classificationService.classifySingleImage(
+        selectedFile, 
+        modelType,
+        reportFormat  // Add reportFormat parameter
+      );
       setResult(classificationResult);
     } catch (error) {
       console.error('Classification failed:', error);
@@ -65,8 +69,20 @@ const SingleClassification: React.FC = () => {
   };
 
   const handleDownloadPDF = (result: ClassificationResult): void => {
-      // This function can handle both image and video results
-      console.log('Download PDF:', result);
+    // Enhanced PDF download handler
+    console.log('Download PDF:', result);
+    
+    // If the backend returns a PDF blob directly, you can handle it here
+    if (result.pdfBlob) {
+      const url = window.URL.createObjectURL(result.pdfBlob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `classification_report_${result.filename}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
   };
 
   return (
@@ -115,11 +131,25 @@ const SingleClassification: React.FC = () => {
                 onChange={(e) => setModelType(e.target.value)}
                 className="model-select"
               >
-              {MODEL_TYPES.map(type => (
+                {MODEL_TYPES.map(type => (
                   <option key={type} value={type}>
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            {/* Add Report Format Selection */}
+            <div className="report-format-selection">
+              <label htmlFor="report-format">Report Format:</label>
+              <select 
+                id="report-format"
+                value={reportFormat} 
+                onChange={(e) => setReportFormat(e.target.value as ReportFormat)}
+                className="report-format-select"
+              >
+                <option value="json">JSON</option>
+                <option value="pdf">PDF</option>
               </select>
             </div>
 
@@ -141,73 +171,102 @@ const SingleClassification: React.FC = () => {
         </div>
 
         {result && (
-            <div className="results-section">
-              <h2>Analysis Results</h2>
-              <div className={`result-card ${result.predicted_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
-                <div className="result-header">
-                  <h3>{result.filename}</h3>
-                  <span className="result-badge">
-                    {result.predicted_class}
-                  </span>
+          <div className="results-section">
+            <h2>Analysis Results</h2>
+            <div className={`result-card ${result.predicted_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
+              <div className="result-header">
+                <h3>{result.filename}</h3>
+                <span className="result-badge">
+                  {result.predicted_class}
+                </span>
+              </div>
+              
+              <div className="confidence-meter">
+                <div className="confidence-label">
+                  Confidence: {(result.confidence! * 100).toFixed(2)}%
                 </div>
+                <div className="confidence-bar">
+                  <div 
+                    className="confidence-fill"
+                    style={{ 
+                      width: `${result.confidence! * 100}%`,
+                      backgroundColor: getConfidenceColor(result.confidence!)
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="result-details">
+                <div className="detail-item">
+                  <span className="detail-label">Model Used:</span>
+                  <span className="detail-value">{result.model.toUpperCase()}</span>
+                </div>
+                {result.probability != null && (
+                  <div className="detail-item">
+                    <span className="detail-label">Probability Score:</span>
+                    <span className="detail-value">{result.probability.toFixed(4)}</span>
+                  </div>
+                )}
+                <div className="detail-item">
+                  <span className="detail-label">Report Format:</span>
+                  <span className="detail-value">{reportFormat.toUpperCase()}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Analysis Type:</span>
+                  <span className="detail-value">Single Image</span>
+                </div>
+              </div>
+
+              {/* Updated Action Buttons */}
+              <div className="action-buttons">
+                <button 
+                  className="email-btn futuristic-btn"
+                  onClick={() => handleEmailResults({
+                    confidence: result.confidence!,
+                    predicted_class: result.predicted_class,
+                    filename: result.filename,
+                    model: result.model,
+                    probability: result.probability,
+                  })}
+                >
+                  <span className="btn-icon">✉️</span>
+                  Email Results
+                </button>
                 
-                <div className="confidence-meter">
-                  <div className="confidence-label">
-                    Confidence: {(result.confidence! * 100).toFixed(2)}%
-                  </div>
-                  <div className="confidence-bar">
-                    <div 
-                      className="confidence-fill"
-                      style={{ 
-                        width: `${result.confidence! * 100}%`,
-                        backgroundColor: getConfidenceColor(result.confidence!)
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="result-details">
-                  <div className="detail-item">
-                    <span className="detail-label">Model Used:</span>
-                    <span className="detail-value">{result.model.toUpperCase()}</span>
-                  </div>
-                    {result.probability != null && (
-                      <div className="detail-item">
-                        <span className="detail-label">Probability Score:</span>
-                        <span className="detail-value">{result.probability.toFixed(4)}</span>
-                      </div>
-                    )}
-                  <div className="detail-item">
-                    <span className="detail-label">Analysis Type:</span>
-                    <span className="detail-value">Single Image</span>
-                  </div>
-                </div>
-
-                {/* Futuristic Action Buttons - Reusing same structure */}
-                <div className="action-buttons">
-                  <button 
-                    className="email-btn futuristic-btn"
-                    onClick={() => handleEmailResults({
-                      confidence: result.confidence!,
-                      predicted_class: result.predicted_class,
-                      filename: result.filename,
-                      model: result.model,
-                      probability: result.probability,
-                    })}
-                  >
-                    <span className="btn-icon">✉️</span>
-                    Email Results
-                  </button>
+                {/* Show PDF download only if PDF format was used or available */}
+                {(reportFormat === 'pdf' || result.pdfBlob) && (
                   <button 
                     className="pdf-btn futuristic-btn"
-                    onClick={() => handleDownloadPDF(result as ClassificationResult)}
+                    onClick={() => handleDownloadPDF(result)}
                   >
                     <span className="btn-icon">📄</span>
                     Download PDF Report
                   </button>
-                </div>
+                )}
+                
+                {/* Optional: Add JSON download button */}
+                {reportFormat === 'json' && (
+                  <button 
+                    className="json-btn futuristic-btn"
+                    onClick={() => {
+                      const dataStr = JSON.stringify(result, null, 2);
+                      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                      const url = URL.createObjectURL(dataBlob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `classification_${result.filename}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    <span className="btn-icon">📊</span>
+                    Download JSON
+                  </button>
+                )}
               </div>
-            </div>)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

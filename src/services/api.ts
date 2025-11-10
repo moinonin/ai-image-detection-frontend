@@ -1,5 +1,7 @@
 import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo, VideoSummary } from '../types';
 
+type ReportFormat = 'json' | 'pdf';
+
 // Vite uses import.meta.env, not process.env
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
 
@@ -79,11 +81,16 @@ class ApiService {
     });
   }
 
-  // Classification endpoints
-  async classifySingleImage(file: File, modelType: string = 'ml'): Promise<ClassificationResult> {
+  // Update the method signature and implementation
+  async classifySingleImage(
+    file: File, 
+    modelType: string = 'ml', 
+    reportFormat: ReportFormat = 'json' // Add with default
+  ): Promise<ClassificationResult> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('model_type', modelType);
+    formData.append('report_format', reportFormat); // Add this line
 
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
@@ -98,34 +105,93 @@ class ApiService {
       const errorText = await response.text();
       console.error('Backend error:', response.status, errorText);
       throw new Error(`Classification failed (${response.status})`);
+    }
+
+    // Handle PDF response differently if needed
+    if (reportFormat === 'pdf') {
+      const pdfBlob = await response.blob();
+      // Include required properties and cast to ClassificationResult to satisfy the return type
+      return {
+        filename: file.name,
+        predicted_class: 'PDF Report',
+        confidence: 1,
+        model: modelType,
+        report_format: 'pdf',
+        user: null,
+        pdfBlob: pdfBlob
+      } as unknown as ClassificationResult;
+    }
+
+  return response.json();
 }
-    if (!response.ok) {
-      throw new Error('Classification failed');
-    }
 
-    return response.json();
+async startBatchJobSync(
+  files: File[], 
+  model: string = 'ml',
+  reportFormat: ReportFormat = 'json'
+): Promise<any> {
+  const formData = new FormData();
+  files.forEach(file => formData.append('files', file));
+  formData.append('model', model);
+  formData.append('report_format', reportFormat);
+
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Backend error:', response.status, errorText);
+    throw new Error(`Batch job start failed (${response.status})`);
   }
 
-  async classifyBatchImages(files: File[], model: string = 'ml'): Promise<any> {
-    const formData = new FormData();
-    files.forEach(file => formData.append('files', file));
-    formData.append('model', model);
-
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Batch classification failed');
-    }
-
-    return response.json();
+  // Handle PDF response
+  if (reportFormat === 'pdf') {
+    const pdfBlob = await response.blob();
+    return {
+      job_id: `batch_${Date.now()}`,
+      status: 'completed',
+      total_images: files.length,
+      processed: files.length,
+      results: [],
+      pdfBlob: pdfBlob
+    };
   }
+
+  return response.json();
+}
+
+async downloadBatchPDF(
+  files: File[], 
+  model: string = 'ml'
+): Promise<Blob> {
+  const formData = new FormData();
+  files.forEach(file => formData.append('files', file));
+  formData.append('model', model);
+  formData.append('report_format', 'pdf'); // Set report format to PDF
+
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Backend error:', response.status, errorText);
+    throw new Error(`Batch PDF download failed (${response.status})`);
+  }
+
+  return response.blob();
+}
 
   async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
     const formData = new FormData();
@@ -156,40 +222,85 @@ class ApiService {
     return this.request('/api/v1/models');
   }
 
-  async classifyVideo(file: File, model: string, partial: boolean): Promise<VideoSummary> {
-    const formData = new FormData();
-    formData.append('files', file);
-    formData.append('model', model);
-    
-    // FastAPI expects 'true'/'false' strings for boolean form fields
-    formData.append('partial', partial ? 'true' : 'false');
+async classifyVideo(
+  file: File, 
+  model: string, 
+  partial: boolean,
+  reportFormat: ReportFormat = 'json'
+): Promise<VideoSummary> {
+  const formData = new FormData();
+  formData.append('files', file);
+  formData.append('model', model);
+  formData.append('partial', partial ? 'true' : 'false');
+  formData.append('report_format', reportFormat);
 
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // Remove Content-Type header when using FormData with fetch
-        // Let the browser set it automatically with boundary
-      },
-      body: formData,
-    });
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
 
-    if (!response.ok) {
-      // Get more detailed error information
-      let errorDetail = 'Unknown error';
-      try {
-        const errorData = await response.json();
-        errorDetail = errorData.detail || JSON.stringify(errorData);
-      } catch (e) {
-        errorDetail = response.statusText;
-      }
-      
-      throw new Error(`Video classification failed: ${response.status} - ${errorDetail}`);
-    }
-
-    return response.json();
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Backend error:', response.status, errorText);
+    throw new Error(`Video classification failed (${response.status})`);
   }
+
+  // Handle PDF response
+  if (reportFormat === 'pdf') {
+    const pdfBlob = await response.blob();
+    return {
+      filename: file.name,
+      dominant_class: 'PDF Report',
+      confidence_ai: 100,
+      confidence_human: 0,
+      model: model,
+      analysis_type: partial ? 'partial' : 'full',
+      'analysis detail': partial ? 'Partial analysis (50 frames)' : 'Full analysis (all frames)',
+      total_frames_analyzed: 0,
+      ai_frames: 0,
+      human_frames: 0,
+      average_ai_confidence: 0,
+      average_human_confidence: 0,
+      pdfBlob: pdfBlob
+    } as VideoSummary;
+  }
+
+  return response.json();
+}
+
+async downloadVideoPDF(
+  file: File, 
+  model: string, 
+  partial: boolean
+): Promise<Blob> {
+  const formData = new FormData();
+  formData.append('files', file);
+  formData.append('model', model);
+  formData.append('partial', partial ? 'true' : 'false');
+  formData.append('report_format', 'pdf'); // Request PDF format
+
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Backend error:', response.status, errorText);
+    throw new Error(`PDF download failed (${response.status})`);
+  }
+
+  return response.blob();
+}
+
 }
 
 export const authService = new ApiService();

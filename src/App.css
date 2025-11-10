@@ -1377,3 +1377,33 @@ body {
 .expand-button:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+/* report format section */
+/* Add styles for report format selection */
+.report-format-selection {
+  margin: 15px 0;
+}
+
+.report-format-selection label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.report-format-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+}
+
+/* Style for JSON download button */
+.json-btn.futuristic-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.json-btn.futuristic-btn:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}

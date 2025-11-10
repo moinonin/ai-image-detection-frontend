@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { classificationService } from '../services/api';
-import { VideoSummary } from '../types';
+import { VideoSummary, ReportFormat} from '../types';
 
 type EmailResultProps = VideoSummary;
-type PDFResultProps = VideoSummary;
 
 const VideoClassification: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -13,7 +12,7 @@ const VideoClassification: React.FC = () => {
   const [result, setResult] = useState<VideoSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-
+  const [reportFormat] = useState<ReportFormat>('pdf'); // Changed from 'json'
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setSelectedFile(event.target.files[0]);
@@ -40,7 +39,7 @@ const VideoClassification: React.FC = () => {
     }
   };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) return;
 
@@ -56,48 +55,88 @@ const VideoClassification: React.FC = () => {
     setResult(null);
     
     try {
-        const videoResult = await classificationService.classifyVideo(
+      const videoResult = await classificationService.classifyVideo(
         selectedFile, 
         modelType, 
         partialAnalysis
-        );
-        console.log('=== SUCCESS ===');
-        console.log('Result:', videoResult);
-        setResult(videoResult);
+      );
+      console.log('=== SUCCESS ===');
+      console.log('Result:', videoResult);
+      setResult(videoResult);
     } catch (error: any) {
-        console.log('=== ERROR DETAILS ===');
-        console.log('Full error:', error);
-        console.log('Error message:', error.message);
-        
-        let errorMessage = 'Video analysis failed. Please try again.';
-        
-        if (error.message) {
+      console.log('=== ERROR DETAILS ===');
+      console.log('Full error:', error);
+      console.log('Error message:', error.message);
+      
+      let errorMessage = 'Video analysis failed. Please try again.';
+      
+      if (error.message) {
         errorMessage = error.message;
-        }
-        
-        alert(errorMessage);
+      }
+      
+      alert(errorMessage);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-    };
+  };
 
-    const getConfidenceColor = (confidence: number) => {
-        if (confidence > 80) return '#00ff00';
-        if (confidence > 60) return '#ffff00';
-        return '#ff4444';
-    };
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence > 80) return '#00ff00';
+    if (confidence > 60) return '#ffff00';
+    return '#ff4444';
+  };
 
-    const handleEmailResults = (result: EmailResultProps): void => {
-        // Implement email functionality
-        console.log('Email results:', result);
-        // You can use window.location.href or an API call here
-    };
+  const handleEmailResults = async (result: EmailResultProps): Promise<void> => {
+    try {
+      console.log('Emailing results:', result);
+      // Implement email functionality here
+      // This could be an API call to your backend email service
+      alert('Email functionality would be implemented here');
+    } catch (error) {
+      console.error('Failed to email results:', error);
+      alert('Failed to send email. Please try again.');
+    }
+  };
 
-    const handleDownloadPDF = (result: PDFResultProps): void => {
-        // Implement PDF download functionality
-        console.log('Download PDF:', result);
-        // You can use libraries like jsPDF or make an API call
-    };
+  const handleDownloadPDF = async (): Promise<void> => {
+    if (!selectedFile) return;
+
+    setLoading(true);
+    try {
+      console.log('Downloading PDF report...');
+      const pdfBlob = await classificationService.downloadVideoPDF(
+        selectedFile,
+        modelType,
+        partialAnalysis
+      );
+      
+      // Create and trigger download
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `video_analysis_report_${selectedFile.name}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      console.log('PDF downloaded successfully');
+    } catch (error: any) {
+      console.error('PDF download failed:', error);
+      alert('PDF download failed. Please try again.');
+    }
+  };
+  const handleDownloadJSON = (result: VideoSummary): void => {
+    const dataStr = JSON.stringify(result, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `video_analysis_${result.filename}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="video-classification">
       <div className="page-header">
@@ -189,108 +228,121 @@ const VideoClassification: React.FC = () => {
         </div>
 
         {result && (
-            <div className="results-section">
+          <div className="results-section">
             <h2>Video Analysis Results</h2>
             <div className={`result-card ${result.dominant_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
-                <div className="result-header">
+              <div className="result-header">
                 <h3>{result.filename}</h3>
                 <span className="result-badge">
-                    {result.dominant_class}
+                  {result.dominant_class}
                 </span>
-                </div>
-                
-                <div className="confidence-meters">
+              </div>
+              
+              <div className="confidence-meters">
                 <div className="confidence-meter">
-                    <div className="confidence-label">
+                  <div className="confidence-label">
                     AI Confidence: {result.confidence_ai}%
-                    </div>
-                    <div className="confidence-bar">
+                  </div>
+                  <div className="confidence-bar">
                     <div 
-                        className="confidence-fill"
-                        style={{ 
+                      className="confidence-fill"
+                      style={{ 
                         width: `${result.confidence_ai}%`,
                         backgroundColor: getConfidenceColor(result.confidence_ai)
-                        }}
+                      }}
                     ></div>
-                    </div>
+                  </div>
                 </div>
 
                 <div className="confidence-meter">
-                    <div className="confidence-label">
+                  <div className="confidence-label">
                     Human Confidence: {result.confidence_human}%
-                    </div>
-                    <div className="confidence-bar">
+                  </div>
+                  <div className="confidence-bar">
                     <div 
-                        className="confidence-fill"
-                        style={{ 
+                      className="confidence-fill"
+                      style={{ 
                         width: `${result.confidence_human}%`,
                         backgroundColor: getConfidenceColor(result.confidence_human)
-                        }}
+                      }}
                     ></div>
-                    </div>
+                  </div>
                 </div>
-                </div>
+              </div>
 
-                <div className="result-details">
+              <div className="result-details">
                 <div className="detail-item">
-                    <span className="detail-label">Model Used:</span>
-                    <span className="detail-value">{result.model.toUpperCase()}</span>
+                  <span className="detail-label">Model Used:</span>
+                  <span className="detail-value">{result.model.toUpperCase()}</span>
                 </div>
                 <div className="detail-item">
-                    <span className="detail-label">Analysis Type:</span>
-                    <span className="detail-value">{result.analysis_type}</span>
+                  <span className="detail-label">Analysis Type:</span>
+                  <span className="detail-value">{result.analysis_type}</span>
                 </div>
                 <div className="detail-item">
-                    <span className="detail-label">Analysis Detail:</span>
-                    <span className="detail-value">{result['analysis detail']}</span>
+                  <span className="detail-label">Analysis Detail:</span>
+                  <span className="detail-value">{result['analysis detail']}</span>
                 </div>
                 <div className="detail-item">
-                    <span className="detail-label">Total Frames Analyzed:</span>
-                    <span className="detail-value">{result.total_frames_analyzed}</span>
+                  <span className="detail-label">Total Frames Analyzed:</span>
+                  <span className="detail-value">{result.total_frames_analyzed}</span>
                 </div>
                 <div className="detail-item">
-                    <span className="detail-label">AI Frames:</span>
-                    <span className="detail-value">{result.ai_frames}</span>
+                  <span className="detail-label">AI Frames:</span>
+                  <span className="detail-value">{result.ai_frames}</span>
                 </div>
                 <div className="detail-item">
-                    <span className="detail-label">Human Frames:</span>
-                    <span className="detail-value">{result.human_frames}</span>
+                  <span className="detail-label">Human Frames:</span>
+                  <span className="detail-value">{result.human_frames}</span>
                 </div>
                 {result.average_ai_confidence > 0 && (
-                    <div className="detail-item">
+                  <div className="detail-item">
                     <span className="detail-label">Avg AI Confidence:</span>
                     <span className="detail-value">{(result.average_ai_confidence * 100).toFixed(2)}%</span>
-                    </div>
+                  </div>
                 )}
                 {result.average_human_confidence > 0 && (
-                    <div className="detail-item">
+                  <div className="detail-item">
                     <span className="detail-label">Avg Human Confidence:</span>
                     <span className="detail-value">{(result.average_human_confidence * 100).toFixed(2)}%</span>
-                    </div>
+                  </div>
                 )}
-                </div>
-
-                {/* Futuristic Action Buttons */}
-                <div className="action-buttons">
+              </div>
+              {/* Action Buttons - Apply SingleClassification pattern */}
+              <div className="action-buttons">
                 <button 
-                    className="email-btn futuristic-btn"
-                    onClick={() => handleEmailResults(result)}
+                  className="email-btn futuristic-btn"
+                  onClick={() => handleEmailResults(result)}
                 >
-                    <span className="btn-icon">✉️</span>
-                    Email Results
+                  <span className="btn-icon">✉️</span>
+                  Email Results
                 </button>
-                <button 
+                
+                {/* Show PDF download only if PDF format was used or available */}
+                {reportFormat === 'pdf' && (
+                  <button 
                     className="pdf-btn futuristic-btn"
-                    onClick={() => handleDownloadPDF(result)}
-                >
+                    onClick={() => handleDownloadPDF()}
+                  >
                     <span className="btn-icon">📄</span>
                     Download PDF Report
-                </button>
-                </div>
+                  </button>
+                )}
+                
+                {/* Show JSON download only if JSON format was used */}
+                {reportFormat === 'json' && (
+                  <button 
+                    className="json-btn futuristic-btn"
+                    onClick={() => handleDownloadJSON(result)}
+                  >
+                    <span className="btn-icon">📊</span>
+                    Download JSON
+                  </button>
+                )}
+              </div>
             </div>
-            </div>
-            )}
-
+          </div>
+        )}
       </div>
     </div>
   );
