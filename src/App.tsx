@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Dashboard';
+import Dashboard from './components/Resources';
 import SingleClassification from './components/SingleClassification';
 import BatchClassification from './components/BatchClassification';
 import VideoClassification from './components/VideoClassification';
@@ -11,7 +11,11 @@ import UserProfile from './components/UserProfile';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import Navbar from './components/Navbar';
+import Home from './components/Home'; // New Home component
+import Pricing from './components/Pricing'; // New Pricing component
+import About from './components/About'; // New About component
 import './App.css';
+import Resources from './components/Resources';
 
 const App: React.FC = () => {
   return (
@@ -43,7 +47,10 @@ const ProtectedLayout: React.FC = () => {
       <Navbar />
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/about" element={<About />} />
           <Route path="/single" element={<SingleClassification />} />
           <Route path="/batch" element={<BatchClassification />} />
           <Route path="/videos" element={<VideoClassification />} />

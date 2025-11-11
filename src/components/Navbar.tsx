@@ -26,22 +26,22 @@ const Navbar: React.FC = () => {
         <ul className="nav-links">
           <li>
             <Link to="/" className={isActive('/')}>
-              Dashboard
+              Home
             </Link>
           </li>
           <li>
-            <Link to="/single" className={isActive('/single')}>
-              Single Analysis
+            <Link to="/resources" className={isActive('/resources')}>
+              Resources
             </Link>
           </li>
           <li>
-            <Link to="/batch" className={isActive('/batch')}>
-              Batch Analysis
+            <Link to="/pricing" className={isActive('/pricing')}>
+              Pricing
             </Link>
           </li>
           <li>
-            <Link to="/videos" className={isActive('/videos')}>
-              Video Analysis
+            <Link to="/about" className={isActive('/about')}>
+              About
             </Link>
           </li>
           <li>
