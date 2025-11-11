@@ -1,4 +1,4 @@
-import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo, VideoSummary } from '../types';
+import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo, VideoClassificationResponse } from '../types';
 
 type ReportFormat = 'json' | 'pdf';
 
@@ -225,14 +225,14 @@ async downloadBatchPDF(
 async classifyVideo(
   file: File, 
   model: string, 
-  partial: boolean,
-  reportFormat: ReportFormat = 'json'
-): Promise<VideoSummary> {
+  partial: boolean
+): Promise<VideoClassificationResponse> {
   const formData = new FormData();
   formData.append('files', file);
   formData.append('model', model);
   formData.append('partial', partial ? 'true' : 'false');
-  formData.append('report_format', reportFormat);
+  formData.append('report_format', 'json'); // Always JSON for analysis
+  formData.append('use_cache', 'true'); // Enable cache
 
   const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
@@ -249,26 +249,6 @@ async classifyVideo(
     throw new Error(`Video classification failed (${response.status})`);
   }
 
-  // Handle PDF response
-  if (reportFormat === 'pdf') {
-    const pdfBlob = await response.blob();
-    return {
-      filename: file.name,
-      dominant_class: 'PDF Report',
-      confidence_ai: 100,
-      confidence_human: 0,
-      model: model,
-      analysis_type: partial ? 'partial' : 'full',
-      'analysis detail': partial ? 'Partial analysis (50 frames)' : 'Full analysis (all frames)',
-      total_frames_analyzed: 0,
-      ai_frames: 0,
-      human_frames: 0,
-      average_ai_confidence: 0,
-      average_human_confidence: 0,
-      pdfBlob: pdfBlob
-    } as VideoSummary;
-  }
-
   return response.json();
 }
 
@@ -281,7 +261,8 @@ async downloadVideoPDF(
   formData.append('files', file);
   formData.append('model', model);
   formData.append('partial', partial ? 'true' : 'false');
-  formData.append('report_format', 'pdf'); // Request PDF format
+  formData.append('report_format', 'pdf');
+  formData.append('use_cache', 'true');  // Add cache parameter
 
   const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {

@@ -1407,3 +1407,55 @@ body {
 .json-btn.futuristic-btn:hover {
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
 }
+
+/* browse button setup */
+.browse-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 14px;
+}
+
+.browse-btn:hover {
+  background-color: #0056b3;
+}
+/* another */
+.browse-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 14px;
+}
+
+.browse-btn:hover {
+  background-color: #0056b3;
+}
+/* and another */
+.browse-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 14px;
+}
+
+.browse-btn:hover {
+  background-color: #0056b3;
+}

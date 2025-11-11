@@ -108,18 +108,19 @@ const SingleClassification: React.FC = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 className="file-input"
+                style={{ display: 'none' }}
               />
               <div className="upload-content">
                 <div className="upload-icon">📁</div>
                 <p>
                   {selectedFile 
                     ? `Selected: ${selectedFile.name}`
-                    : 'Drag & drop an image or click to browse'
+                    : 'Drag & drop an image or use the button below to browse'
                   }
                 </p>
-                <button type="button" className="browse-btn">
+                <label htmlFor="file-upload" className="browse-btn">
                   Browse Files
-                </button>
+                </label>
               </div>
             </div>
 
@@ -139,7 +140,6 @@ const SingleClassification: React.FC = () => {
               </select>
             </div>
 
-            {/* Add Report Format Selection */}
             <div className="report-format-selection">
               <label htmlFor="report-format">Report Format:</label>
               <select 

@@ -67,6 +67,14 @@ export interface ModelInfo {
   description: string;
 }
 
+// Video Analysis Response with Cache Support
+export interface VideoAnalysisResponse {
+  analysis_results: VideoSummary;
+  from_cache: boolean;
+  cache_used: boolean;
+  timestamp: string;
+}
+
 export interface VideoSummary {
   filename: string;
   analysis_type: string;
@@ -83,6 +91,38 @@ export interface VideoSummary {
   pdfBlob?: Blob;
   summary?: LargeFileSummary;
   details?: FileDetail[];
+  // Optional cache fields that might be included
+  from_cache?: boolean;
+  cache_timestamp?: string;
+}
+
+export interface ClassificationService {
+  classifyVideo(
+    file: File, 
+    model: string, 
+    partial: boolean
+  ): Promise<VideoClassificationResponse>;
+  
+  downloadVideoPDF(
+    file: File, 
+    model: string, 
+    partial: boolean
+  ): Promise<Blob>;
+}
+
+export type VideoClassificationResponse = VideoSummary | VideoAnalysisResponse;
+
+// Type guard
+export function isCachedResponse(response: any): response is VideoAnalysisResponse {
+  return response && 'analysis_results' in response && 'from_cache' in response;
+}
+
+// Helper function to extract video summary from either response format
+export function getVideoSummary(response: VideoClassificationResponse): VideoSummary {
+  if (isCachedResponse(response)) {
+    return response.analysis_results;
+  }
+  return response;
 }
 
 export  interface PDFResultProps {

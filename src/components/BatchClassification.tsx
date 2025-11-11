@@ -306,18 +306,19 @@ const handleEmailResults = (result: any) => {
                 accept="image/*"
                 onChange={handleFileChange}
                 className="file-input"
+                style={{ display: 'none' }}
               />
               <div className="upload-content">
                 <div className="upload-icon">📂</div>
                 <p>
                   {selectedFiles.length > 0 
                     ? `${selectedFiles.length} files selected`
-                    : 'Drag & drop images or click to browse'
+                    : 'Drag & drop images or use the button below to browse'
                   }
                 </p>
-                <button type="button" className="browse-btn" onClick={() => fileInputRef.current?.click()}>
+                <label htmlFor={fileInputRef.current?.id || 'file-upload'} className="browse-btn" onClick={() => fileInputRef.current?.click()}>
                   Browse Files
-                </button>
+                </label>
               </div>
             </div>
 
@@ -350,10 +351,10 @@ const handleEmailResults = (result: any) => {
                 className="model-select"
               >
                 {MODEL_TYPES.map(type => (
-                    <option key={type} value={type}>
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </option>
-                  ))}
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -477,7 +478,7 @@ const handleEmailResults = (result: any) => {
                                     <span className="detail-value">Batch Analysis</span>
                                   </div>
                                 </div>
-                                {/* Individual result action buttons - Apply SingleClassification pattern */}
+                                {/* Individual result action buttons - Apply SingleClassification pattern
                                 <div className="action-buttons">
                                   <button 
                                     className="email-btn futuristic-btn"
@@ -489,32 +490,6 @@ const handleEmailResults = (result: any) => {
                                     <span className="btn-icon">✉️</span>
                                     Email This Result
                                   </button>
-                                  
-                                  {/* Show PDF download only if PDF format was used */}
-                                  {/*reportFormat === 'pdf' && (
-                                    <button 
-                                      className="pdf-btn futuristic-btn"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownloadPDF(result);
-                                      }}
-                                    >
-                                      <span className="btn-icon">📄</span>
-                                      Download This PDF
-                                    </button>
-                                  )*/}
-                                  {/*reportFormat === 'pdf' && (
-                                    <button 
-                                      className="pdf-btn futuristic-btn"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownloadPDF(result); // Now this works for single results too
-                                      }}
-                                    >
-                                      <span className="btn-icon">📄</span>
-                                      Download This PDF
-                                    </button>
-                                  )*/}
                                   {reportFormat === 'pdf' && (
                                     <button 
                                       className="pdf-btn futuristic-btn"
@@ -529,8 +504,8 @@ const handleEmailResults = (result: any) => {
                                     </button>
                                   )}
                                   {/* Show JSON download only if JSON format was used */}
-                                  {renderDownloadButton()}
-                                </div>
+                                  {/*renderDownloadButton()}
+                                </div> */}
                               </div>
                             </div>
                           )}

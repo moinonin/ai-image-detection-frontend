@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { classificationService } from '../services/api';
-import { VideoSummary, ReportFormat} from '../types';
+import { VideoSummary, isCachedResponse} from '../types';
 
 type EmailResultProps = VideoSummary;
 
@@ -12,10 +12,17 @@ const VideoClassification: React.FC = () => {
   const [result, setResult] = useState<VideoSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [reportFormat] = useState<ReportFormat>('pdf'); // Changed from 'json'
+  //const [reportFormat] = useState<ReportFormat>('pdf');
+  const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [usedCache, setUsedCache] = useState(false);
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setSelectedFile(event.target.files[0]);
+      // Reset states when new file is selected
+      setAnalysisComplete(false);
+      setUsedCache(false);
+      setResult(null);
     }
   };
 
@@ -36,49 +43,52 @@ const VideoClassification: React.FC = () => {
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setSelectedFile(e.dataTransfer.files[0]);
+      // Reset states when new file is selected
+      setAnalysisComplete(false);
+      setUsedCache(false);
+      setResult(null);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedFile) return;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!selectedFile) return;
 
-    console.log('=== DEBUG VIDEO UPLOAD ===');
-    console.log('File:', selectedFile);
-    console.log('File name:', selectedFile.name);
-    console.log('File type:', selectedFile.type);
-    console.log('File size:', selectedFile.size);
-    console.log('Model:', modelType);
-    console.log('Partial:', partialAnalysis);
-
-    setLoading(true);
-    setResult(null);
+  setLoading(true);
+  setResult(null);
+  setAnalysisComplete(false);
+  setUsedCache(false);
+  
+  try {
+    // Remove the reportFormat parameter since it's not needed
+    const response = await classificationService.classifyVideo(
+      selectedFile, 
+      modelType, 
+      partialAnalysis
+    );
     
-    try {
-      const videoResult = await classificationService.classifyVideo(
-        selectedFile, 
-        modelType, 
-        partialAnalysis
-      );
-      console.log('=== SUCCESS ===');
-      console.log('Result:', videoResult);
-      setResult(videoResult);
-    } catch (error: any) {
-      console.log('=== ERROR DETAILS ===');
-      console.log('Full error:', error);
-      console.log('Error message:', error.message);
-      
-      let errorMessage = 'Video analysis failed. Please try again.';
-      
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      alert(errorMessage);
-    } finally {
-      setLoading(false);
+    // Handle both response formats using type guard
+    let analysisResults: VideoSummary;
+    let cacheUsed = false;
+    
+    if (isCachedResponse(response)) {
+      analysisResults = response.analysis_results;
+      cacheUsed = response.from_cache || response.cache_used;
+    } else {
+      analysisResults = response;
+      cacheUsed = false;
     }
-  };
+    
+    setResult(analysisResults);
+    setUsedCache(cacheUsed);
+    setAnalysisComplete(true);
+    
+  } catch (error: any) {
+    // Error handling...
+  } finally {
+    setLoading(false);
+  }
+};
 
   const getConfidenceColor = (confidence: number) => {
     if (confidence > 80) return '#00ff00';
@@ -89,8 +99,6 @@ const VideoClassification: React.FC = () => {
   const handleEmailResults = async (result: EmailResultProps): Promise<void> => {
     try {
       console.log('Emailing results:', result);
-      // Implement email functionality here
-      // This could be an API call to your backend email service
       alert('Email functionality would be implemented here');
     } catch (error) {
       console.error('Failed to email results:', error);
@@ -115,7 +123,7 @@ const VideoClassification: React.FC = () => {
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `video_analysis_report_${selectedFile.name}.pdf`;
+      a.download = `video_analysis_report_${selectedFile.name.split('.')[0]}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -124,9 +132,12 @@ const VideoClassification: React.FC = () => {
     } catch (error: any) {
       console.error('PDF download failed:', error);
       alert('PDF download failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
-  const handleDownloadJSON = (result: VideoSummary): void => {
+
+  {/*const handleDownloadJSON = (result: VideoSummary): void => {
     const dataStr = JSON.stringify(result, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -135,6 +146,45 @@ const VideoClassification: React.FC = () => {
     a.download = `video_analysis_${result.filename}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };*/}
+
+  // Reset analysis state when settings change
+  React.useEffect(() => {
+    if (analysisComplete) {
+      setAnalysisComplete(false);
+      setUsedCache(false);
+    }
+  }, [modelType, partialAnalysis]);
+
+  // Get button text based on current state
+  const getButtonText = () => {
+    if (loading) {
+      return (
+        <>
+          <div className="spinner"></div>
+          Analyzing Video...
+        </>
+      );
+    }
+    
+    if (analysisComplete) {
+      if (usedCache) {
+        return 'Analysis Complete (Cached)';
+      } else {
+        return 'Analysis Complete';
+      }
+    }
+    
+    return 'Analyze Video';
+  };
+
+  // Get button class based on state
+  const getButtonClass = () => {
+    let className = 'analyze-btn';
+    if (analysisComplete && !loading) {
+      className += ' analysis-complete';
+    }
+    return className;
   };
 
   return (
@@ -160,18 +210,19 @@ const VideoClassification: React.FC = () => {
                 accept="video/*,.mp4,.avi,.mov,.mkv,.webm,.flv,.wmv"
                 onChange={handleFileChange}
                 className="file-input"
+                style={{ display: 'none' }}
               />
               <div className="upload-content">
                 <div className="upload-icon">🎥</div>
                 <p>
                   {selectedFile 
                     ? `Selected: ${selectedFile.name}`
-                    : 'Drag & drop a video or click to browse'
+                    : 'Drag & drop a video or use the button below to browse'
                   }
                 </p>
-                <button type="button" className="browse-btn">
+                <label htmlFor="file-upload" className="browse-btn">
                   Browse Files
-                </button>
+                </label>
               </div>
             </div>
 
@@ -212,24 +263,25 @@ const VideoClassification: React.FC = () => {
 
             <button 
               type="submit" 
-              disabled={!selectedFile || loading}
-              className="analyze-btn"
+              disabled={!selectedFile || (loading && !analysisComplete)}
+              className={getButtonClass()}
             >
-              {loading ? (
-                <>
-                  <div className="spinner"></div>
-                  Analyzing Video...
-                </>
-              ) : (
-                'Analyze Video'
-              )}
+              {getButtonText()}
             </button>
           </form>
         </div>
 
-        {result && (
+        {result && analysisComplete && (
           <div className="results-section">
-            <h2>Video Analysis Results</h2>
+            <div className="results-header">
+              <h2>Video Analysis Results</h2>
+              {usedCache && (
+                <div className="cache-indicator">
+                  <span className="cache-badge">Cached Results</span>
+                  <span className="cache-info">Using previously analyzed data</span>
+                </div>
+              )}
+            </div>
             
             {/* Check if we have valid classification results or error response */}
             {result.dominant_class ? (
@@ -277,15 +329,15 @@ const VideoClassification: React.FC = () => {
                 <div className="result-details">
                   <div className="detail-item">
                     <span className="detail-label">Model Used:</span>
-                    <span className="detail-value">{result.model.toUpperCase()}</span>
+                    <span className="detail-value">{result.model?.toUpperCase() || modelType.toUpperCase()}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Analysis Type:</span>
-                    <span className="detail-value">{result.analysis_type}</span>
+                    <span className="detail-value">{result.analysis_type || (partialAnalysis ? 'Partial' : 'Full')}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Analysis Detail:</span>
-                    <span className="detail-value">{result['analysis detail']}</span>
+                    <span className="detail-value">{result['analysis detail'] || (partialAnalysis ? 'Partial video analysis' : 'Full video analysis')}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Total Frames Analyzed:</span>
@@ -313,7 +365,7 @@ const VideoClassification: React.FC = () => {
                   )}
                 </div>
                 
-                {/* Action Buttons - Apply SingleClassification pattern */}
+                {/* Action Buttons */}
                 <div className="action-buttons">
                   <button 
                     className="email-btn futuristic-btn"
@@ -323,27 +375,22 @@ const VideoClassification: React.FC = () => {
                     Email Results
                   </button>
                   
-                  {/* Show PDF download only if PDF format was used or available */}
-                  {reportFormat === 'pdf' && (
-                    <button 
-                      className="pdf-btn futuristic-btn"
-                      onClick={() => handleDownloadPDF()}
-                    >
-                      <span className="btn-icon">📄</span>
-                      Download PDF Report
-                    </button>
-                  )}
+                  <button 
+                    className="pdf-btn futuristic-btn"
+                    onClick={handleDownloadPDF}
+                    disabled={loading}
+                  >
+                    <span className="btn-icon">📄</span>
+                    {loading ? 'Generating PDF...' : 'Download PDF Report'}
+                  </button>
                   
-                  {/* Show JSON download only if JSON format was used */}
-                  {reportFormat === 'json' && (
-                    <button 
-                      className="json-btn futuristic-btn"
-                      onClick={() => handleDownloadJSON(result)}
-                    >
-                      <span className="btn-icon">📊</span>
-                      Download JSON
-                    </button>
-                  )}
+                  {/*<button 
+                    className="json-btn futuristic-btn"
+                    onClick={() => handleDownloadJSON(result)}
+                  >
+                    <span className="btn-icon">📊</span>
+                    Download JSON
+                  </button>*/}
                 </div>
               </div>
             ) : result.summary ? (
@@ -403,13 +450,11 @@ const VideoClassification: React.FC = () => {
                 <div className="error-help">
                   <p><strong>Recommended Actions:</strong></p>
                   <ul>
-                    <li>Try uploading smaller video files (under {result.summary.max_size} MB recommended)</li>
+                    <li>Try uploading smaller video files</li>
                     <li>Check your internet connection for large uploads</li>
                     <li>Contact support if you need to process large videos regularly</li>
                   </ul>
                 </div>
-
-                {/* No action buttons for error cases */}
               </div>
             ) : (
               // Fallback for unexpected result format
