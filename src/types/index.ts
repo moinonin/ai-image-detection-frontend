@@ -13,6 +13,27 @@ export interface AuthResponse {
   expires_in: number;
 }
 
+/* Handle large files */
+export interface LargeFileSummary {
+  accepted: number;
+  rejected: number;
+  total_uploaded_MB: number;
+  max_size: number;
+  max_file_size_MB: number
+}
+
+export interface FileDetail {
+  file_name: string;
+  status: 'accepted' | 'rejected';
+  file_size_MB?: number;
+  message?: string;
+}
+
+export interface LargeFileResponse {
+  summary: LargeFileSummary;
+  details: FileDetail[];
+}
+
 export interface ClassificationResult {
   filename: string;
   model: string;
@@ -60,6 +81,8 @@ export interface VideoSummary {
   model: string;
   "analysis detail": string;
   pdfBlob?: Blob;
+  summary?: LargeFileSummary;
+  details?: FileDetail[];
 }
 
 export  interface PDFResultProps {
@@ -115,4 +138,30 @@ export interface BatchResult {
   probability?: number;
   [key: string]: any;
   pdfBlob?: Blob;
+}
+
+// Individual result type
+export interface IndividualClassificationResult {
+  filename: string;
+  model: string;
+  probability: number;
+  predicted_class: string;
+  is_ai: boolean;
+  ground_truth?: string;
+  features: Record<string, any>;
+  confidence: number;
+  user: string;
+
+  
+}
+
+export type BatchClassificationResults = IndividualClassificationResult[];
+// Function overloads for better type safety
+export interface PDFDownloadHandlers {
+  // Overload for single result
+  handleDownloadPDF(result: IndividualClassificationResult): Promise<void>;
+  // Overload for batch results
+  handleDownloadPDF(results: BatchClassificationResults): Promise<void>;
+  // Implementation signature
+  handleDownloadPDF(resultOrResults: IndividualClassificationResult | BatchClassificationResults): Promise<void>;
 }

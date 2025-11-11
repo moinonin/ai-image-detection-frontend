@@ -303,5 +303,35 @@ async downloadVideoPDF(
 
 }
 
+export const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
+  
+  console.log('📤 Calling PDF endpoint with:', { resultsCount: results.length, reportType });
+
+  const token = localStorage.getItem('token');
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/api/v1/generate-pdf`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ results, reportType }),
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ PDF generation failed:', response.status, errorText);
+    throw new Error(`Failed to generate PDF: ${response.status}`);
+  }
+  
+  return response.blob();
+};
+
+
 export const authService = new ApiService();
 export const classificationService = new ApiService();

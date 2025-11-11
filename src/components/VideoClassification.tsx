@@ -230,117 +230,202 @@ const VideoClassification: React.FC = () => {
         {result && (
           <div className="results-section">
             <h2>Video Analysis Results</h2>
-            <div className={`result-card ${result.dominant_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
-              <div className="result-header">
-                <h3>{result.filename}</h3>
-                <span className="result-badge">
-                  {result.dominant_class}
-                </span>
-              </div>
-              
-              <div className="confidence-meters">
-                <div className="confidence-meter">
-                  <div className="confidence-label">
-                    AI Confidence: {result.confidence_ai}%
+            
+            {/* Check if we have valid classification results or error response */}
+            {result.dominant_class ? (
+              // Normal classification results
+              <div className={`result-card ${result.dominant_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
+                <div className="result-header">
+                  <h3>{result.filename}</h3>
+                  <span className="result-badge">
+                    {result.dominant_class}
+                  </span>
+                </div>
+                
+                <div className="confidence-meters">
+                  <div className="confidence-meter">
+                    <div className="confidence-label">
+                      AI Confidence: {result.confidence_ai}%
+                    </div>
+                    <div className="confidence-bar">
+                      <div 
+                        className="confidence-fill"
+                        style={{ 
+                          width: `${result.confidence_ai}%`,
+                          backgroundColor: getConfidenceColor(result.confidence_ai)
+                        }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="confidence-bar">
-                    <div 
-                      className="confidence-fill"
-                      style={{ 
-                        width: `${result.confidence_ai}%`,
-                        backgroundColor: getConfidenceColor(result.confidence_ai)
-                      }}
-                    ></div>
+
+                  <div className="confidence-meter">
+                    <div className="confidence-label">
+                      Human Confidence: {result.confidence_human}%
+                    </div>
+                    <div className="confidence-bar">
+                      <div 
+                        className="confidence-fill"
+                        style={{ 
+                          width: `${result.confidence_human}%`,
+                          backgroundColor: getConfidenceColor(result.confidence_human)
+                        }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="confidence-meter">
-                  <div className="confidence-label">
-                    Human Confidence: {result.confidence_human}%
+                <div className="result-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Model Used:</span>
+                    <span className="detail-value">{result.model.toUpperCase()}</span>
                   </div>
-                  <div className="confidence-bar">
-                    <div 
-                      className="confidence-fill"
-                      style={{ 
-                        width: `${result.confidence_human}%`,
-                        backgroundColor: getConfidenceColor(result.confidence_human)
-                      }}
-                    ></div>
+                  <div className="detail-item">
+                    <span className="detail-label">Analysis Type:</span>
+                    <span className="detail-value">{result.analysis_type}</span>
                   </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Analysis Detail:</span>
+                    <span className="detail-value">{result['analysis detail']}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Total Frames Analyzed:</span>
+                    <span className="detail-value">{result.total_frames_analyzed}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">AI Frames:</span>
+                    <span className="detail-value">{result.ai_frames}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Human Frames:</span>
+                    <span className="detail-value">{result.human_frames}</span>
+                  </div>
+                  {result.average_ai_confidence > 0 && (
+                    <div className="detail-item">
+                      <span className="detail-label">Avg AI Confidence:</span>
+                      <span className="detail-value">{(result.average_ai_confidence * 100).toFixed(2)}%</span>
+                    </div>
+                  )}
+                  {result.average_human_confidence > 0 && (
+                    <div className="detail-item">
+                      <span className="detail-label">Avg Human Confidence:</span>
+                      <span className="detail-value">{(result.average_human_confidence * 100).toFixed(2)}%</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Action Buttons - Apply SingleClassification pattern */}
+                <div className="action-buttons">
+                  <button 
+                    className="email-btn futuristic-btn"
+                    onClick={() => handleEmailResults(result)}
+                  >
+                    <span className="btn-icon">✉️</span>
+                    Email Results
+                  </button>
+                  
+                  {/* Show PDF download only if PDF format was used or available */}
+                  {reportFormat === 'pdf' && (
+                    <button 
+                      className="pdf-btn futuristic-btn"
+                      onClick={() => handleDownloadPDF()}
+                    >
+                      <span className="btn-icon">📄</span>
+                      Download PDF Report
+                    </button>
+                  )}
+                  
+                  {/* Show JSON download only if JSON format was used */}
+                  {reportFormat === 'json' && (
+                    <button 
+                      className="json-btn futuristic-btn"
+                      onClick={() => handleDownloadJSON(result)}
+                    >
+                      <span className="btn-icon">📊</span>
+                      Download JSON
+                    </button>
+                  )}
                 </div>
               </div>
+            ) : result.summary ? (
+              // Large file error response
+              <div className="result-card error">
+                <div className="result-header">
+                  <h3>File Processing Summary</h3>
+                  <span className="result-badge error-badge">
+                    Large Files Detected
+                  </span>
+                </div>
+                
+                <div className="error-summary">
+                  <p><strong>The following issues were encountered while processing your upload:</strong></p>
+                  <div className="summary-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Accepted Files:</span>
+                      <span className="stat-value accepted">{result.summary.accepted}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Rejected Files:</span>
+                      <span className="stat-value rejected">{result.summary.rejected}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Total Uploaded Size:</span>
+                      <span className="stat-value">{result.summary.total_uploaded_MB} MB</span>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="result-details">
-                <div className="detail-item">
-                  <span className="detail-label">Model Used:</span>
-                  <span className="detail-value">{result.model.toUpperCase()}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Analysis Type:</span>
-                  <span className="detail-value">{result.analysis_type}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Analysis Detail:</span>
-                  <span className="detail-value">{result['analysis detail']}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Total Frames Analyzed:</span>
-                  <span className="detail-value">{result.total_frames_analyzed}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">AI Frames:</span>
-                  <span className="detail-value">{result.ai_frames}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Human Frames:</span>
-                  <span className="detail-value">{result.human_frames}</span>
-                </div>
-                {result.average_ai_confidence > 0 && (
-                  <div className="detail-item">
-                    <span className="detail-label">Avg AI Confidence:</span>
-                    <span className="detail-value">{(result.average_ai_confidence * 100).toFixed(2)}%</span>
+                {result.details && result.details.length > 0 && (
+                  <div className="file-details">
+                    <h4>File Details:</h4>
+                    <div className="file-list">
+                      {result.details.map((file, index) => (
+                        <div key={index} className={`file-item ${file.status}`}>
+                          <div className="file-info">
+                            <div className="file-name">{file.file_name || `File ${index + 1}`}</div>
+                            <div className="file-status">
+                              <span className={`status-badge ${file.status}`}>
+                                {file.status.toUpperCase()}
+                              </span>
+                              {file.file_size_MB && (
+                                <span className="file-size">({file.file_size_MB} MB)</span>
+                              )}
+                            </div>
+                          </div>
+                          {file.message && (
+                            <div className="file-message">{file.message}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {result.average_human_confidence > 0 && (
-                  <div className="detail-item">
-                    <span className="detail-label">Avg Human Confidence:</span>
-                    <span className="detail-value">{(result.average_human_confidence * 100).toFixed(2)}%</span>
-                  </div>
-                )}
+
+                <div className="error-help">
+                  <p><strong>Recommended Actions:</strong></p>
+                  <ul>
+                    <li>Try uploading smaller video files (under {result.summary.max_size} MB recommended)</li>
+                    <li>Check your internet connection for large uploads</li>
+                    <li>Contact support if you need to process large videos regularly</li>
+                  </ul>
+                </div>
+
+                {/* No action buttons for error cases */}
               </div>
-              {/* Action Buttons - Apply SingleClassification pattern */}
-              <div className="action-buttons">
-                <button 
-                  className="email-btn futuristic-btn"
-                  onClick={() => handleEmailResults(result)}
-                >
-                  <span className="btn-icon">✉️</span>
-                  Email Results
-                </button>
-                
-                {/* Show PDF download only if PDF format was used or available */}
-                {reportFormat === 'pdf' && (
-                  <button 
-                    className="pdf-btn futuristic-btn"
-                    onClick={() => handleDownloadPDF()}
-                  >
-                    <span className="btn-icon">📄</span>
-                    Download PDF Report
-                  </button>
-                )}
-                
-                {/* Show JSON download only if JSON format was used */}
-                {reportFormat === 'json' && (
-                  <button 
-                    className="json-btn futuristic-btn"
-                    onClick={() => handleDownloadJSON(result)}
-                  >
-                    <span className="btn-icon">📊</span>
-                    Download JSON
-                  </button>
-                )}
+            ) : (
+              // Fallback for unexpected result format
+              <div className="result-card error">
+                <div className="result-header">
+                  <h3>Processing Error</h3>
+                  <span className="result-badge error-badge">
+                    Unknown Error
+                  </span>
+                </div>
+                <div className="error-message">
+                  <p>Unable to process the video file. The file may be corrupted, in an unsupported format, or there was a server error.</p>
+                  <p>Please try again with a different file or contact support if the issue persists.</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

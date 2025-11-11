@@ -1,6 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { classificationService } from '../services/api';
-import { BatchJob } from '../types';
+import { BatchJob, IndividualClassificationResult } from '../types';
+
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()!.split(';').shift()!;
+  return null;
+}
 
 const BatchClassification: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -183,7 +190,7 @@ const BatchClassification: React.FC = () => {
     URL.revokeObjectURL(url);
   };*/}
 
-  const handleDownloadPDF = async (result: any): Promise<void> => {
+  {/*const handleDownloadPDF = async (result: any): Promise<void> => {
     setPdfLoading(true);
     try {
       const pdfBlob = await classificationService.downloadBatchPDF([result], model);
@@ -200,11 +207,79 @@ const BatchClassification: React.FC = () => {
     } finally {
       setPdfLoading(false);
     }
-  };
+  };*/}
 
-  const handleEmailResults = (result: any) => {
-    console.log('Email single result:', result);
+const handleDownloadPDF = async (
+  resultOrResults: IndividualClassificationResult | IndividualClassificationResult[]
+): Promise<void> => {
+  try {
+    const results = Array.isArray(resultOrResults) ? resultOrResults : [resultOrResults];
+    
+    console.log('📤 Generating PDF for individual result:', {
+      filename: results[0].filename,
+      resultsCount: results.length
+    });
+
+    // Use the API function instead of direct fetch
+    const pdfBlob = await generatePDFReport(results, 'individual');
+
+    // Create and trigger download
+    const url = window.URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `analysis_${results[0].filename}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+    console.log('Individual PDF downloaded successfully');
+  } catch (error: any) {
+    console.error('Individual PDF download failed:', error);
+    alert(error.message || 'PDF download failed. Please try again.');
+  }
+};
+
+const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
+  // Get the authentication token (adjust based on how you store it)
+  const token = localStorage.getItem('auth_token') || 
+                sessionStorage.getItem('auth_token') ||
+                getCookie('auth_token'); // Use whatever method you use
+  
+  console.log('📤 Calling PDF endpoint with authentication');
+  
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
   };
+  
+  // Add authorization header if token exists
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const response = await fetch('/api/v1/generate-pdf', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ results, reportType }),
+  });
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('❌ PDF generation failed:', response.status, errorText);
+    
+    if (response.status === 401) {
+      throw new Error('Authentication required. Please log in again.');
+    }
+    
+    throw new Error(`Failed to generate PDF: ${response.status}`);
+  }
+  
+  return response.blob();
+};
+
+const handleEmailResults = (result: any) => {
+  console.log('Email single result:', result);
+};
 
 
   return (
@@ -416,7 +491,7 @@ const BatchClassification: React.FC = () => {
                                   </button>
                                   
                                   {/* Show PDF download only if PDF format was used */}
-                                  {reportFormat === 'pdf' && (
+                                  {/*reportFormat === 'pdf' && (
                                     <button 
                                       className="pdf-btn futuristic-btn"
                                       onClick={(e) => {
@@ -427,8 +502,32 @@ const BatchClassification: React.FC = () => {
                                       <span className="btn-icon">📄</span>
                                       Download This PDF
                                     </button>
+                                  )*/}
+                                  {/*reportFormat === 'pdf' && (
+                                    <button 
+                                      className="pdf-btn futuristic-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDownloadPDF(result); // Now this works for single results too
+                                      }}
+                                    >
+                                      <span className="btn-icon">📄</span>
+                                      Download This PDF
+                                    </button>
+                                  )*/}
+                                  {reportFormat === 'pdf' && (
+                                    <button 
+                                      className="pdf-btn futuristic-btn"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        console.log('🖱️ Button clicked for:', result.filename);
+                                        handleDownloadPDF(result);
+                                      }}
+                                    >
+                                      <span className="btn-icon">📄</span>
+                                      Download This PDF
+                                    </button>
                                   )}
-                                  
                                   {/* Show JSON download only if JSON format was used */}
                                   {renderDownloadButton()}
                                 </div>
