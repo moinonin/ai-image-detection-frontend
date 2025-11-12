@@ -181,7 +181,7 @@ const SingleClassification: React.FC = () => {
               )}
             </button>
             {/* Display error message if any */}
-            {error && (
+            {/*error && (
               <div className="error-message" style={{ color: 'red', marginTop: '10px' }}>
                 <strong>Error:</strong> {error}
                 {errorDetails && (
@@ -190,7 +190,7 @@ const SingleClassification: React.FC = () => {
                   </pre>
                 )}
               </div>
-            )}
+            )*/}
           </form>
         </div>
 
