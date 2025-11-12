@@ -9,6 +9,24 @@ function getCookie(name: string): string | null {
   return null;
 }
 
+interface FileValidationError {
+  error: string;
+  summary: {
+    accepted: number;
+    rejected: number;
+    total_uploaded_MB: number;
+    max_size: number;
+    max_file_size_MB: number;
+  };
+  details: Array<{
+    filename: string;
+    status: 'accepted' | 'rejected';
+    file_size_MB: number;
+    reason?: string;
+  }>;
+  accepted_files: any[];
+}
+
 const BatchClassification: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
@@ -20,6 +38,37 @@ const BatchClassification: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const reportFormat: 'pdf' | 'json' = 'pdf';
+  const [validationError, setValidationError] = useState<FileValidationError | null>(null);
+
+  // Client-side file size validation constants
+  const MAX_FILE_SIZE_MB = 0.5;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+  const validateFiles = (files: File[]): FileValidationError | null => {
+    const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE_BYTES);
+    
+    if (oversizedFiles.length === 0) {
+      return null;
+    }
+
+    return {
+      error: "Some files exceed size limits",
+      summary: {
+        accepted: files.length - oversizedFiles.length,
+        rejected: oversizedFiles.length,
+        total_uploaded_MB: files.reduce((acc, file) => acc + (file.size / (1024 * 1024)), 0),
+        max_size: 5,
+        max_file_size_MB: MAX_FILE_SIZE_MB
+      },
+      details: files.map(file => ({
+        filename: file.name,
+        status: file.size > MAX_FILE_SIZE_BYTES ? 'rejected' : 'accepted',
+        file_size_MB: parseFloat((file.size / (1024 * 1024)).toFixed(2)),
+        reason: file.size > MAX_FILE_SIZE_BYTES ? `Exceeded size limit (max ${MAX_FILE_SIZE_MB} MB per file)` : undefined
+      })),
+      accepted_files: files.filter(file => file.size <= MAX_FILE_SIZE_BYTES)
+    };
+  };
 
   const renderDownloadButton = () => {
     if (reportFormat === 'pdf') {
@@ -50,7 +99,18 @@ const BatchClassification: React.FC = () => {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setSelectedFiles(Array.from(event.target.files));
+      const files = Array.from(event.target.files);
+      
+      // Validate files immediately when selected
+      const validationResult = validateFiles(files);
+      if (validationResult) {
+        setValidationError(validationResult);
+        // Still set selected files so user can see all files, but validation error will prevent submission
+        setSelectedFiles(files);
+      } else {
+        setSelectedFiles(files);
+        setValidationError(null);
+      }
     }
   };
 
@@ -70,7 +130,17 @@ const BatchClassification: React.FC = () => {
     setDragActive(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setSelectedFiles(Array.from(e.dataTransfer.files));
+      const files = Array.from(e.dataTransfer.files);
+      
+      // Validate files immediately when dropped
+      const validationResult = validateFiles(files);
+      if (validationResult) {
+        setValidationError(validationResult);
+        setSelectedFiles(files);
+      } else {
+        setSelectedFiles(files);
+        setValidationError(null);
+      }
     }
   };
 
@@ -78,20 +148,76 @@ const BatchClassification: React.FC = () => {
     e.preventDefault();
     if (selectedFiles.length === 0) return;
 
+    // Check for client-side validation errors before submitting
+    const clientValidationError = validateFiles(selectedFiles);
+    if (clientValidationError) {
+      setValidationError(clientValidationError);
+      return; // Prevent submission
+    }
+
     setLoading(true);
+    setValidationError(null);
+    setJobStatus(null);
+    setJobId(null);
+
     try {
       const response = await classificationService.startBatchJob(
         selectedFiles, 
         model
       );
       setJobId(response.job_id);
-      // Start polling for status
       pollJobStatus(response.job_id);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to start batch job:', error);
-      alert('Failed to start batch processing. Please try again.');
+      
+      // Check if this is a file validation error (from backend or client-side)
+      if (error.error && error.summary && error.details) {
+        setValidationError(error as FileValidationError);
+      } else {
+        alert('Failed to start batch processing. Please try again.');
+      }
       setLoading(false);
     }
+  };
+
+  const handleProceedWithAcceptedFiles = () => {
+    if (!validationError) return;
+
+    // Filter selected files to only include accepted ones
+    const acceptedFilenames = validationError.details
+      .filter(file => file.status === 'accepted')
+      .map(file => file.filename);
+
+    const acceptedFiles = selectedFiles.filter(file => 
+      acceptedFilenames.includes(file.name)
+    );
+
+    if (acceptedFiles.length === 0) {
+      alert('No accepted files to proceed with.');
+      return;
+    }
+
+    setSelectedFiles(acceptedFiles);
+    setValidationError(null);
+    setLoading(true);
+
+    // Retry the submission with only accepted files
+    classificationService.startBatchJob(acceptedFiles, model)
+      .then(response => {
+        setJobId(response.job_id);
+        pollJobStatus(response.job_id);
+      })
+      .catch(error => {
+        console.error('Failed to start batch job with accepted files:', error);
+        
+        // Handle backend validation error even with filtered files
+        if (error.error && error.summary && error.details) {
+          setValidationError(error as FileValidationError);
+        } else {
+          alert('Failed to start batch processing. Please try again.');
+        }
+        setLoading(false);
+      });
   };
 
   const pollJobStatus = async (jobId: string) => {
@@ -113,7 +239,12 @@ const BatchClassification: React.FC = () => {
   };
 
   const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    
+    // Revalidate after removal
+    const validationResult = validateFiles(newFiles);
+    setValidationError(validationResult);
   };
 
   const getStatusColor = (status: string) => {
@@ -141,7 +272,6 @@ const BatchClassification: React.FC = () => {
   const handleEmailBatchResults = async (jobStatus: BatchJob): Promise<void> => {
     try {
       console.log('Emailing batch results:', jobStatus);
-      // Implement batch email functionality
       alert('Batch email functionality would be implemented here');
     } catch (error) {
       console.error('Failed to email batch results:', error);
@@ -160,7 +290,6 @@ const BatchClassification: React.FC = () => {
         model
       );
       
-      // Create and trigger download
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.style.display = 'none';
@@ -179,114 +308,80 @@ const BatchClassification: React.FC = () => {
     }
   };
 
-  {/*const handleDownloadBatchJSON = (jobStatus: BatchJob): void => {
-    const dataStr = JSON.stringify(jobStatus, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `batch_classification_${jobId}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };*/}
-
-  {/*const handleDownloadPDF = async (result: any): Promise<void> => {
-    setPdfLoading(true);
+  const handleDownloadPDF = async (
+    resultOrResults: IndividualClassificationResult | IndividualClassificationResult[]
+  ): Promise<void> => {
     try {
-      const pdfBlob = await classificationService.downloadBatchPDF([result], model);
+      const results = Array.isArray(resultOrResults) ? resultOrResults : [resultOrResults];
+      
+      console.log('📤 Generating PDF for individual result:', {
+        filename: results[0].filename,
+        resultsCount: results.length
+      });
+
+      const pdfBlob = await generatePDFReport(results, 'individual');
+
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
+      a.style.display = 'none';
       a.href = url;
-      a.download = `analysis_${result.filename}.pdf`;
+      a.download = `analysis_${results[0].filename}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('PDF download failed:', error);
-      alert('PDF download failed. Please try again.');
-    } finally {
-      setPdfLoading(false);
+
+      console.log('Individual PDF downloaded successfully');
+    } catch (error: any) {
+      console.error('Individual PDF download failed:', error);
+      alert(error.message || 'PDF download failed. Please try again.');
     }
-  };*/}
-
-const handleDownloadPDF = async (
-  resultOrResults: IndividualClassificationResult | IndividualClassificationResult[]
-): Promise<void> => {
-  try {
-    const results = Array.isArray(resultOrResults) ? resultOrResults : [resultOrResults];
-    
-    console.log('📤 Generating PDF for individual result:', {
-      filename: results[0].filename,
-      resultsCount: results.length
-    });
-
-    // Use the API function instead of direct fetch
-    const pdfBlob = await generatePDFReport(results, 'individual');
-
-    // Create and trigger download
-    const url = window.URL.createObjectURL(pdfBlob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = `analysis_${results[0].filename}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-
-    console.log('Individual PDF downloaded successfully');
-  } catch (error: any) {
-    console.error('Individual PDF download failed:', error);
-    alert(error.message || 'PDF download failed. Please try again.');
-  }
-};
-
-const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
-  // Get the authentication token (adjust based on how you store it)
-  const token = localStorage.getItem('auth_token') || 
-                sessionStorage.getItem('auth_token') ||
-                getCookie('auth_token'); // Use whatever method you use
-  
-  console.log('📤 Calling PDF endpoint with authentication');
-  
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
   };
-  
-  // Add authorization header if token exists
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  
-  const response = await fetch('/api/v1/generate-pdf', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ results, reportType }),
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('❌ PDF generation failed:', response.status, errorText);
+
+  const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
+    const token = localStorage.getItem('auth_token') || 
+                  sessionStorage.getItem('auth_token') ||
+                  getCookie('auth_token');
     
-    if (response.status === 401) {
-      throw new Error('Authentication required. Please log in again.');
+    console.log('📤 Calling PDF endpoint with authentication');
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
     
-    throw new Error(`Failed to generate PDF: ${response.status}`);
-  }
-  
-  return response.blob();
-};
+    const response = await fetch('/api/v1/generate-pdf', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ results, reportType }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ PDF generation failed:', response.status, errorText);
+      
+      if (response.status === 401) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+      
+      throw new Error(`Failed to generate PDF: ${response.status}`);
+    }
+    
+    return response.blob();
+  };
 
-const handleEmailResults = (result: any) => {
-  console.log('Email single result:', result);
-};
-
+  const handleEmailResults = (result: any) => {
+    console.log('Email single result:', result);
+  };
 
   return (
     <div className="batch-classification">
       <div className="page-header">
         <h1>Batch Image Analysis</h1>
         <p>Process multiple images simultaneously with advanced AI models</p>
+        <p className="file-size-info">Maximum file size: {MAX_FILE_SIZE_MB} MB per file</p>
       </div>
 
       <div className="batch-container">
@@ -316,6 +411,7 @@ const handleEmailResults = (result: any) => {
                     : 'Drag & drop images or use the button below to browse'
                   }
                 </p>
+                <p className="file-size-note">Max file size: {MAX_FILE_SIZE_MB} MB</p>
                 <label htmlFor={fileInputRef.current?.id || 'file-upload'} className="browse-btn" onClick={() => fileInputRef.current?.click()}>
                   Browse Files
                 </label>
@@ -326,18 +422,83 @@ const handleEmailResults = (result: any) => {
               <div className="selected-files">
                 <h4>Selected Files:</h4>
                 <div className="files-list">
-                  {selectedFiles.map((file, index) => (
-                    <div key={index} className="file-item">
-                      <span className="file-name">{file.name}</span>
-                      <button 
-                        type="button" 
-                        className="remove-file"
-                        onClick={() => removeFile(index)}
-                      >
-                        ✕
-                      </button>
+                  {selectedFiles.map((file, index) => {
+                    const fileSizeMB = file.size / (1024 * 1024);
+                    const isOversized = fileSizeMB > MAX_FILE_SIZE_MB;
+                    
+                    return (
+                      <div key={index} className={`file-item ${isOversized ? 'oversized' : ''}`}>
+                        <span className="file-name">{file.name}</span>
+                        <span className="file-size">({fileSizeMB.toFixed(2)} MB)</span>
+                        <button 
+                          type="button" 
+                          className="remove-file"
+                          onClick={() => removeFile(index)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* File Validation Error Display */}
+            {validationError && (
+              <div className="validation-error">
+                <div className="error-header">
+                  <h3>📁 File Validation Results</h3>
+                  <span className="error-badge">{validationError.error}</span>
+                </div>
+                
+                <div className="validation-summary">
+                  <div className="summary-item accepted">
+                    <span className="summary-label">Accepted:</span>
+                    <span className="summary-value">{validationError.summary.accepted}</span>
+                  </div>
+                  <div className="summary-item rejected">
+                    <span className="summary-label">Rejected:</span>
+                    <span className="summary-value">{validationError.summary.rejected}</span>
+                  </div>
+                  <div className="summary-item size">
+                    <span className="summary-label">Max File Size:</span>
+                    <span className="summary-value">{validationError.summary.max_file_size_MB} MB</span>
+                  </div>
+                </div>
+
+                <div className="file-details">
+                  <h4>File Details:</h4>
+                  {validationError.details.map((file, index) => (
+                    <div key={index} className={`file-detail ${file.status}`}>
+                      <span className="file-name">{file.filename}</span>
+                      <span className="file-size">{file.file_size_MB.toFixed(2)} MB</span>
+                      <span className={`file-status ${file.status}`}>
+                        {file.status === 'accepted' ? '✓' : '✗'} {file.status}
+                      </span>
+                      {file.reason && <span className="file-reason">{file.reason}</span>}
                     </div>
                   ))}
+                </div>
+
+                <div className="validation-actions">
+                  {validationError.summary.accepted > 0 && (
+                    <button 
+                      type="button"
+                      className="proceed-btn futuristic-btn"
+                      onClick={handleProceedWithAcceptedFiles}
+                    >
+                      <span className="btn-icon">🚀</span>
+                      Proceed with {validationError.summary.accepted} Accepted Files
+                    </button>
+                  )}
+                  <button 
+                    type="button"
+                    className="dismiss-btn"
+                    onClick={() => setValidationError(null)}
+                  >
+                    Dismiss
+                  </button>
                 </div>
               </div>
             )}
@@ -360,7 +521,7 @@ const handleEmailResults = (result: any) => {
 
             <button 
               type="submit" 
-              disabled={selectedFiles.length === 0 || loading}
+              disabled={selectedFiles.length === 0 || loading || !!(validationError && validationError.summary.accepted === 0)}
               className="analyze-btn"
             >
               {loading ? (
@@ -375,6 +536,7 @@ const handleEmailResults = (result: any) => {
           </form>
         </div>
 
+        {/* Rest of the component remains the same */}
         {jobStatus && (
           <div className="job-status">
             <h2>Batch Processing Status</h2>
@@ -405,7 +567,6 @@ const handleEmailResults = (result: any) => {
                 </div>
               </div>
 
-              {/* Batch-level action buttons - User decides after seeing results */}
               <div className="action-buttons">
                 <button 
                   className="email-btn futuristic-btn"
@@ -415,7 +576,6 @@ const handleEmailResults = (result: any) => {
                   Email Batch Report
                 </button>
                 
-                {/* Show PDF download only if PDF format was used or available */}
                 {renderDownloadButton()}
               </div>
               
@@ -478,34 +638,6 @@ const handleEmailResults = (result: any) => {
                                     <span className="detail-value">Batch Analysis</span>
                                   </div>
                                 </div>
-                                {/* Individual result action buttons - Apply SingleClassification pattern
-                                <div className="action-buttons">
-                                  <button 
-                                    className="email-btn futuristic-btn"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEmailResults(result);
-                                    }}
-                                  >
-                                    <span className="btn-icon">✉️</span>
-                                    Email This Result
-                                  </button>
-                                  {reportFormat === 'pdf' && (
-                                    <button 
-                                      className="pdf-btn futuristic-btn"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        console.log('🖱️ Button clicked for:', result.filename);
-                                        handleDownloadPDF(result);
-                                      }}
-                                    >
-                                      <span className="btn-icon">📄</span>
-                                      Download This PDF
-                                    </button>
-                                  )}
-                                  {/* Show JSON download only if JSON format was used */}
-                                  {/*renderDownloadButton()}
-                                </div> */}
                               </div>
                             </div>
                           )}

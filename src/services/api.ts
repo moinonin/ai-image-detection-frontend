@@ -171,6 +171,33 @@ async startBatchJobSync(
   model: string = 'ml',
   reportFormat: ReportFormat = 'json'
 ): Promise<any> {
+  // Client-side file size validation
+  const MAX_FILE_SIZE_MB = 0.5;
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+  
+  const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE_BYTES);
+  if (oversizedFiles.length > 0) {
+    // Create a structured error similar to backend response
+    const oversizedError = {
+      error: "Some files exceed size limits",
+      summary: {
+        accepted: files.length - oversizedFiles.length,
+        rejected: oversizedFiles.length,
+        total_uploaded_MB: files.reduce((acc, file) => acc + (file.size / (1024 * 1024)), 0),
+        max_size: 5,
+        max_file_size_MB: MAX_FILE_SIZE_MB
+      },
+      details: files.map(file => ({
+        filename: file.name,
+        status: file.size > MAX_FILE_SIZE_BYTES ? 'rejected' : 'accepted',
+        file_size_MB: file.size / (1024 * 1024),
+        reason: file.size > MAX_FILE_SIZE_BYTES ? `Exceeded size limit (max ${MAX_FILE_SIZE_MB} MB per file)` : undefined
+      })),
+      accepted_files: files.filter(file => file.size <= MAX_FILE_SIZE_BYTES)
+    };
+    throw oversizedError;
+  }
+
   const formData = new FormData();
   files.forEach(file => formData.append('files', file));
   formData.append('model', model);
@@ -186,8 +213,22 @@ async startBatchJobSync(
   });
 
   if (!response.ok) {
+    // Try to parse error response with file validation details
+    try {
+      const errorData = await response.json();
+      if (errorData.error && errorData.summary) {
+        // This is a file validation error with accepted/rejected files
+        throw errorData;
+      }
+    } catch (parseError) {
+      // Fallback to generic error handling
+      const errorText = await response.text();
+      console.error('Backend error:', response.status, errorText);
+      throw new Error(`Batch job start failed (${response.status})`);
+    }
+    
+    // If we reach here, it was a validation error but parsing failed
     const errorText = await response.text();
-    console.error('Backend error:', response.status, errorText);
     throw new Error(`Batch job start failed (${response.status})`);
   }
 
