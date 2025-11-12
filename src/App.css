@@ -1643,18 +1643,24 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2rem;
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .pricing-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 15px;
-  padding: 2.5rem 2rem;
+  padding: 2.5rem 1.5rem;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  text-align: center;
+  min-height: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .pricing-card::before {
@@ -1687,19 +1693,39 @@ body {
   color: var(--text-primary);
   margin-bottom: 1rem;
   font-size: 1.5rem;
+  width: 100%;
 }
 
 .price {
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: bold;
   color: var(--primary-color);
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.price-amount {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.price-period {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: normal;
+  margin-left: 4px;
 }
 
 .price::before {
-  content: '$';
-  font-size: 1.5rem;
-  vertical-align: super;
+  /*content: '$';*/
+  /*font-size: 1.5rem;*/
+  /*vertical-align: super;*/
+  display: none;
 }
 
 .pricing-card ul {
@@ -1707,6 +1733,8 @@ body {
   padding: 0;
   text-align: left;
   margin-bottom: 2rem;
+  width: 100%;
+  flex-grow: 1;
 }
 
 .pricing-card li {
@@ -1727,6 +1755,26 @@ body {
   position: absolute;
   left: 0;
   font-weight: bold;
+}
+
+.pricing-cta {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  color: var(--primary-bg);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 200px;
+  margin-top: auto;
+}
+
+.pricing-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4);
 }
 
 /* About Component Styles */
@@ -1838,6 +1886,7 @@ body {
   .pricing-cards {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    padding: 0 1rem;
   }
 
   .pricing-card.featured {
@@ -1866,6 +1915,7 @@ body {
 
   .pricing-card {
     padding: 2rem 1rem;
+    min-height: auto;
   }
 
   .price {
@@ -2956,4 +3006,339 @@ body {
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+}
+
+/* Hamburger Menu Styles */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 5px;
+  z-index: 1001;
+}
+
+.bar {
+  display: block;
+  width: 25px;
+  height: 3px;
+  margin: 3px auto;
+  transition: all 0.3s ease-in-out;
+  background-color: var(--text-primary);
+}
+
+/* Mobile Styles - Update your existing media query */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
+  }
+
+  .nav-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .nav-links {
+    position: fixed;
+    left: -100%;
+    top: 70px;
+    flex-direction: column;
+    background-color: var(--primary-bg);
+    width: 100%;
+    text-align: center;
+    transition: 0.3s;
+    box-shadow: 0 10px 27px rgba(0, 0, 0, 0.05);
+    padding: 2rem 0;
+    gap: 0;
+    border-top: 1px solid var(--card-border);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+  }
+
+  .nav-links.active {
+    left: 0;
+  }
+
+  .nav-links li {
+    margin: 1rem 0;
+    width: 100%;
+  }
+
+  .nav-links a {
+    display: block;
+    padding: 1rem 2rem;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .nav-links a::after {
+    display: none;
+  }
+
+  .logout-btn {
+    margin: 1rem 2rem;
+    width: calc(100% - 4rem);
+    padding: 1rem;
+  }
+
+  /* Hamburger Animation */
+  .hamburger.active .bar:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger.active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .hamburger.active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  /* Prevent body scroll when menu is open */
+  body.menu-open {
+    overflow: hidden;
+  }
+}
+
+/* Update existing mobile styles for nav-content */
+@media (max-width: 768px) {
+  .nav-content {
+    flex-wrap: wrap;
+  }
+}
+
+/* Optional: Add backdrop when menu is open */
+.menu-backdrop {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 70px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 999;
+}
+
+.menu-backdrop.active {
+  display: block;
+}
+
+/* Add this to your CSS file */
+.menu-backdrop {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 70px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 999;
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .menu-backdrop {
+    display: block;
+  }
+}
+
+/* Fixed Pricing Card Styles */
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.pricing-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 15px;
+  padding: 2.5rem 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  min-height: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pricing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.pricing-card:hover::before {
+  opacity: 1;
+}
+
+.pricing-card.featured {
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+  box-shadow: 0 15px 50px rgba(0, 255, 255, 0.2);
+}
+
+.pricing-card.featured::before {
+  opacity: 1;
+}
+
+.pricing-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  width: 100%;
+}
+
+/* Fixed Price Styles - Remove the problematic ::before */
+.price {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.price-amount {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.price-period {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+/* Remove the old ::before approach */
+.price::before {
+  display: none;
+}
+
+.pricing-card ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  margin-bottom: 2rem;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.pricing-card li {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  position: relative;
+  padding-left: 2rem;
+}
+
+.pricing-card li:last-child {
+  border-bottom: none;
+}
+
+.pricing-card li::before {
+  content: '✓';
+  color: var(--accent-color);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+/* Pricing CTA Button */
+.pricing-cta {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  color: var(--primary-bg);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 200px;
+  margin-top: auto;
+}
+
+.pricing-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4);
+}
+
+/* Mobile Responsive Pricing */
+@media (max-width: 768px) {
+  .pricing-cards {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+
+  .pricing-card {
+    padding: 2rem 1rem;
+    min-height: auto;
+  }
+
+  .pricing-card.featured {
+    transform: none;
+  }
+
+  .price {
+    font-size: 2rem;
+  }
+
+  .price-amount {
+    font-size: 2rem;
+  }
+
+  .pricing-card h3 {
+    font-size: 1.3rem;
+  }
+
+  .pricing-card li {
+    padding: 0.6rem 0;
+    padding-left: 1.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pricing-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .price {
+    font-size: 1.8rem;
+  }
+
+  .price-amount {
+    font-size: 1.8rem;
+  }
+}
+
+/* Fix for the existing problematic price styles */
+.price::before {
+  content: '' !important; /* Override the existing content */
+  display: none !important; /* Hide the problematic pseudo-element */
 }
