@@ -82,47 +82,88 @@ class ApiService {
   }
 
   // Update the method signature and implementation
-  async classifySingleImage(
-    file: File, 
-    modelType: string = 'ml', 
-    reportFormat: ReportFormat = 'json' // Add with default
-  ): Promise<ClassificationResult> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('model_type', modelType);
-    formData.append('report_format', reportFormat); // Add this line
+// In your existing classifySingleImage function, replace the current error checking:
+async classifySingleImage(
+  file: File, 
+  modelType: string = 'ml', 
+  reportFormat: ReportFormat = 'json'
+): Promise<ClassificationResult> {
+  const token = localStorage.getItem('token');
+  
+  try {
+    // First, get the classification result with JSON format
+    const jsonFormData = new FormData();
+    jsonFormData.append('file', file);
+    jsonFormData.append('model_type', modelType);
 
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
+    const jsonResponse = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      body: formData,
+      body: jsonFormData,
     });
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Backend error:', response.status, errorText);
-      throw new Error(`Classification failed (${response.status})`);
+    if (!jsonResponse.ok) {
+      const errorText = await jsonResponse.text();
+      console.error('Backend error:', jsonResponse.status, errorText);
+      throw new Error(`Classification failed (${jsonResponse.status})`);
     }
 
-    // Handle PDF response differently if needed
+    const result = await jsonResponse.json();
+
+    // === ADD THIS SECTION ===
+    // Check if this is an error response from file size validation
+    if (result.error) {
+      // Check if it's a file size error and extract details
+      if (result.summary && result.details) {
+        const fileSizeError = new Error(result.error);
+        fileSizeError.name = 'FileSizeError';
+        // Attach the full error details to the error object
+        (fileSizeError as any).details = result;
+        throw fileSizeError;
+      } else {
+        throw new Error(result.error);
+      }
+    }
+    // === END OF ADDED SECTION ===
+
+    // Validate that we have the required fields for a successful classification
+    if (!result.predicted_class || result.confidence === undefined) {
+      console.warn('Incomplete response from backend:', result);
+      throw new Error('Incomplete classification response');
+    }
+
+    // If PDF is requested, make a separate call
     if (reportFormat === 'pdf') {
-      const pdfBlob = await response.blob();
-      // Include required properties and cast to ClassificationResult to satisfy the return type
-      return {
-        filename: file.name,
-        predicted_class: 'PDF Report',
-        confidence: 1,
-        model: modelType,
-        report_format: 'pdf',
-        user: null,
-        pdfBlob: pdfBlob
-      } as unknown as ClassificationResult;
+      try {
+        const pdfFormData = new FormData();
+        pdfFormData.append('file', file);
+        pdfFormData.append('model_type', modelType);
+        pdfFormData.append('report_format', 'pdf');
+
+        const pdfResponse = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: pdfFormData,
+        });
+
+        if (pdfResponse.ok) {
+          const pdfBlob = await pdfResponse.blob();
+          result.pdfBlob = pdfBlob;
+        }
+      } catch (pdfError) {
+        console.warn('PDF generation failed, but classification succeeded:', pdfError);
+      }
     }
 
-  return response.json();
+    return result;
+  } catch (error) {
+    console.error('Classification service error:', error);
+    throw error;
+  }
 }
 
 async startBatchJobSync(
