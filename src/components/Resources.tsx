@@ -6,10 +6,10 @@ const Resources: React.FC = () => {
     <div className="resources">
       {/* Header Section */}
       <section className="resources-header">
-        <h1>Analysis Resources</h1>
+        <h1>Media Analysis Tools</h1>
         <p className="resources-subtitle">
-          Choose the right tool for your content analysis needs. From quick single checks 
-          to comprehensive batch processing, we've got you covered.
+          Advanced AI detection for images and videos. From quick single image checks 
+          to comprehensive video analysis, choose the right tool for your media verification needs.
         </p>
       </section>
 
@@ -17,16 +17,16 @@ const Resources: React.FC = () => {
       <section className="tools-section">
         <div className="tools-grid">
           <div className="tool-card neon-blue">
-            <div className="tool-icon">🔍</div>
-            <h3>Single Analysis</h3>
+            <div className="tool-icon">🖼️</div>
+            <h3>Single Image Analysis</h3>
             <p className="tool-description">
-              Quick, precise analysis of individual documents, images, or text with detailed 
-              AI detection reports. Perfect for one-off content verification.
+              Quick, detailed analysis of individual images with comprehensive AI detection reports. 
+              Perfect for one-off image verification and authenticity checks.
             </p>
             <div className="tool-features">
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Individual file analysis
+                Individual image analysis
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
@@ -34,29 +34,29 @@ const Resources: React.FC = () => {
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Detailed confidence scores
+                Multiple image formats (JPG, PNG, WEBP)
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Multiple format support
+                Detailed confidence scores
               </div>
             </div>
             <Link to="/single" className="tool-cta">
-              Start Single Analysis
+              Analyze Single Image
             </Link>
           </div>
 
           <div className="tool-card neon-purple">
-            <div className="tool-icon">📚</div>
-            <h3>Batch Processing</h3>
+            <div className="tool-icon">🖼️📚</div>
+            <h3>Batch Image Processing</h3>
             <p className="tool-description">
-              Process multiple files simultaneously with our efficient batch analysis system. 
-              Perfect for teams, agencies, and large-scale content verification.
+              Process multiple images simultaneously with our efficient batch analysis system. 
+              Perfect for teams, agencies, and large-scale image verification projects.
             </p>
             <div className="tool-features">
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Bulk file upload
+                Bulk image upload
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
@@ -68,11 +68,11 @@ const Resources: React.FC = () => {
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Export results
+                Export PDF reports
               </div>
             </div>
             <Link to="/batch" className="tool-cta">
-              Start Batch Analysis
+              Process Many Images
             </Link>
           </div>
 
@@ -80,17 +80,17 @@ const Resources: React.FC = () => {
             <div className="tool-icon">🎥</div>
             <h3>Video Analysis</h3>
             <p className="tool-description">
-              Advanced AI detection for video content, including frame-by-frame analysis, 
-              audio transcription, and comprehensive media verification.
+              Advanced AI detection for video content with flexible analysis options. 
+              Choose between full frame-by-frame analysis or smart sampling for cost-effective verification.
             </p>
             <div className="tool-features">
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Frame-level detection
+                Full video analysis
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Audio analysis
+                Smart frame sampling
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
@@ -108,46 +108,73 @@ const Resources: React.FC = () => {
         </div>
       </section>
 
-      {/* Usage Stats */}
+      {/* Report Features */}
       <section className="usage-stats">
         <div className="stats-content">
-          <h2>Trusted by Professionals</h2>
+          <h2>Comprehensive Reporting</h2>
           <div className="stats-grid">
             <div className="stat-item">
-              <div className="stat-number">50K+</div>
-              <div className="stat-label">Analyses This Month</div>
+              <div className="stat-icon">📄</div>
+              <div className="stat-number">PDF Reports</div>
+              <div className="stat-label">Detailed Analysis Export</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">99.7%</div>
-              <div className="stat-label">Accuracy Rate</div>
+              <div className="stat-icon">📧</div>
+              <div className="stat-number">Email Delivery</div>
+              <div className="stat-label">Send Reports Directly</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">2.3s</div>
-              <div className="stat-label">Average Processing Time</div>
+              <div className="stat-icon">🔍</div>
+              <div className="stat-number">Frame Sampling</div>
+              <div className="stat-label">Cost-Effective Video Analysis</div>
             </div>
             <div className="stat-item">
-              <div className="stat-number">100%</div>
-              <div className="stat-label">Data Privacy</div>
+              <div className="stat-icon">⚡</div>
+              <div className="stat-number">Fast Processing</div>
+              <div className="stat-label">Quick Turnaround Times</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Support Section */}
+      {/* Media Formats Support */}
       <section className="support-section">
         <div className="support-content">
-          <h2>Need Help Choosing?</h2>
+          <h2>Supported Media Formats</h2>
           <p>
-            Not sure which tool is right for your needs? Our support team is here to help 
-            you select the perfect analysis solution for your specific requirements.
+            We specialize in image and video analysis with support for all major formats. 
+            Get detailed AI detection results for your visual content with our specialized tools.
           </p>
-          <div className="support-actions">
-            <Link to="/about" className="support-link">
-              Contact Support
-            </Link>
-            <a href="/docs" className="support-link secondary">
-              View Documentation
-            </a>
+          <div className="format-grid">
+            <div className="format-category">
+              <h4>📷 Images</h4>
+              <div className="format-list">
+                <span className="format-item">JPG/JPEG</span>
+                <span className="format-item">PNG</span>
+                <span className="format-item">WEBP</span>
+                <span className="format-item">BMP</span>
+                <span className="format-item">GIF</span>
+              </div>
+            </div>
+            <div className="format-category">
+              <h4>🎥 Videos</h4>
+              <div className="format-list">
+                <span className="format-item">MP4</span>
+                <span className="format-item">MOV</span>
+                <span className="format-item">AVI</span>
+                <span className="format-item">WMV</span>
+                <span className="format-item">WebM</span>
+              </div>
+            </div>
+            <div className="format-category">
+              <h4>📊 Reports</h4>
+              <div className="format-list">
+                <span className="format-item">PDF Download</span>
+                <span className="format-item">Email Delivery</span>
+                <span className="format-item">Confidence Scores</span>
+                <span className="format-item">Visual Evidence</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

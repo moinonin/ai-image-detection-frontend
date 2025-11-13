@@ -2616,17 +2616,14 @@ body {
   line-height: 1.6;
 }
 
-/* Tools Section */
-.tools-section {
-  margin-bottom: 4rem;
-}
-
+/* Tools Section - Height Balancing */
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 2.5rem;
   max-width: 1200px;
   margin: 0 auto;
+  align-items: stretch; /* This ensures cards stretch to same height */
 }
 
 .tool-card {
@@ -2638,6 +2635,10 @@ body {
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensure cards take full grid height */
+  min-height: 550px; /* Set a consistent minimum height */
 }
 
 .tool-card::before {
@@ -2676,6 +2677,7 @@ body {
   font-size: 4rem;
   margin-bottom: 1.5rem;
   filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
+  flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
 .tool-card h3 {
@@ -2686,6 +2688,7 @@ body {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  flex-shrink: 0; /* Prevent heading from shrinking */
 }
 
 .tool-description {
@@ -2693,17 +2696,19 @@ body {
   line-height: 1.6;
   margin-bottom: 2rem;
   font-size: 1.1rem;
+  flex-grow: 0; /* Don't let description grow */
 }
 
 .tool-features {
   text-align: left;
   margin-bottom: 2.5rem;
+  flex-grow: 1; /* Allow features to grow and fill space */
 }
 
 .feature-item {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem; /* Increased from 0.8rem to 1rem */
   padding: 0.8rem 0;
   color: var(--text-secondary);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -2717,6 +2722,8 @@ body {
   color: var(--accent-color);
   font-weight: bold;
   font-size: 1.1rem;
+  flex-shrink: 0; /* Prevents the checkmark from shrinking */
+  min-width: 20px; /* Ensures consistent width */
 }
 
 .tool-cta {
@@ -2733,6 +2740,8 @@ body {
   overflow: hidden;
   width: 100%;
   text-align: center;
+  margin-top: auto; /* Push CTA to bottom */
+  flex-shrink: 0; /* Prevent button from shrinking */
 }
 
 .tool-cta::before {
@@ -2753,6 +2762,60 @@ body {
 .tool-cta:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4);
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .tools-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 0 1rem;
+  }
+
+  .tool-card {
+    padding: 2.5rem 2rem;
+    min-height: auto; /* Remove fixed height on mobile */
+    height: auto;
+  }
+
+  .tool-icon {
+    font-size: 3.5rem;
+  }
+
+  .tool-card h3 {
+    font-size: 1.6rem;
+  }
+
+  .tool-description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tool-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .tool-icon {
+    font-size: 3rem;
+  }
+
+  .tool-card h3 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Optional: Equalize description heights */
+.tool-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  flex-grow: 0;
+  min-height: 80px; /* Set a minimum height for descriptions */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Usage Stats */
@@ -3247,11 +3310,10 @@ body {
 }
 
 .pricing-card li {
-  padding: 0.8rem 0;
+  padding: 0.8rem 0 0.8rem 1.8rem; /* Increased left padding */
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-secondary);
   position: relative;
-  padding-left: 2rem;
 }
 
 .pricing-card li:last-child {
@@ -3262,7 +3324,7 @@ body {
   content: '✓';
   color: var(--accent-color);
   position: absolute;
-  left: 0;
+  left: 0.5rem; /* Position checkmark within the left padding */
   font-weight: bold;
 }
 
@@ -3341,4 +3403,446 @@ body {
 .price::before {
   content: '' !important; /* Override the existing content */
   display: none !important; /* Hide the problematic pseudo-element */
+}
+/* pricing section */
+/* Fixed Pricing Styles - Add these to your existing CSS */
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.pricing-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 15px;
+  padding: 2.5rem 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.pricing-card.featured {
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+  box-shadow: 0 15px 50px rgba(0, 255, 255, 0.2);
+}
+
+.pricing-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+/* Fixed Price Styles */
+.price {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.pricing-card ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  margin-bottom: 2rem;
+  flex-grow: 1;
+}
+
+.pricing-card li {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  position: relative;
+  padding-left: 2rem;
+}
+
+.pricing-card li:last-child {
+  border-bottom: none;
+}
+
+.pricing-card li::before {
+  content: '✓';
+  color: var(--accent-color);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+/* Mobile Responsive Pricing */
+@media (max-width: 768px) {
+  .pricing-cards {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .pricing-card {
+    padding: 2rem 1rem;
+    min-height: auto;
+  }
+
+  .pricing-card.featured {
+    transform: none;
+  }
+
+  .price {
+    font-size: 2rem;
+  }
+
+  .pricing-card h3 {
+    font-size: 1.3rem;
+  }
+
+  .pricing-card li {
+    padding: 0.6rem 0;
+    padding-left: 1.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pricing-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .price {
+    font-size: 1.8rem;
+  }
+}
+
+/* Remove any problematic existing price styles if they exist */
+.price::before {
+  content: '' !important;
+  display: none !important;
+}
+
+/* Media Formats Support Styles */
+.format-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.format-category {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.format-category h4 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.format-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.format-item {
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+/* Update stats grid for icons */
+.stat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.stats-grid .stat-number {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.stats-grid .stat-label {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .format-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .format-category {
+    padding: 1rem;
+  }
+}
+
+/* Usage based pricing */
+/* Pricing Section Styles */
+.pricing-subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto 4rem;
+}
+
+.pricing-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 15px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pricing-card.featured {
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+  box-shadow: 0 15px 50px rgba(0, 255, 255, 0.2);
+}
+
+.pricing-card.enterprise {
+  border-color: var(--accent-color);
+}
+
+.pricing-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.price {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.pricing-card ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  margin-bottom: 2rem;
+  flex-grow: 1;
+}
+
+.pricing-card li {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  position: relative;
+  padding-left: 0;
+}
+
+.pricing-card li:last-child {
+  border-bottom: none;
+}
+
+.pricing-card li strong {
+  color: var(--text-primary);
+}
+
+.pricing-cta {
+  background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+  color: var(--primary-bg);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: auto;
+}
+
+.pricing-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 255, 0.4);
+}
+
+/* Usage-based Pricing */
+.usage-based-pricing {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 15px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.usage-based-pricing h3 {
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+}
+
+.usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.usage-tier {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.usage-tier h4 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.usage-tier p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Free Trial Notice */
+.free-trial-notice {
+  background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+  border: 1px solid var(--card-border);
+  border-radius: 15px;
+  padding: 3rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.free-trial-notice::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 0, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.free-trial-notice h3 {
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  position: relative;
+  z-index: 2;
+}
+
+.free-trial-notice p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  position: relative;
+  z-index: 2;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.trial-cta {
+  background: linear-gradient(45deg, var(--accent-color), var(--primary-color));
+  color: var(--primary-bg);
+  border: none;
+  padding: 1.2rem 3rem;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.trial-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .pricing-cards {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+
+  .pricing-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .pricing-card.featured {
+    transform: none;
+  }
+
+  .price {
+    font-size: 2rem;
+  }
+
+  .usage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .free-trial-notice {
+    padding: 2rem 1.5rem;
+  }
+
+  .free-trial-notice h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pricing-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .price {
+    font-size: 1.8rem;
+  }
+}
+
+/* FIX: Pricing card checkmark spacing - Add this at the very end of your CSS */
+.pricing-card li {
+  padding-left: 2rem !important;
+  position: relative !important;
+}
+
+.pricing-card li::before {
+  left: 0.5rem !important;
+  position: absolute !important;
 }

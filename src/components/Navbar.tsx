@@ -30,7 +30,7 @@ const Navbar: React.FC = () => {
     <nav className="navbar">
       <div className="nav-content">
         <Link to="/" className="logo" onClick={closeMenu}>
-          AIDetect
+          VeriForensic
         </Link>
         
         {/* Hamburger Menu Button */}
