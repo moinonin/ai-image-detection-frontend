@@ -8,12 +8,16 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = localStorage.getItem('token');
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    };
+
     const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
-      },
+      headers,
+      credentials: 'include', // This is crucial
       ...options,
     };
 
@@ -101,6 +105,7 @@ async classifySingleImage(
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: jsonFormData,
     });
     
@@ -209,6 +214,7 @@ async startBatchJobSync(
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    credentials: 'include',
     body: formData,
   });
 
@@ -228,7 +234,7 @@ async startBatchJobSync(
     }
     
     // If we reach here, it was a validation error but parsing failed
-    const errorText = await response.text();
+    //const errorText = await response.text();
     throw new Error(`Batch job start failed (${response.status})`);
   }
 
@@ -263,6 +269,7 @@ async downloadBatchPDF(
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    credentials: 'include', // ← ADD THIS LINE
     body: formData,
   });
 
@@ -279,27 +286,29 @@ async downloadBatchPDF(
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
     formData.append('model', model);
-
     const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/async`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      credentials: 'include', // ← ADD THIS LINE
       body: formData,
     });
 
     if (!response.ok) {
       throw new Error('Failed to start batch job');
     }
-
     return response.json();
   }
 
-  async getBatchJobStatus(jobId: string): Promise<BatchJob> {
-    return this.request(`/api/v1/classify/batch/status/${jobId}`);
-  }
-
+//  async getBatchJobStatus(jobId: string): Promise<BatchJob> {
+    //return this.request(`/api/v1/classify/batch/status/${jobId}`);
+ //   return this.request(`/api/v1/classify/batch/status/${jobId}?include_analyses=true`);
+ // }
+async getBatchJobStatus(jobId: string, includeAnalyses: boolean = false): Promise<BatchJob> {
+  return this.request(`/api/v1/classify/batch/status/${jobId}?include_analyses=${includeAnalyses}`);
+}
   async getModels(): Promise<{ models: ModelInfo[] }> {
     return this.request('/api/v1/models');
   }
@@ -322,6 +331,7 @@ async classifyVideo(
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    credentials: 'include',
     body: formData,
   });
 
@@ -352,6 +362,7 @@ async downloadVideoPDF(
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    credentials: 'include',
     body: formData,
   });
 

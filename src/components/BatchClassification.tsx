@@ -1,30 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { classificationService } from '../services/api';
-import { BatchJob, IndividualClassificationResult } from '../types';
+import { BatchJob, IndividualClassificationResult, FileValidationError } from '../types';
 
 function getCookie(name: string): string | null {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop()!.split(';').shift()!;
   return null;
-}
-
-interface FileValidationError {
-  error: string;
-  summary: {
-    accepted: number;
-    rejected: number;
-    total_uploaded_MB: number;
-    max_size: number;
-    max_file_size_MB: number;
-  };
-  details: Array<{
-    filename: string;
-    status: 'accepted' | 'rejected';
-    file_size_MB: number;
-    reason?: string;
-  }>;
-  accepted_files: any[];
 }
 
 const BatchClassification: React.FC = () => {
@@ -223,7 +205,22 @@ const BatchClassification: React.FC = () => {
   const pollJobStatus = async (jobId: string) => {
     const interval = setInterval(async () => {
       try {
-        const status = await classificationService.getBatchJobStatus(jobId);
+        // Include individual_analyses in the request
+        const status = await classificationService.getBatchJobStatus(jobId, true);
+        console.log('=== BATCH JOB STATUS ===');
+        console.log('Status:', status.status);
+        console.log('Results array exists:', !!status.results);
+        console.log('Results length:', status.results?.length);
+        console.log('Individual analyses exists:', !!status.individual_analyses);
+        console.log('Individual analyses length:', status.individual_analyses?.length);
+        
+        if (status.results && status.results.length > 0) {
+          console.log('First result keys:', Object.keys(status.results[0]));
+        }
+        if (status.individual_analyses && status.individual_analyses.length > 0) {
+          console.log('First individual analysis keys:', Object.keys(status.individual_analyses[0]));
+        }
+        
         setJobStatus(status);
         
         if (status.status === 'completed' || status.status === 'failed') {
@@ -536,7 +533,6 @@ const BatchClassification: React.FC = () => {
           </form>
         </div>
 
-        {/* Rest of the component remains the same */}
         {jobStatus && (
           <div className="job-status">
             <h2>Batch Processing Status</h2>
@@ -579,94 +575,139 @@ const BatchClassification: React.FC = () => {
                 {renderDownloadButton()}
               </div>
               
-              {jobStatus.results && (
-                <div className="results-preview">
-                  <h4>Results Preview:</h4>
-                  <div className="results-grid">
-                    {jobStatus.results
-                      .slice(0, isExpanded ? jobStatus.results.length : 5)
-                      .map((result: any, index: number) => (
-                        <div key={index} className="result-container">
-                          <div 
-                            className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
-                            onClick={() => toggleExpand(index)}
-                          >
-                            <span className="filename">{result.filename || `Image ${index + 1}`}</span>
-                            <span className={`prediction ${result.predicted_class.includes('AI') ? 'ai' : 'human'}`}>
-                              {result.predicted_class}
-                            </span>
-                          </div>
-                          
-                          {expandedIndex === index && (
-                            <div className="result-details-expanded">
-                              <div className={`result-card ${result.predicted_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
-                                <div className="result-header">
-                                  <h3>{result.filename}</h3>
-                                  <span className="result-badge">
-                                    {result.predicted_class}
-                                  </span>
-                                </div>
-                                
-                                <div className="confidence-meter">
-                                  <div className="confidence-label">
-                                    Confidence: {result.confidence != null ? `${(result.confidence * 100).toFixed(2)}%` : 'N/A'}
-                                  </div>
-                                  <div className="confidence-bar">
-                                    <div 
-                                      className="confidence-fill"
-                                      style={{ 
-                                        width: `${(result.confidence || 0) * 100}%`,
-                                        backgroundColor: getConfidenceColor(result.confidence || 0)
-                                      }}
-                                    ></div>
-                                  </div>
-                                </div>
-
-                                <div className="result-details">
-                                  <div className="detail-item">
-                                    <span className="detail-label">Model Used:</span>
-                                    <span className="detail-value">{result.model?.toUpperCase()}</span>
-                                  </div>
-                                  {result.probability != null && (
-                                    <div className="detail-item">
-                                      <span className="detail-label">Probability Score:</span>
-                                      <span className="detail-value">{result.probability.toFixed(4)}</span>
-                                    </div>
-                                  )}
-                                  <div className="detail-item">
-                                    <span className="detail-label">Analysis Type:</span>
-                                    <span className="detail-value">Batch Analysis</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+              {/* Enhanced Results Section with Fallback Logic */}
+              {(() => {
+                // Use individual_analyses if available, fallback to results
+                const displayData = jobStatus.individual_analyses || jobStatus.results || [];
+                
+                return displayData.length > 0 ? (
+                  <div className="results-preview">
+                    <div className="results-header">
+                      <h4>Results Preview:</h4>
+                      {jobStatus.individual_analyses && (
+                        <div className="data-source-indicator">
+                          <small>
+                            Showing {displayData.length} results from individual analyses
+                          </small>
                         </div>
-                      ))}
-                  </div>
-                  
-                  {jobStatus.results.length > 5 && (
-                    <div className="results-expand">
-                      <button 
-                        className="expand-button"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                      >
-                        {isExpanded ? (
-                          <>
-                            <span>Show less</span>
-                            <span className="expand-icon">▲</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Show all {jobStatus.results.length} results</span>
-                            <span className="expand-icon">▼</span>
-                          </>
-                        )}
-                      </button>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
+                    <div className="results-grid">
+                      {displayData
+                        .slice(0, isExpanded ? displayData.length : 5)
+                        .map((result: any, index: number) => {
+                          // Normalize data from both sources (individual_analyses vs results)
+                          const displayResult = {
+                            filename: result.filename,
+                            // Handle different field names between sources
+                            predicted_class: result.predicted_class || result.predictedClass,
+                            confidence: result.confidence ?? result.probability, // Use confidence, fallback to probability
+                            probability: result.probability,
+                            model: result.model || result.model_slug || model, // Multiple possible field names
+                            is_ai: result.is_ai ?? result.isAI, // Handle both snake_case and camelCase
+                            ground_truth: result.ground_truth || result.groundTruth
+                          };
+                          
+                          return (
+                            <div key={index} className="result-container">
+                              <div 
+                                className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
+                                onClick={() => toggleExpand(index)}
+                              >
+                                <span className="filename">{displayResult.filename || `Image ${index + 1}`}</span>
+                                {/* Use is_ai for classification instead of string parsing */}
+                                <span className={`prediction ${displayResult.is_ai ? 'ai' : 'human'}`}>
+                                  {displayResult.predicted_class || (displayResult.is_ai ? 'AI Generated' : 'Human Created')}
+                                </span>
+                              </div>
+                              
+                              {expandedIndex === index && (
+                                <div className="result-details-expanded">
+                                  <div className={`result-card ${displayResult.is_ai ? 'ai-detected' : 'human-detected'}`}>
+                                    <div className="result-header">
+                                      <h3>{displayResult.filename || `Image ${index + 1}`}</h3>
+                                      <span className="result-badge">
+                                        {displayResult.predicted_class || (displayResult.is_ai ? 'AI Generated' : 'Human Created')}
+                                      </span>
+                                    </div>
+                                    
+                                    <div className="confidence-meter">
+                                      <div className="confidence-label">
+                                        Confidence: {displayResult.confidence != null ? `${(displayResult.confidence * 100).toFixed(2)}%` : 'N/A'}
+                                      </div>
+                                      <div className="confidence-bar">
+                                        <div 
+                                          className="confidence-fill"
+                                          style={{ 
+                                            width: `${(displayResult.confidence || 0) * 100}%`,
+                                            backgroundColor: getConfidenceColor(displayResult.confidence || 0)
+                                          }}
+                                        ></div>
+                                      </div>
+                                    </div>
+
+                                    <div className="result-details">
+                                      <div className="detail-item">
+                                        <span className="detail-label">AI Detection:</span>
+                                        <span className="detail-value">{displayResult.is_ai ? 'AI Generated' : 'Human Created'}</span>
+                                      </div>
+                                      <div className="detail-item">
+                                        <span className="detail-label">Model Used:</span>
+                                        <span className="detail-value">{displayResult.model?.toUpperCase() || 'Unknown'}</span>
+                                      </div>
+                                      {displayResult.probability != null && (
+                                        <div className="detail-item">
+                                          <span className="detail-label">Probability Score:</span>
+                                          <span className="detail-value">{displayResult.probability.toFixed(4)}</span>
+                                        </div>
+                                      )}
+                                      {displayResult.ground_truth && (
+                                        <div className="detail-item">
+                                          <span className="detail-label">Ground Truth:</span>
+                                          <span className="detail-value">{displayResult.ground_truth}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                    
+                    {displayData.length > 5 && (
+                      <div className="results-expand">
+                        <button 
+                          className="expand-button"
+                          onClick={() => setIsExpanded(!isExpanded)}
+                        >
+                          {isExpanded ? (
+                            <>
+                              <span>Show less</span>
+                              <span className="expand-icon">▲</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Show all {displayData.length} results</span>
+                              <span className="expand-icon">▼</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : jobStatus.status === 'completed' ? (
+                  <div className="no-results">
+                    <p>
+                      {jobStatus.results_note || "No results available. The job completed but no individual file details were returned."}
+                    </p>
+                    {jobStatus.results_source && (
+                      <p className="results-source">Data source: {jobStatus.results_source}</p>
+                    )}
+                  </div>
+                ) : null;
+              })()}
 
               {jobStatus.error && (
                 <div className="error-message">

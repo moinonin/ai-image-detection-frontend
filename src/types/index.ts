@@ -59,6 +59,10 @@ export interface BatchJob {
   error: string | null;
   created_at: string;
   completed_at?: string;
+  reportFormat?: string;
+  individual_analyses?: any[];  // New
+  results_note?: string;        // New
+  results_source?: string;      // New
 }
 
 export interface ModelInfo {
@@ -100,7 +104,8 @@ export interface ClassificationService {
   classifyVideo(
     file: File, 
     model: string, 
-    partial: boolean
+    partial: boolean,
+    reportFormat?: string,
   ): Promise<VideoClassificationResponse>;
   
   downloadVideoPDF(
@@ -178,6 +183,7 @@ export interface BatchResult {
   probability?: number;
   [key: string]: any;
   pdfBlob?: Blob;
+  reportFormat?: string;
 }
 
 // Individual result type
@@ -193,6 +199,24 @@ export interface IndividualClassificationResult {
   user: string;
 
   
+}
+
+export interface FileValidationError {
+  error: string;
+  summary: {
+    accepted: number;
+    rejected: number;
+    total_uploaded_MB: number;
+    max_size: number;
+    max_file_size_MB: number;
+  };
+  details: Array<{
+    filename: string;
+    status: 'accepted' | 'rejected';
+    file_size_MB: number;
+    reason?: string;
+  }>;
+  accepted_files: any[];
 }
 
 export type BatchClassificationResults = IndividualClassificationResult[];

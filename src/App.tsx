@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Resources';
+//import Dashboard from './components/Resources';
 import SingleClassification from './components/SingleClassification';
 import BatchClassification from './components/BatchClassification';
 import VideoClassification from './components/VideoClassification';
