@@ -1,9 +1,28 @@
-import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo, VideoClassificationResponse } from '../types';
+import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo, VideoClassificationResponse, UsageInfo, CacheInfo } from '../types';
 
 type ReportFormat = 'json' | 'pdf';
 
-// Vite uses import.meta.env, not process.env
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
+
+// Extended interfaces to include pdfBlob
+interface SingleClassificationResponse {
+  analysis: ClassificationResult;
+  cache_info: CacheInfo;
+  usage: UsageInfo;
+  pdfBlob?: Blob;
+}
+
+interface BatchClassificationResponse {
+  analyses: Array<{
+    filename: string;
+    analysis_results: any;
+    from_cache: boolean;
+    cache_used: boolean;
+    timestamp: string;
+  }>;
+  usage: UsageInfo;
+  pdfBlob?: Blob;
+}
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -17,7 +36,7 @@ class ApiService {
 
     const config: RequestInit = {
       headers,
-      credentials: 'include', // This is crucial
+      credentials: 'include',
       ...options,
     };
 
@@ -56,7 +75,7 @@ class ApiService {
     });
   }
 
-  async getCurrentUser(): Promise<User> { // Removed token parameter since we get it from localStorage
+  async getCurrentUser(): Promise<User> {
     return this.request<User>('/api/v1/auth/me');
   }
 
@@ -85,203 +104,216 @@ class ApiService {
     });
   }
 
-  // Update the method signature and implementation
-// In your existing classifySingleImage function, replace the current error checking:
-async classifySingleImage(
-  file: File, 
-  modelType: string = 'ml', 
-  reportFormat: ReportFormat = 'json'
-): Promise<ClassificationResult> {
-  const token = localStorage.getItem('token');
-  
-  try {
-    // First, get the classification result with JSON format
-    const jsonFormData = new FormData();
-    jsonFormData.append('file', file);
-    jsonFormData.append('model_type', modelType);
+  // Fixed single image classification
+  async classifySingleImage(
+    file: File, 
+    modelType: string = 'ml', 
+    reportFormat: ReportFormat = 'json',
+    useCache: boolean = true,
+    accountId?: string
+  ): Promise<SingleClassificationResponse> {
+    const token = localStorage.getItem('token');
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('model_type', modelType);
+      formData.append('report_format', reportFormat);
+      formData.append('use_cache', useCache.toString());
+      if (accountId) {
+        formData.append('account_id', accountId);
+      }
 
-    const jsonResponse = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend error:', response.status, errorText);
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error && errorData.summary) {
+            const fileSizeError = new Error(errorData.error);
+            fileSizeError.name = 'FileSizeError';
+            (fileSizeError as any).details = errorData;
+            throw fileSizeError;
+          }
+        } catch (parseError) {
+          throw new Error(`Classification failed (${response.status}): ${errorText}`);
+        }
+        
+        throw new Error(`Classification failed (${response.status})`);
+      }
+
+      // For PDF responses, handle blob
+      if (reportFormat === 'pdf') {
+        const pdfBlob = await response.blob();
+        return {
+          analysis: {
+            filename: file.name,
+            model: modelType,
+            predicted_class: 'Unknown',
+            user: 'Unknown',
+            report_format: 'pdf',
+            confidence: 0,
+            is_ai: false,
+          } as ClassificationResult,
+          cache_info: { from_cache: false, cache_timestamp: null },
+          usage: { free_analyses_used_this_month: 0, free_analyses_remaining: 0, subscription_used: false, account_id: null },
+          pdfBlob
+        };
+      }
+
+      // For JSON responses
+      const result = await response.json();
+      console.log('Raw API response:', result);
+      
+      if (!result.analysis) {
+        console.warn('API response missing analysis field:', result);
+        throw new Error('Invalid response from server: missing analysis data');
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.error('Classification service error:', error);
+      throw error;
+    }
+  }
+
+  // Batch classification
+  async startBatchJobSync(
+    files: File[], 
+    model: string = 'ml',
+    reportFormat: ReportFormat = 'json',
+    useCache: boolean = true,
+    accountId?: string
+  ): Promise<BatchClassificationResponse> {
+    const MAX_FILE_SIZE_MB = 0.5;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+    
+    const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE_BYTES);
+    if (oversizedFiles.length > 0) {
+      const oversizedError = {
+        error: "Some files exceed size limits",
+        summary: {
+          accepted: files.length - oversizedFiles.length,
+          rejected: oversizedFiles.length,
+          total_uploaded_MB: files.reduce((acc, file) => acc + (file.size / (1024 * 1024)), 0),
+          max_size: 5,
+          max_file_size_MB: MAX_FILE_SIZE_MB
+        },
+        details: files.map(file => ({
+          filename: file.name,
+          status: file.size > MAX_FILE_SIZE_BYTES ? 'rejected' : 'accepted',
+          file_size_MB: file.size / (1024 * 1024),
+          reason: file.size > MAX_FILE_SIZE_BYTES ? `Exceeded size limit (max ${MAX_FILE_SIZE_MB} MB per file)` : undefined
+        })),
+        accepted_files: files.filter(file => file.size <= MAX_FILE_SIZE_BYTES)
+      };
+      throw oversizedError;
+    }
+
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    formData.append('model', model);
+    formData.append('report_format', reportFormat);
+    formData.append('use_cache', useCache.toString());
+    if (accountId) {
+      formData.append('account_id', accountId);
+    }
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
       },
       credentials: 'include',
-      body: jsonFormData,
+      body: formData,
     });
-    
-    if (!jsonResponse.ok) {
-      const errorText = await jsonResponse.text();
-      console.error('Backend error:', jsonResponse.status, errorText);
-      throw new Error(`Classification failed (${jsonResponse.status})`);
-    }
 
-    const result = await jsonResponse.json();
-
-    // === ADD THIS SECTION ===
-    // Check if this is an error response from file size validation
-    if (result.error) {
-      // Check if it's a file size error and extract details
-      if (result.summary && result.details) {
-        const fileSizeError = new Error(result.error);
-        fileSizeError.name = 'FileSizeError';
-        // Attach the full error details to the error object
-        (fileSizeError as any).details = result;
-        throw fileSizeError;
-      } else {
-        throw new Error(result.error);
-      }
-    }
-    // === END OF ADDED SECTION ===
-
-    // Validate that we have the required fields for a successful classification
-    if (!result.predicted_class || result.confidence === undefined) {
-      console.warn('Incomplete response from backend:', result);
-      throw new Error('Incomplete classification response');
-    }
-
-    // If PDF is requested, make a separate call
-    if (reportFormat === 'pdf') {
+    if (!response.ok) {
       try {
-        const pdfFormData = new FormData();
-        pdfFormData.append('file', file);
-        pdfFormData.append('model_type', modelType);
-        pdfFormData.append('report_format', 'pdf');
-
-        const pdfResponse = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: pdfFormData,
-        });
-
-        if (pdfResponse.ok) {
-          const pdfBlob = await pdfResponse.blob();
-          result.pdfBlob = pdfBlob;
+        const errorData = await response.json();
+        if (errorData.error && errorData.summary) {
+          throw errorData;
         }
-      } catch (pdfError) {
-        console.warn('PDF generation failed, but classification succeeded:', pdfError);
+      } catch (parseError) {
+        const errorText = await response.text();
+        console.error('Backend error:', response.status, errorText);
+        throw new Error(`Batch job start failed (${response.status})`);
       }
-    }
-
-    return result;
-  } catch (error) {
-    console.error('Classification service error:', error);
-    throw error;
-  }
-}
-
-async startBatchJobSync(
-  files: File[], 
-  model: string = 'ml',
-  reportFormat: ReportFormat = 'json'
-): Promise<any> {
-  // Client-side file size validation
-  const MAX_FILE_SIZE_MB = 0.5;
-  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-  
-  const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE_BYTES);
-  if (oversizedFiles.length > 0) {
-    // Create a structured error similar to backend response
-    const oversizedError = {
-      error: "Some files exceed size limits",
-      summary: {
-        accepted: files.length - oversizedFiles.length,
-        rejected: oversizedFiles.length,
-        total_uploaded_MB: files.reduce((acc, file) => acc + (file.size / (1024 * 1024)), 0),
-        max_size: 5,
-        max_file_size_MB: MAX_FILE_SIZE_MB
-      },
-      details: files.map(file => ({
-        filename: file.name,
-        status: file.size > MAX_FILE_SIZE_BYTES ? 'rejected' : 'accepted',
-        file_size_MB: file.size / (1024 * 1024),
-        reason: file.size > MAX_FILE_SIZE_BYTES ? `Exceeded size limit (max ${MAX_FILE_SIZE_MB} MB per file)` : undefined
-      })),
-      accepted_files: files.filter(file => file.size <= MAX_FILE_SIZE_BYTES)
-    };
-    throw oversizedError;
-  }
-
-  const formData = new FormData();
-  files.forEach(file => formData.append('files', file));
-  formData.append('model', model);
-  formData.append('report_format', reportFormat);
-
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: 'include',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    // Try to parse error response with file validation details
-    try {
-      const errorData = await response.json();
-      if (errorData.error && errorData.summary) {
-        // This is a file validation error with accepted/rejected files
-        throw errorData;
-      }
-    } catch (parseError) {
-      // Fallback to generic error handling
-      const errorText = await response.text();
-      console.error('Backend error:', response.status, errorText);
       throw new Error(`Batch job start failed (${response.status})`);
     }
-    
-    // If we reach here, it was a validation error but parsing failed
-    //const errorText = await response.text();
-    throw new Error(`Batch job start failed (${response.status})`);
+
+    if (reportFormat === 'pdf') {
+      const pdfBlob = await response.blob();
+      return {
+        analyses: [],
+        usage: { free_analyses_used_this_month: 0, free_analyses_remaining: 0, subscription_used: false, account_id: null },
+        pdfBlob
+      } as BatchClassificationResponse;
+    }
+
+    return response.json();
   }
 
-  // Handle PDF response
-  if (reportFormat === 'pdf') {
-    const pdfBlob = await response.blob();
-    return {
-      job_id: `batch_${Date.now()}`,
-      status: 'completed',
-      total_images: files.length,
-      processed: files.length,
-      results: [],
-      pdfBlob: pdfBlob
-    };
+  // Video classification
+  async classifyVideo(
+    file: File, 
+    model: string, 
+    partial: boolean,
+    reportFormat: ReportFormat = 'json',
+    useCache: boolean = true,
+    accountId?: string
+  ): Promise<VideoClassificationResponse> {
+    const formData = new FormData();
+    formData.append('files', file);
+    formData.append('model', model);
+    formData.append('partial', partial ? 'true' : 'false');
+    formData.append('report_format', reportFormat);
+    formData.append('use_cache', useCache.toString());
+    if (accountId) {
+      formData.append('account_id', accountId);
+    }
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: 'include',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Backend error:', response.status, errorText);
+      throw new Error(`Video classification failed (${response.status})`);
+    }
+
+    if (reportFormat === 'pdf') {
+      const pdfBlob = await response.blob();
+      return {
+        analyses: [],
+        usage: { free_analyses_used_this_month: 0, free_analyses_remaining: 0, subscription_used: false, account_id: null },
+        pdfBlob
+      } as VideoClassificationResponse;
+    }
+
+    return response.json();
   }
 
-  return response.json();
-}
-
-async downloadBatchPDF(
-  files: File[], 
-  model: string = 'ml'
-): Promise<Blob> {
-  const formData = new FormData();
-  files.forEach(file => formData.append('files', file));
-  formData.append('model', model);
-  formData.append('report_format', 'pdf'); // Set report format to PDF
-
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: 'include', // ← ADD THIS LINE
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Backend error:', response.status, errorText);
-    throw new Error(`Batch PDF download failed (${response.status})`);
-  }
-
-  return response.blob();
-}
-
+  // Async batch job methods
   async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
@@ -292,7 +324,7 @@ async downloadBatchPDF(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      credentials: 'include', // ← ADD THIS LINE
+      credentials: 'include',
       body: formData,
     });
 
@@ -302,83 +334,16 @@ async downloadBatchPDF(
     return response.json();
   }
 
-//  async getBatchJobStatus(jobId: string): Promise<BatchJob> {
-    //return this.request(`/api/v1/classify/batch/status/${jobId}`);
- //   return this.request(`/api/v1/classify/batch/status/${jobId}?include_analyses=true`);
- // }
-async getBatchJobStatus(jobId: string, includeAnalyses: boolean = false): Promise<BatchJob> {
-  return this.request(`/api/v1/classify/batch/status/${jobId}?include_analyses=${includeAnalyses}`);
-}
+  async getBatchJobStatus(jobId: string, includeAnalyses: boolean = false): Promise<BatchJob> {
+    return this.request(`/api/v1/classify/batch/status/${jobId}?include_analyses=${includeAnalyses}`);
+  }
+
   async getModels(): Promise<{ models: ModelInfo[] }> {
     return this.request('/api/v1/models');
   }
-
-async classifyVideo(
-  file: File, 
-  model: string, 
-  partial: boolean
-): Promise<VideoClassificationResponse> {
-  const formData = new FormData();
-  formData.append('files', file);
-  formData.append('model', model);
-  formData.append('partial', partial ? 'true' : 'false');
-  formData.append('report_format', 'json'); // Always JSON for analysis
-  formData.append('use_cache', 'true'); // Enable cache
-
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: 'include',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Backend error:', response.status, errorText);
-    throw new Error(`Video classification failed (${response.status})`);
-  }
-
-  return response.json();
-}
-
-async downloadVideoPDF(
-  file: File, 
-  model: string, 
-  partial: boolean
-): Promise<Blob> {
-  const formData = new FormData();
-  formData.append('files', file);
-  formData.append('model', model);
-  formData.append('partial', partial ? 'true' : 'false');
-  formData.append('report_format', 'pdf');
-  formData.append('use_cache', 'true');  // Add cache parameter
-
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: 'include',
-    body: formData,
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('Backend error:', response.status, errorText);
-    throw new Error(`PDF download failed (${response.status})`);
-  }
-
-  return response.blob();
-}
-
 }
 
 export const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
-  
   console.log('📤 Calling PDF endpoint with:', { resultsCount: results.length, reportType });
 
   const token = localStorage.getItem('token');
@@ -405,7 +370,6 @@ export const generatePDFReport = async (results: any[], reportType: string = 'in
   
   return response.blob();
 };
-
 
 export const authService = new ApiService();
 export const classificationService = new ApiService();

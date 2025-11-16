@@ -34,6 +34,7 @@ export interface LargeFileResponse {
   details: FileDetail[];
 }
 
+// Updated Classification Result and Response Types
 export interface ClassificationResult {
   filename: string;
   model: string;
@@ -46,6 +47,41 @@ export interface ClassificationResult {
   user: string;
   is_ai?: boolean;
   result?: any;
+  pdfBlob?: Blob;
+  from_cache?: boolean;
+  cache_timestamp?: string;
+}
+
+export interface UsageInfo {
+  free_analyses_used_this_month: number;
+  free_analyses_remaining: number;
+  subscription_used: boolean;
+  account_id: string | null;
+}
+
+export interface CacheInfo {
+  from_cache: boolean;
+  cache_timestamp: string | null;
+}
+
+export interface SingleClassificationResponse {
+  analysis: ClassificationResult;
+  cache_info: CacheInfo;
+  usage: UsageInfo;
+  pdfBlob?: Blob;
+}
+
+export interface BatchAnalysisItem {
+  filename: string;
+  analysis_results: any;
+  from_cache: boolean;
+  cache_used: boolean;
+  timestamp: string;
+}
+
+export interface BatchClassificationResponse {
+  analyses: BatchAnalysisItem[];
+  usage: UsageInfo;
   pdfBlob?: Blob;
 }
 
@@ -115,19 +151,56 @@ export interface ClassificationService {
   ): Promise<Blob>;
 }
 
-export type VideoClassificationResponse = VideoSummary | VideoAnalysisResponse;
+// Updated Video Classification Response to match new structure
+export interface VideoClassificationResponse {
+  analyses: Array<{
+    filename: string;
+    analysis_results: VideoSummary;
+    from_cache: boolean;
+    cache_used: boolean;
+    timestamp: string;
+  }>;
+  usage: UsageInfo;
+  pdfBlob?: Blob;
+}
 
-// Type guard
+// Type guard for old cached response format
 export function isCachedResponse(response: any): response is VideoAnalysisResponse {
   return response && 'analysis_results' in response && 'from_cache' in response;
 }
 
-// Helper function to extract video summary from either response format
-export function getVideoSummary(response: VideoClassificationResponse): VideoSummary {
-  if (isCachedResponse(response)) {
+// Type guard for new response format
+export function isNewVideoResponse(response: any): response is VideoClassificationResponse {
+  return response && 'analyses' in response && 'usage' in response;
+}
+
+// Type guard for direct VideoSummary (old format)
+export function isDirectVideoSummary(response: any): response is VideoSummary {
+  return response && 
+         'filename' in response && 
+         'analysis_type' in response && 
+         'confidence_ai' in response &&
+         'confidence_human' in response &&
+         'total_frames_analyzed' in response;
+}
+
+// Helper function to extract video summary from any response format
+export function getVideoSummary(response: any): VideoSummary {
+  if (isNewVideoResponse(response)) {
+    // New response structure - take the first analysis result
+    if (response.analyses.length > 0) {
+      return response.analyses[0].analysis_results;
+    }
+    throw new Error('No analyses found in video response');
+  } else if (isCachedResponse(response)) {
+    // Old cached response format
     return response.analysis_results;
+  } else if (isDirectVideoSummary(response)) {
+    // Direct VideoSummary (old non-cached format)
+    return response;
   }
-  return response;
+  
+  throw new Error('Unknown video response format');
 }
 
 export  interface PDFResultProps {
@@ -197,8 +270,6 @@ export interface IndividualClassificationResult {
   features: Record<string, any>;
   confidence: number;
   user: string;
-
-  
 }
 
 export interface FileValidationError {
@@ -220,6 +291,7 @@ export interface FileValidationError {
 }
 
 export type BatchClassificationResults = IndividualClassificationResult[];
+
 // Function overloads for better type safety
 export interface PDFDownloadHandlers {
   // Overload for single result
@@ -228,4 +300,32 @@ export interface PDFDownloadHandlers {
   handleDownloadPDF(results: BatchClassificationResults): Promise<void>;
   // Implementation signature
   handleDownloadPDF(resultOrResults: IndividualClassificationResult | BatchClassificationResults): Promise<void>;
+}
+
+// Helper type for extracting analysis data from different response formats
+export type AnalysisResponse = 
+  | SingleClassificationResponse 
+  | BatchClassificationResponse 
+  | VideoClassificationResponse;
+
+// Helper function types for working with the new response structures
+export function extractEnrichedResults(response: AnalysisResponse): any[] {
+  if ('analysis' in response) {
+    // Single classification response
+    return [response.analysis];
+  } else if ('analyses' in response) {
+    // Batch or video response
+    return response.analyses.flatMap(analysis => 
+      analysis.analysis_results?.enriched_results || []
+    );
+  }
+  return [];
+}
+
+export function getUsageInfo(response: AnalysisResponse): UsageInfo {
+  return response.usage;
+}
+
+export function getCacheInfo(response: SingleClassificationResponse): CacheInfo {
+  return response.cache_info;
 }
