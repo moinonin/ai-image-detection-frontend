@@ -3,6 +3,24 @@ import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo, VideoCla
 type ReportFormat = 'json' | 'pdf';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
+function base64ToBlob(base64: string, contentType: string = ''): Blob {
+  const byteCharacters = atob(base64);
+  const byteArrays = [];
+  
+  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+    const slice = byteCharacters.slice(offset, offset + 512);
+    
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+    
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+  
+  return new Blob(byteArrays, { type: contentType });
+}
 
 // Extended interfaces to include pdfBlob
 interface SingleClassificationResponse {
@@ -104,89 +122,93 @@ class ApiService {
     });
   }
 
-  // Fixed single image classification
-  async classifySingleImage(
-    file: File, 
-    modelType: string = 'ml', 
-    reportFormat: ReportFormat = 'json',
-    useCache: boolean = true,
-    accountId?: string
-  ): Promise<SingleClassificationResponse> {
-    const token = localStorage.getItem('token');
+// Fixed single image classification
+async classifySingleImage(
+  file: File, 
+  modelType: string = 'ml', 
+  reportFormat: ReportFormat = 'json',
+  useCache: boolean = true,
+  accountId?: string
+): Promise<SingleClassificationResponse> {
+  const token = localStorage.getItem('token');
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('model_type', modelType);
+    formData.append('report_format', reportFormat);
+    formData.append('use_cache', useCache.toString());
+    if (accountId) {
+      formData.append('account_id', accountId);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: 'include',
+      body: formData,
+    });
     
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('model_type', modelType);
-      formData.append('report_format', reportFormat);
-      formData.append('use_cache', useCache.toString());
-      if (accountId) {
-        formData.append('account_id', accountId);
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        credentials: 'include',
-        body: formData,
-      });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Backend error:', response.status, errorText);
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Backend error:', response.status, errorText);
-        
-        try {
-          const errorData = JSON.parse(errorText);
-          if (errorData.error && errorData.summary) {
-            const fileSizeError = new Error(errorData.error);
-            fileSizeError.name = 'FileSizeError';
-            (fileSizeError as any).details = errorData;
-            throw fileSizeError;
-          }
-        } catch (parseError) {
-          throw new Error(`Classification failed (${response.status}): ${errorText}`);
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.error && errorData.summary) {
+          const fileSizeError = new Error(errorData.error);
+          fileSizeError.name = 'FileSizeError';
+          (fileSizeError as any).details = errorData;
+          throw fileSizeError;
         }
-        
-        throw new Error(`Classification failed (${response.status})`);
+      } catch (parseError) {
+        throw new Error(`Classification failed (${response.status}): ${errorText}`);
       }
+      
+      throw new Error(`Classification failed (${response.status})`);
+    }
 
-      // For PDF responses, handle blob
-      if (reportFormat === 'pdf') {
-        const pdfBlob = await response.blob();
-        return {
-          analysis: {
-            filename: file.name,
-            model: modelType,
-            predicted_class: 'Unknown',
-            user: 'Unknown',
-            report_format: 'pdf',
-            confidence: 0,
-            is_ai: false,
-          } as ClassificationResult,
-          cache_info: { from_cache: false, cache_timestamp: null },
-          usage: { free_analyses_used_this_month: 0, free_analyses_remaining: 0, subscription_used: false, account_id: null },
-          pdfBlob
-        };
-      }
-
-      // For JSON responses
+    // For PDF responses, handle blob and extract analysis data from headers
+    if (reportFormat === 'pdf') {
+      // Parse the JSON response that now includes pdf_content as base64
       const result = await response.json();
-      console.log('Raw API response:', result);
+      console.log('PDF API response:', result);
       
       if (!result.analysis) {
         console.warn('API response missing analysis field:', result);
         throw new Error('Invalid response from server: missing analysis data');
       }
       
-      return result;
-      
-    } catch (error) {
-      console.error('Classification service error:', error);
-      throw error;
+      // Convert base64 PDF content to blob
+      if (result.pdf_content) {
+        const pdfBlob = base64ToBlob(result.pdf_content, 'application/pdf');
+        return {
+          ...result,
+          pdfBlob
+        };
+      } else {
+        throw new Error('PDF content missing from response');
+      }
     }
+
+    // For JSON responses
+    const result = await response.json();
+    console.log('Raw API response:', result);
+    
+    if (!result.analysis) {
+      console.warn('API response missing analysis field:', result);
+      throw new Error('Invalid response from server: missing analysis data');
+    }
+    
+    return result;
+    
+  } catch (error) {
+    console.error('Classification service error:', error);
+    throw error;
   }
+}
 
   // Batch classification
   async startBatchJobSync(

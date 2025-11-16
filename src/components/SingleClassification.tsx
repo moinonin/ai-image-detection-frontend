@@ -71,44 +71,34 @@ const SingleClassification: React.FC = () => {
         reportFormat 
       });
       
-      // Always get JSON analysis data first
-      const analysisResult = await classificationService.classifySingleImage(
+      const result = await classificationService.classifySingleImage(
         selectedFile, 
         modelType,
-        'json'
+        reportFormat
       );
       
-      console.log('Analysis result:', analysisResult);
+      console.log('API result:', result);
       
-      if (analysisResult.analysis && Object.keys(analysisResult.analysis).length > 0) {
-        setResult(analysisResult);
-        
-        // If PDF was requested, get it separately
-        if (reportFormat === 'pdf') {
-          try {
-            const pdfResult = await classificationService.classifySingleImage(
-              selectedFile, 
-              modelType,
-              'pdf'
-            );
-            
-            // Update the result with the PDF blob
-            if (pdfResult.pdfBlob) {
-              setResult(prev => prev ? { ...prev, pdfBlob: pdfResult.pdfBlob } : prev);
-            }
-          } catch (pdfError) {
-            console.warn('PDF generation failed:', pdfError);
-            setError('Analysis completed but PDF generation failed. You can still view the results below.');
-          }
-        }
+      if (result.analysis && Object.keys(result.analysis).length > 0) {
+        setResult(result);
       } else {
         setError('No analysis data received from server');
       }
     } catch (error: any) {
       console.error('Classification failed:', error);
-      setError(error.message);
-      if (error.name === 'FileSizeError' && error.details) {
+      
+      // Handle specific error cases
+      if (error.message.includes('402')) {
+        setError('You have exhausted your free analyses. Please subscribe to continue using the service.');
+        setErrorDetails({
+          type: 'subscription_required',
+          message: 'Upgrade your account to unlock more analyses'
+        });
+      } else if (error.name === 'FileSizeError' && error.details) {
+        setError(error.message);
         setErrorDetails(error.details);
+      } else {
+        setError(error.message);
       }
     } finally {
       setLoading(false);
@@ -142,13 +132,28 @@ const SingleClassification: React.FC = () => {
 
   const getPredictedClass = (): string => {
     if (!analysisResult) return 'Unknown';
-    return analysisResult.predicted_class || 'Unknown';
+    
+    // Check if we have the actual predicted_class from analysis
+    if (analysisResult.predicted_class && analysisResult.predicted_class !== 'Analysis Complete') {
+      return analysisResult.predicted_class;
+    }
+    
+    // Fallback to checking is_ai flag if predicted_class is not available
+    if (analysisResult.is_ai !== undefined) {
+      return analysisResult.is_ai ? 'AI Generated' : 'Human Created';
+    }
+    
+    return 'Unknown';
   };
 
   const getAIDetectedClass = (): string => {
-    const predictedClass = getPredictedClass();
-    if (predictedClass === 'Unknown') return 'unknown-detected';
-    return predictedClass.includes("AI") ? "ai-detected" : "human-detected";
+    const predictedClass = getPredictedClass().toLowerCase();
+    
+    if (predictedClass === 'unknown') return 'unknown-detected';
+    if (predictedClass.includes('ai') || predictedClass.includes('generated')) {
+      return 'ai-detected';
+    }
+    return 'human-detected';
   };
 
   return (
@@ -243,9 +248,17 @@ const SingleClassification: React.FC = () => {
             {analysisResult && !error ? (
               <div className={`result-card ${getAIDetectedClass()}`}>
                 <div className="result-header">
-                  <h3>{analysisResult.filename || 'Unknown File'}</h3>
+                  <h3>{analysisResult.filename || selectedFile?.name || 'Unknown File'}</h3>
                   <span className="result-badge">{getPredictedClass()}</span>
                 </div>
+
+                {/* Show a warning if we're using fallback data */}
+                {/*analysisResult.predicted_class === 'Analysis Complete' && (
+                  <div className="data-warning">
+                    <span className="warning-icon">⚠️</span>
+                    <span>Showing basic analysis results. Full details available in PDF report.</span>
+                  </div>
+                )*/}
 
                 {result?.cache_info && (
                   <div className="cache-info">
@@ -371,9 +384,67 @@ const SingleClassification: React.FC = () => {
                 </div>
               </div>
             ) : (
-              // Error display remains the same
+              // ERROR DISPLAY SECTION - REPLACED WITH PROPER ERROR HANDLING
               <div className="result-card error-detected">
-                {/* ... error display code ... */}
+                <div className="error-header">
+                  <h3>❌ Analysis Failed</h3>
+                </div>
+                
+                <div className="error-message">
+                  <p>{error}</p>
+                  
+                  {/* Special handling for subscription required error */}
+                  {errorDetails?.type === 'subscription_required' && (
+                  <div className="subscription-prompt">
+                    <div className="upgrade-options">
+                      <h4>✨ Upgrade Your Account</h4>
+                      <p>You've used all your free analyses this month. Choose a plan to continue:</p>
+                      
+                      <div className="plan-actions">
+                        <button 
+                          className="plan-btn explorer"
+                          onClick={() => window.location.href = '/pricing?plan=explorer'}
+                        >
+                          <span className="plan-name">Explorer Plan</span>
+                          <span className="plan-price">$19/month</span>
+                        </button>
+                        <button 
+                          className="plan-btn pro primary"
+                          onClick={() => window.location.href = '/pricing?plan=pro'}
+                        >
+                          <span className="plan-name">Pro Plan</span>
+                          <span className="plan-price">$79/month</span>
+                        </button>
+                      </div>
+
+                      <div className="contact-support">
+                        <p>Need help choosing? <a href="/contact">Contact our support team</a></p>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+                  
+                  {/* Show error details for file size errors */}
+                  {errorDetails && errorDetails.type !== 'subscription_required' && (
+                    <div className="error-details">
+                      <pre>{JSON.stringify(errorDetails, null, 2)}</pre>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Retry button for non-subscription errors */}
+                {errorDetails?.type !== 'subscription_required' && (
+                  <div className="action-buttons">
+                    <button 
+                      className="retry-btn futuristic-btn"
+                      onClick={handleSubmit}
+                      disabled={loading}
+                    >
+                      <span className="btn-icon">🔄</span>
+                      Try Again
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
