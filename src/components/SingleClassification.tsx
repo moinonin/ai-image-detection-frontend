@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { classificationService, generatePDFReport } from '../services/api';
+import { classificationService } from '../services/api';
 import { ClassificationResult, EmailResultsParams, ReportFormat } from '../types';
 
 // Local type that matches what the API returns

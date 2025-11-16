@@ -134,6 +134,20 @@ export interface VideoSummary {
   // Optional cache fields that might be included
   from_cache?: boolean;
   cache_timestamp?: string;
+  // Add features as an optional property
+  features?: {
+    eigen_entropy: number;
+    eigen_decay_rate: number;
+    eigen_condition_number: number;
+    radial_smoothness: number;
+    high_freq_energy: number;
+    channel_correlation: number;
+    color_consistency: number;
+    local_inconsistency: number;
+    noise_std: number;
+    noise_skew: number;
+    noise_regularity: number;
+  };
 }
 
 export interface ClassificationService {
@@ -146,11 +160,11 @@ export interface ClassificationService {
   
   downloadVideoPDF(
     file: File, 
-    model: string, 
-    partial: boolean
+    modelType: string, 
+    partialAnalysis: boolean
   ): Promise<Blob>;
 }
-
+//downloadVideoPDF(file: File, modelType: string, partialAnalysis: boolean): Promise<Blob>;
 // Updated Video Classification Response to match new structure
 export interface VideoClassificationResponse {
   analyses: Array<{

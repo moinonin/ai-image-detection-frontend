@@ -335,6 +335,29 @@ async classifySingleImage(
     return response.json();
   }
 
+  async downloadVideoPDF(
+    file: File,
+    modelType: string = 'ml',
+    partialAnalysis: boolean = true
+  ): Promise<Blob> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('model_type', modelType);
+    formData.append('partial_analysis', partialAnalysis.toString());
+    formData.append('report_format', 'pdf');
+
+    const response = await fetch('/api/classify/video', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`PDF download failed: ${response.statusText}`);
+    }
+
+    return await response.blob();
+  }
+
   // Async batch job methods
   async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
     const formData = new FormData();

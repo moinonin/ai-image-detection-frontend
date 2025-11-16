@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { classificationService } from '../services/api';
-import { VideoSummary, isCachedResponse} from '../types';
+import { VideoClassificationResponse, VideoSummary } from '../types';
 
 type EmailResultProps = VideoSummary;
 
@@ -9,20 +9,18 @@ const VideoClassification: React.FC = () => {
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [modelType, setModelType] = useState('ml');
   const [partialAnalysis, setPartialAnalysis] = useState(true);
-  const [result, setResult] = useState<VideoSummary | null>(null);
+  const [result, setResult] = useState<VideoClassificationResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  //const [reportFormat] = useState<ReportFormat>('pdf');
-  const [analysisComplete, setAnalysisComplete] = useState(false);
-  const [usedCache, setUsedCache] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<any>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setSelectedFile(event.target.files[0]);
-      // Reset states when new file is selected
-      setAnalysisComplete(false);
-      setUsedCache(false);
       setResult(null);
+      setError(null);
+      setErrorDetails(null);
     }
   };
 
@@ -43,52 +41,56 @@ const VideoClassification: React.FC = () => {
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setSelectedFile(e.dataTransfer.files[0]);
-      // Reset states when new file is selected
-      setAnalysisComplete(false);
-      setUsedCache(false);
       setResult(null);
+      setError(null);
+      setErrorDetails(null);
     }
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!selectedFile) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile) return;
 
-  setLoading(true);
-  setResult(null);
-  setAnalysisComplete(false);
-  setUsedCache(false);
-  
-  try {
-    // Remove the reportFormat parameter since it's not needed
-    const response = await classificationService.classifyVideo(
-      selectedFile, 
-      modelType, 
-      partialAnalysis
-    );
+    setLoading(true);
+    setResult(null);
+    setError(null);
+    setErrorDetails(null);
     
-    // Handle both response formats using type guard
-    let analysisResults: VideoSummary;
-    let cacheUsed = false;
-    
-    if (isCachedResponse(response)) {
-      analysisResults = response.analysis_results;
-      cacheUsed = response.from_cache || response.cache_used;
-    } else {
-      analysisResults = response;
-      cacheUsed = false;
+    try {
+      console.log('Sending video request with:', { 
+        file: selectedFile.name, 
+        modelType, 
+        partialAnalysis 
+      });
+      
+      const response = await classificationService.classifyVideo(
+        selectedFile, 
+        modelType, 
+        partialAnalysis
+      );
+      
+      console.log('Video API result:', response);
+      setResult(response);
+      
+    } catch (error: any) {
+      console.error('Video classification failed:', error);
+      
+      if (error.message.includes('402')) {
+        setError('You have exhausted your free analyses. Please subscribe to continue using the service.');
+        setErrorDetails({
+          type: 'subscription_required',
+          message: 'Upgrade your account to unlock more analyses'
+        });
+      } else if (error.name === 'FileSizeError' && error.details) {
+        setError(error.message);
+        setErrorDetails(error.details);
+      } else {
+        setError(error.message);
+      }
+    } finally {
+      setLoading(false);
     }
-    
-    setResult(analysisResults);
-    setUsedCache(cacheUsed);
-    setAnalysisComplete(true);
-    
-  } catch (error: any) {
-    // Error handling...
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const getConfidenceColor = (confidence: number) => {
     if (confidence > 80) return '#00ff00';
@@ -96,18 +98,26 @@ const handleSubmit = async (e: React.FormEvent) => {
     return '#ff4444';
   };
 
-  const handleEmailResults = async (result: EmailResultProps): Promise<void> => {
-    try {
-      console.log('Emailing results:', result);
-      alert('Email functionality would be implemented here');
-    } catch (error) {
-      console.error('Failed to email results:', error);
-      alert('Failed to send email. Please try again.');
+  // Get the first analysis result from the array
+  const analysisData = result?.analyses?.[0];
+  const analysisResult = analysisData?.analysis_results;
+
+  const getAIDetectedClass = (): string => {
+    if (!analysisResult?.dominant_class) return 'unknown-detected';
+    
+    const dominantClass = analysisResult.dominant_class.toLowerCase();
+    if (dominantClass.includes('ai') || dominantClass.includes('generated')) {
+      return 'ai-detected';
     }
+    return 'human-detected';
+  };
+
+  const handleEmailResults = (result: EmailResultProps): void => {
+    console.log('Email video results:', result);
   };
 
   const handleDownloadPDF = async (): Promise<void> => {
-    if (!selectedFile) return;
+    if (!selectedFile || !result) return;
 
     setLoading(true);
     try {
@@ -118,7 +128,6 @@ const handleSubmit = async (e: React.FormEvent) => {
         partialAnalysis
       );
       
-      // Create and trigger download
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.style.display = 'none';
@@ -131,60 +140,23 @@ const handleSubmit = async (e: React.FormEvent) => {
       console.log('PDF downloaded successfully');
     } catch (error: any) {
       console.error('PDF download failed:', error);
-      alert('PDF download failed. Please try again.');
+      setError('PDF download failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  {/*const handleDownloadJSON = (result: VideoSummary): void => {
-    const dataStr = JSON.stringify(result, null, 2);
+  const handleDownloadJSON = (): void => {
+    if (!analysisResult) return;
+    
+    const dataStr = JSON.stringify(analysisResult, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `video_analysis_${result.filename}.json`;
+    a.download = `video_analysis_${analysisResult.filename || 'result'}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  };*/}
-
-  // Reset analysis state when settings change
-  React.useEffect(() => {
-    if (analysisComplete) {
-      setAnalysisComplete(false);
-      setUsedCache(false);
-    }
-  }, [modelType, partialAnalysis]);
-
-  // Get button text based on current state
-  const getButtonText = () => {
-    if (loading) {
-      return (
-        <>
-          <div className="spinner"></div>
-          Analyzing Video...
-        </>
-      );
-    }
-    
-    if (analysisComplete) {
-      if (usedCache) {
-        return 'Analysis Complete (Cached)';
-      } else {
-        return 'Analysis Complete';
-      }
-    }
-    
-    return 'Analyze Video';
-  };
-
-  // Get button class based on state
-  const getButtonClass = () => {
-    let className = 'analyze-btn';
-    if (analysisComplete && !loading) {
-      className += ' analysis-complete';
-    }
-    return className;
   };
 
   return (
@@ -263,48 +235,66 @@ const handleSubmit = async (e: React.FormEvent) => {
 
             <button 
               type="submit" 
-              disabled={!selectedFile || (loading && !analysisComplete)}
-              className={getButtonClass()}
+              disabled={!selectedFile || loading}
+              className="analyze-btn"
             >
-              {getButtonText()}
+              {loading ? (
+                <>
+                  <div className="spinner"></div>
+                  Analyzing Video...
+                </>
+              ) : (
+                'Analyze Video'
+              )}
             </button>
           </form>
         </div>
 
-        {result && analysisComplete && (
+        {(analysisResult || error) && (
           <div className="results-section">
-            <div className="results-header">
-              <h2>Video Analysis Results</h2>
-              {usedCache && (
-                <div className="cache-indicator">
-                  <span className="cache-badge">Cached Results</span>
-                  <span className="cache-info">Using previously analyzed data</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Check if we have valid classification results or error response */}
-            {result.dominant_class ? (
-              // Normal classification results
-              <div className={`result-card ${result.dominant_class.includes('AI') ? 'ai-detected' : 'human-detected'}`}>
+            <h2>Analysis Results</h2>
+
+            {analysisResult && !error ? (
+              <div className={`result-card ${getAIDetectedClass()}`}>
                 <div className="result-header">
-                  <h3>{result.filename}</h3>
+                  <h3>{analysisResult.filename || selectedFile?.name || 'Unknown File'}</h3>
                   <span className="result-badge">
-                    {result.dominant_class}
+                    {analysisResult.dominant_class || 'Analysis Complete'}
                   </span>
                 </div>
-                
+
+                {/* Cache info from the analysis data */}
+                {analysisData && (
+                  <div className="cache-info">
+                    <div className="detail-item">
+                      <span className="detail-label">Cache Status:</span>
+                      <span className="detail-value">
+                        {analysisData.from_cache ? 'Cached Result' : 'Fresh Analysis'}
+                      </span>
+                    </div>
+                    {analysisData.timestamp && (
+                      <div className="detail-item">
+                        <span className="detail-label">Analysis Time:</span>
+                        <span className="detail-value">
+                          {new Date(analysisData.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Confidence meters */}
                 <div className="confidence-meters">
                   <div className="confidence-meter">
                     <div className="confidence-label">
-                      AI Confidence: {result.confidence_ai}%
+                      AI Confidence: {analysisResult.confidence_ai}%
                     </div>
                     <div className="confidence-bar">
-                      <div 
+                      <div
                         className="confidence-fill"
-                        style={{ 
-                          width: `${result.confidence_ai}%`,
-                          backgroundColor: getConfidenceColor(result.confidence_ai)
+                        style={{
+                          width: `${analysisResult.confidence_ai}%`,
+                          backgroundColor: getConfidenceColor(analysisResult.confidence_ai),
                         }}
                       ></div>
                     </div>
@@ -312,14 +302,14 @@ const handleSubmit = async (e: React.FormEvent) => {
 
                   <div className="confidence-meter">
                     <div className="confidence-label">
-                      Human Confidence: {result.confidence_human}%
+                      Human Confidence: {analysisResult.confidence_human}%
                     </div>
                     <div className="confidence-bar">
-                      <div 
+                      <div
                         className="confidence-fill"
-                        style={{ 
-                          width: `${result.confidence_human}%`,
-                          backgroundColor: getConfidenceColor(result.confidence_human)
+                        style={{
+                          width: `${analysisResult.confidence_human}%`,
+                          backgroundColor: getConfidenceColor(analysisResult.confidence_human),
                         }}
                       ></div>
                     </div>
@@ -329,53 +319,88 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <div className="result-details">
                   <div className="detail-item">
                     <span className="detail-label">Model Used:</span>
-                    <span className="detail-value">{result.model?.toUpperCase() || modelType.toUpperCase()}</span>
+                    <span className="detail-value">{analysisResult.model?.toUpperCase() || modelType.toUpperCase()}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Analysis Type:</span>
-                    <span className="detail-value">{result.analysis_type || (partialAnalysis ? 'Partial' : 'Full')}</span>
+                    <span className="detail-value">{analysisResult.analysis_type || (partialAnalysis ? 'Partial' : 'Full')}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Analysis Detail:</span>
-                    <span className="detail-value">{result['analysis detail'] || (partialAnalysis ? 'Partial video analysis' : 'Full video analysis')}</span>
+                    <span className="detail-value">{analysisResult["analysis detail"] || (partialAnalysis ? 'Partial video analysis' : 'Full video analysis')}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Total Frames Analyzed:</span>
-                    <span className="detail-value">{result.total_frames_analyzed}</span>
+                    <span className="detail-value">{analysisResult.total_frames_analyzed}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">AI Frames:</span>
-                    <span className="detail-value">{result.ai_frames}</span>
+                    <span className="detail-value">{analysisResult.ai_frames}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Human Frames:</span>
-                    <span className="detail-value">{result.human_frames}</span>
+                    <span className="detail-value">{analysisResult.human_frames}</span>
                   </div>
-                  {result.average_ai_confidence > 0 && (
+                  {analysisResult.average_ai_confidence > 0 && (
                     <div className="detail-item">
                       <span className="detail-label">Avg AI Confidence:</span>
-                      <span className="detail-value">{(result.average_ai_confidence * 100).toFixed(2)}%</span>
+                      <span className="detail-value">{(analysisResult.average_ai_confidence * 100).toFixed(2)}%</span>
                     </div>
                   )}
-                  {result.average_human_confidence > 0 && (
+                  {analysisResult.average_human_confidence > 0 && (
                     <div className="detail-item">
                       <span className="detail-label">Avg Human Confidence:</span>
-                      <span className="detail-value">{(result.average_human_confidence * 100).toFixed(2)}%</span>
+                      <span className="detail-value">{(analysisResult.average_human_confidence * 100).toFixed(2)}%</span>
                     </div>
                   )}
+                  
+                  {/* Show features if available */}
+                  {analysisResult.features && (
+                    <>
+                      <div className="detail-section">
+                        <h4>Technical Features:</h4>
+                        {Object.entries(analysisResult.features).map(([key, value]) => (
+                          <div key={key} className="detail-item">
+                            <span className="detail-label">{key.replace(/_/g, ' ')}:</span>
+                            <span className="detail-value">{typeof value === 'number' ? value.toFixed(4) : String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
-                
-                {/* Action Buttons */}
+
+                {/* Usage info from the top level */}
+                {result?.usage && (
+                  <div className="usage-info">
+                    <div className="detail-item">
+                      <span className="detail-label">Free Analyses Remaining:</span>
+                      <span className="detail-value">{result.usage.free_analyses_remaining}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Used This Month:</span>
+                      <span className="detail-value">{result.usage.free_analyses_used_this_month}</span>
+                    </div>
+                    {result.usage.subscription_used && (
+                      <div className="detail-item">
+                        <span className="detail-label">Subscription:</span>
+                        <span className="detail-value">Active</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Action buttons */}
                 <div className="action-buttons">
-                  <button 
+                  <button
                     className="email-btn futuristic-btn"
-                    onClick={() => handleEmailResults(result)}
+                    onClick={() => handleEmailResults(analysisResult)}
                   >
                     <span className="btn-icon">✉️</span>
                     Email Results
                   </button>
-                  
-                  <button 
+
+                  <button
                     className="pdf-btn futuristic-btn"
                     onClick={handleDownloadPDF}
                     disabled={loading}
@@ -383,92 +408,75 @@ const handleSubmit = async (e: React.FormEvent) => {
                     <span className="btn-icon">📄</span>
                     {loading ? 'Generating PDF...' : 'Download PDF Report'}
                   </button>
-                  
-                  {/*<button 
+
+                  <button
                     className="json-btn futuristic-btn"
-                    onClick={() => handleDownloadJSON(result)}
+                    onClick={handleDownloadJSON}
                   >
                     <span className="btn-icon">📊</span>
                     Download JSON
-                  </button>*/}
-                </div>
-              </div>
-            ) : result.summary ? (
-              // Large file error response
-              <div className="result-card error">
-                <div className="result-header">
-                  <h3>File Processing Summary</h3>
-                  <span className="result-badge error-badge">
-                    Large Files Detected
-                  </span>
-                </div>
-                
-                <div className="error-summary">
-                  <p><strong>The following issues were encountered while processing your upload:</strong></p>
-                  <div className="summary-stats">
-                    <div className="stat-item">
-                      <span className="stat-label">Accepted Files:</span>
-                      <span className="stat-value accepted">{result.summary.accepted}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">Rejected Files:</span>
-                      <span className="stat-value rejected">{result.summary.rejected}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">Total Uploaded Size:</span>
-                      <span className="stat-value">{result.summary.total_uploaded_MB} MB</span>
-                    </div>
-                  </div>
-                </div>
-
-                {result.details && result.details.length > 0 && (
-                  <div className="file-details">
-                    <h4>File Details:</h4>
-                    <div className="file-list">
-                      {result.details.map((file, index) => (
-                        <div key={index} className={`file-item ${file.status}`}>
-                          <div className="file-info">
-                            <div className="file-name">{file.file_name || `File ${index + 1}`}</div>
-                            <div className="file-status">
-                              <span className={`status-badge ${file.status}`}>
-                                {file.status.toUpperCase()}
-                              </span>
-                              {file.file_size_MB && (
-                                <span className="file-size">({file.file_size_MB} MB)</span>
-                              )}
-                            </div>
-                          </div>
-                          {file.message && (
-                            <div className="file-message">{file.message}</div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="error-help">
-                  <p><strong>Recommended Actions:</strong></p>
-                  <ul>
-                    <li>Try uploading smaller video files</li>
-                    <li>Check your internet connection for large uploads</li>
-                    <li>Contact support if you need to process large videos regularly</li>
-                  </ul>
+                  </button>
                 </div>
               </div>
             ) : (
-              // Fallback for unexpected result format
-              <div className="result-card error">
-                <div className="result-header">
-                  <h3>Processing Error</h3>
-                  <span className="result-badge error-badge">
-                    Unknown Error
-                  </span>
+              // Error display
+              <div className="result-card error-detected">
+                <div className="error-header">
+                  <h3>❌ Analysis Failed</h3>
                 </div>
+                
                 <div className="error-message">
-                  <p>Unable to process the video file. The file may be corrupted, in an unsupported format, or there was a server error.</p>
-                  <p>Please try again with a different file or contact support if the issue persists.</p>
+                  <p>{error}</p>
+                  
+                  {errorDetails?.type === 'subscription_required' && (
+                  <div className="subscription-prompt">
+                    <div className="upgrade-options">
+                      <h4>✨ Upgrade Your Account</h4>
+                      <p>You've used all your free analyses this month. Choose a plan to continue:</p>
+                      
+                      <div className="plan-actions">
+                        <button 
+                          className="plan-btn explorer"
+                          onClick={() => window.location.href = '/pricing?plan=explorer'}
+                        >
+                          <span className="plan-name">Explorer Plan</span>
+                          <span className="plan-price">$19/month</span>
+                        </button>
+                        <button 
+                          className="plan-btn pro primary"
+                          onClick={() => window.location.href = '/pricing?plan=pro'}
+                        >
+                          <span className="plan-name">Pro Plan</span>
+                          <span className="plan-price">$79/month</span>
+                        </button>
+                      </div>
+
+                      <div className="contact-support">
+                        <p>Need help choosing? <a href="/contact">Contact our support team</a></p>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+                  
+                  {errorDetails && errorDetails.type !== 'subscription_required' && (
+                    <div className="error-details">
+                      <pre>{JSON.stringify(errorDetails, null, 2)}</pre>
+                    </div>
+                  )}
                 </div>
+                
+                {errorDetails?.type !== 'subscriptition_required' && (
+                  <div className="action-buttons">
+                    <button 
+                      className="retry-btn futuristic-btn"
+                      onClick={handleSubmit}
+                      disabled={loading}
+                    >
+                      <span className="btn-icon">🔄</span>
+                      Try Again
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

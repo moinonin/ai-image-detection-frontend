@@ -62,7 +62,7 @@ const Pricing: React.FC = () => {
           <p className="price">Custom</p>
           <ul>
             <li>Custom analysis limits</li>
-            <li>API access</li>
+            <li>API access licensing</li>
             <li>White-label solutions</li>
             <li>Dedicated infrastructure</li>
             <li>SLAs and custom contracts</li>
