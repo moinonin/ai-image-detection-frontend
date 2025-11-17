@@ -73,10 +73,18 @@ export interface SingleClassificationResponse {
 
 export interface BatchAnalysisItem {
   filename: string;
-  analysis_results: any;
+  analysis_results: IndividualClassificationResult;
   from_cache: boolean;
   cache_used: boolean;
   timestamp: string;
+  
+}
+
+export interface BatchUsage {
+  free_analyses_used_this_month: number;
+  free_analyses_remaining: number;
+  subscription_used: boolean;
+  account_id: string | null;
 }
 
 export interface BatchClassificationResponse {
@@ -87,18 +95,17 @@ export interface BatchClassificationResponse {
 
 export interface BatchJob {
   job_id: string;
-  status: string;
-  user: string;
-  total_images: number;
+  status: 'processing' | 'completed' | 'failed';
   processed: number;
-  results: any;
-  error: string | null;
-  created_at: string;
-  completed_at?: string;
-  reportFormat?: string;
-  individual_analyses?: any[];  // New
-  results_note?: string;        // New
-  results_source?: string;      // New
+  total_images: number;
+  // Multiple possible result formats for backward compatibility
+  results?: IndividualClassificationResult[];
+  individual_analyses?: IndividualClassificationResult[];
+  analyses?: BatchAnalysisItem[]; // Add this for new backend format
+  usage?: BatchUsage; // Add this for usage information
+  error?: string;
+  results_note?: string;
+  results_source?: string;
 }
 
 export interface ModelInfo {
@@ -148,6 +155,19 @@ export interface VideoSummary {
     noise_skew: number;
     noise_regularity: number;
   };
+  // new with batch analysis
+    video_id: string;
+    total_frames: number;
+    analyzed_frames: number;
+    overall_verdict: string;
+    confidence: number;
+    
+    // Add the missing enriched_results property
+    enriched_results?: EnrichedResult | null;
+    
+    // Other existing VideoSummary properties...
+    processing_time?: string;
+    model_used?: string;
 }
 
 export interface ClassificationService {
@@ -277,13 +297,25 @@ export interface BatchResult {
 export interface IndividualClassificationResult {
   filename: string;
   model: string;
-  probability: number;
-  predicted_class: string;
-  is_ai: boolean;
-  ground_truth?: string;
-  features: Record<string, any>;
-  confidence: number;
+  analysis_type: string;
+  total_images: number;
+  analyzed_images: number;
   user: string;
+  ai_detected: boolean;
+  confidence: number;
+  predicted_class: string;
+  probability: number;
+  from_cache: boolean;
+  cache_timestamp: string | null;
+  processing_time: string;
+  enriched_results?: EnrichedResult | null;
+  // Legacy fields for backward compatibility
+  is_ai?: boolean;
+  isAI?: boolean;
+  predictedClass?: string;
+  model_slug?: string;
+  ground_truth?: string;
+  groundTruth?: string;
 }
 
 export interface FileValidationError {
@@ -301,7 +333,7 @@ export interface FileValidationError {
     file_size_MB: number;
     reason?: string;
   }>;
-  accepted_files: any[];
+  accepted_files: File[];
 }
 
 export type BatchClassificationResults = IndividualClassificationResult[];
@@ -321,6 +353,16 @@ export type AnalysisResponse =
   | SingleClassificationResponse 
   | BatchClassificationResponse 
   | VideoClassificationResponse;
+
+// Add this interface for enriched results if needed
+export interface EnrichedResult {
+  // Define the structure based on your backend response
+  // These are example fields - adjust based on your actual data
+  additional_analysis?: any;
+  metadata?: any;
+  enhanced_confidence?: number;
+  // Add other fields that appear in enriched_results
+}
 
 // Helper function types for working with the new response structures
 export function extractEnrichedResults(response: AnalysisResponse): any[] {
@@ -342,4 +384,23 @@ export function getUsageInfo(response: AnalysisResponse): UsageInfo {
 
 export function getCacheInfo(response: SingleClassificationResponse): CacheInfo {
   return response.cache_info;
+}
+
+// Add these types to match backend response
+export interface BatchAnalysisResponse {
+  analyses: BatchAnalysisItem[];
+  usage: BatchUsage;
+}
+
+export interface BatchJobStatus {
+  job_id: string;
+  status: 'processing' | 'completed' | 'failed';
+  processed: number;
+  total_images: number;
+  results?: IndividualClassificationResult[];
+  individual_analyses?: IndividualClassificationResult[];
+  analyses?: BatchAnalysisResponse['analyses']; // Add this to match backend
+  error?: string;
+  results_note?: string;
+  results_source?: string;
 }

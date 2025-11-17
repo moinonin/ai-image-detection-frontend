@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { classificationService } from '../services/api';
-import { BatchJob, IndividualClassificationResult, FileValidationError } from '../types';
+import { BatchJob, IndividualClassificationResult, FileValidationError, BatchAnalysisItem, BatchUsage } from '../types';
 
 function getCookie(name: string): string | null {
   const value = `; ${document.cookie}`;
@@ -14,7 +14,7 @@ const BatchClassification: React.FC = () => {
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [model, setModel] = useState('scalpel');
   const [loading, setLoading] = useState(false);
-  const [, setPdfLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<BatchJob | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -52,12 +52,61 @@ const BatchClassification: React.FC = () => {
     };
   };
 
+  // Helper function to normalize analysis data from different sources
+  const getNormalizedResults = (jobStatus: BatchJob | null): IndividualClassificationResult[] => {
+    if (!jobStatus) return [];
+    
+    console.log('=== NORMALIZING RESULTS ===');
+    console.log('Available data sources:', {
+      analyses: jobStatus.analyses?.length || 0,
+      individual_analyses: jobStatus.individual_analyses?.length || 0,
+      results: jobStatus.results?.length || 0
+    });
+    
+    // Priority 1: Direct analyses array (new backend format)
+    if (jobStatus.analyses && jobStatus.analyses.length > 0) {
+      console.log('Using analyses array with', jobStatus.analyses.length, 'items');
+      return jobStatus.analyses.map((analysis: BatchAnalysisItem) => {
+        const result = {
+          ...analysis.analysis_results,
+          // Ensure consistent field names
+          is_ai: analysis.analysis_results.ai_detected,
+          predicted_class: analysis.analysis_results.predicted_class,
+          confidence: analysis.analysis_results.confidence,
+          probability: analysis.analysis_results.probability,
+          model: analysis.analysis_results.model,
+          from_cache: analysis.from_cache,
+          cache_timestamp: analysis.analysis_results.cache_timestamp,
+          processing_time: analysis.analysis_results.processing_time
+        };
+        console.log('Normalized analysis result:', result);
+        return result;
+      });
+    }
+    
+    // Priority 2: Individual analyses (fallback)
+    if (jobStatus.individual_analyses && jobStatus.individual_analyses.length > 0) {
+      console.log('Using individual_analyses array with', jobStatus.individual_analyses.length, 'items');
+      return jobStatus.individual_analyses;
+    }
+    
+    // Priority 3: Results (legacy fallback)
+    if (jobStatus.results && jobStatus.results.length > 0) {
+      console.log('Using results array with', jobStatus.results.length, 'items');
+      return jobStatus.results;
+    }
+    
+    console.log('No results found in any data source');
+    return [];
+  };
+
   const renderDownloadButton = () => {
     if (reportFormat === 'pdf') {
       return (
         <button 
           className="pdf-btn futuristic-btn"
-          onClick={() => handleDownloadBatchPDF(jobStatus)}
+          //onClick={() => handleDownloadBatchPDF(jobStatus)}
+          onClick={handleDownloadBatchPDF}
         >
           <span className="btn-icon">📄</span>
           Download Batch PDF
@@ -68,7 +117,7 @@ const BatchClassification: React.FC = () => {
       return (
         <button 
           className="pdf-btn futuristic-btn"
-          onClick={() => handleDownloadBatchPDF(jobStatus!)}
+          onClick={() => handleDownloadBatchPDF()}
           disabled={!jobStatus}
         >
           <span className="btn-icon">📄</span>
@@ -205,25 +254,27 @@ const BatchClassification: React.FC = () => {
   const pollJobStatus = async (jobId: string) => {
     const interval = setInterval(async () => {
       try {
-        // Include individual_analyses in the request
         const status = await classificationService.getBatchJobStatus(jobId, true);
-        console.log('=== BATCH JOB STATUS ===');
+        console.log('=== BATCH JOB STATUS DEBUG ===');
+        console.log('Full status object:', status);
         console.log('Status:', status.status);
-        console.log('Results array exists:', !!status.results);
-        console.log('Results length:', status.results?.length);
+        console.log('Analyses exists:', !!status.analyses);
+        console.log('Analyses length:', status.analyses?.length);
         console.log('Individual analyses exists:', !!status.individual_analyses);
         console.log('Individual analyses length:', status.individual_analyses?.length);
+        console.log('Results exists:', !!status.results);
+        console.log('Results length:', status.results?.length);
+        console.log('Processed:', status.processed, 'Total images:', status.total_images);
         
-        if (status.results && status.results.length > 0) {
-          console.log('First result keys:', Object.keys(status.results[0]));
-        }
-        if (status.individual_analyses && status.individual_analyses.length > 0) {
-          console.log('First individual analysis keys:', Object.keys(status.individual_analyses[0]));
+        if (status.analyses && status.analyses.length > 0) {
+          console.log('First analysis item:', status.analyses[0]);
         }
         
         setJobStatus(status);
         
         if (status.status === 'completed' || status.status === 'failed') {
+          console.log('=== JOB COMPLETED ===');
+          console.log('Final status:', status);
           clearInterval(interval);
           setLoading(false);
         }
@@ -276,16 +327,13 @@ const BatchClassification: React.FC = () => {
     }
   };
 
-  const handleDownloadBatchPDF = async (jobStatus: BatchJob | null): Promise<void> => {
-    if (!jobStatus || !selectedFiles.length) return;
+  const handleDownloadBatchPDF = async (): Promise<void> => {
+    if (!jobId) return;
 
     setPdfLoading(true);
     try {
-      console.log('Downloading batch PDF report...');
-      const pdfBlob = await classificationService.downloadBatchPDF(
-        selectedFiles,
-        model
-      );
+      console.log('Downloading batch PDF report for job:', jobId);
+      const pdfBlob = await classificationService.downloadBatchPDF(jobId);
       
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
@@ -372,6 +420,8 @@ const BatchClassification: React.FC = () => {
   const handleEmailResults = (result: any) => {
     console.log('Email single result:', result);
   };
+
+  const normalizedResults = getNormalizedResults(jobStatus);
 
   return (
     <div className="batch-classification">
@@ -563,6 +613,29 @@ const BatchClassification: React.FC = () => {
                 </div>
               </div>
 
+              {/* Usage Information */}
+              {jobStatus.usage && (
+                <div className="usage-info">
+                  <h4>Usage Summary</h4>
+                  <div className="usage-stats">
+                    <div className="usage-item">
+                      <span className="usage-label">Free Analyses Used:</span>
+                      <span className="usage-value">{jobStatus.usage.free_analyses_used_this_month}</span>
+                    </div>
+                    <div className="usage-item">
+                      <span className="usage-label">Free Analyses Remaining:</span>
+                      <span className="usage-value">{jobStatus.usage.free_analyses_remaining}</span>
+                    </div>
+                    <div className="usage-item">
+                      <span className="usage-label">Subscription:</span>
+                      <span className="usage-value">
+                        {jobStatus.usage.subscription_used ? 'Active' : 'Not Active'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="action-buttons">
                 <button 
                   className="email-btn futuristic-btn"
@@ -575,139 +648,250 @@ const BatchClassification: React.FC = () => {
                 {renderDownloadButton()}
               </div>
               
-              {/* Enhanced Results Section with Fallback Logic */}
-              {(() => {
-                // Use individual_analyses if available, fallback to results
-                const displayData = jobStatus.individual_analyses || jobStatus.results || [];
-                
-                return displayData.length > 0 ? (
-                  <div className="results-preview">
-                    <div className="results-header">
-                      <h4>Results Preview:</h4>
-                      {jobStatus.individual_analyses && (
-                        <div className="data-source-indicator">
-                          <small>
-                            Showing {displayData.length} results from individual analyses
-                          </small>
-                        </div>
-                      )}
-                    </div>
-                    <div className="results-grid">
-                      {displayData
-                        .slice(0, isExpanded ? displayData.length : 5)
-                        .map((result: any, index: number) => {
-                          // Normalize data from both sources (individual_analyses vs results)
-                          const displayResult = {
-                            filename: result.filename,
-                            // Handle different field names between sources
-                            predicted_class: result.predicted_class || result.predictedClass,
-                            confidence: result.confidence ?? result.probability, // Use confidence, fallback to probability
-                            probability: result.probability,
-                            model: result.model || result.model_slug || model, // Multiple possible field names
-                            is_ai: result.is_ai ?? result.isAI, // Handle both snake_case and camelCase
-                            ground_truth: result.ground_truth || result.groundTruth
-                          };
-                          
-                          return (
-                            <div key={index} className="result-container">
-                              <div 
-                                className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
-                                onClick={() => toggleExpand(index)}
-                              >
-                                <span className="filename">{displayResult.filename || `Image ${index + 1}`}</span>
-                                {/* Use is_ai for classification instead of string parsing */}
-                                <span className={`prediction ${displayResult.is_ai ? 'ai' : 'human'}`}>
-                                  {displayResult.predicted_class || (displayResult.is_ai ? 'AI Generated' : 'Human Created')}
-                                </span>
-                              </div>
-                              
-                              {expandedIndex === index && (
-                                <div className="result-details-expanded">
-                                  <div className={`result-card ${displayResult.is_ai ? 'ai-detected' : 'human-detected'}`}>
-                                    <div className="result-header">
-                                      <h3>{displayResult.filename || `Image ${index + 1}`}</h3>
-                                      <span className="result-badge">
-                                        {displayResult.predicted_class || (displayResult.is_ai ? 'AI Generated' : 'Human Created')}
-                                      </span>
-                                    </div>
-                                    
-                                    <div className="confidence-meter">
-                                      <div className="confidence-label">
-                                        Confidence: {displayResult.confidence != null ? `${(displayResult.confidence * 100).toFixed(2)}%` : 'N/A'}
-                                      </div>
-                                      <div className="confidence-bar">
-                                        <div 
-                                          className="confidence-fill"
-                                          style={{ 
-                                            width: `${(displayResult.confidence || 0) * 100}%`,
-                                            backgroundColor: getConfidenceColor(displayResult.confidence || 0)
-                                          }}
-                                        ></div>
-                                      </div>
-                                    </div>
-
-                                    <div className="result-details">
-                                      <div className="detail-item">
-                                        <span className="detail-label">AI Detection:</span>
-                                        <span className="detail-value">{displayResult.is_ai ? 'AI Generated' : 'Human Created'}</span>
-                                      </div>
-                                      <div className="detail-item">
-                                        <span className="detail-label">Model Used:</span>
-                                        <span className="detail-value">{displayResult.model?.toUpperCase() || 'Unknown'}</span>
-                                      </div>
-                                      {displayResult.probability != null && (
-                                        <div className="detail-item">
-                                          <span className="detail-label">Probability Score:</span>
-                                          <span className="detail-value">{displayResult.probability.toFixed(4)}</span>
-                                        </div>
-                                      )}
-                                      {displayResult.ground_truth && (
-                                        <div className="detail-item">
-                                          <span className="detail-label">Ground Truth:</span>
-                                          <span className="detail-value">{displayResult.ground_truth}</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                    </div>
-                    
-                    {displayData.length > 5 && (
-                      <div className="results-expand">
-                        <button 
-                          className="expand-button"
-                          onClick={() => setIsExpanded(!isExpanded)}
-                        >
-                          {isExpanded ? (
-                            <>
-                              <span>Show less</span>
-                              <span className="expand-icon">▲</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>Show all {displayData.length} results</span>
-                              <span className="expand-icon">▼</span>
-                            </>
-                          )}
-                        </button>
+              {/* Enhanced Results Section */}
+              {normalizedResults.length > 0 ? (
+                <div className="results-preview">
+                  <div className="results-header">
+                    <h4>Analysis Results ({normalizedResults.length} images):</h4>
+                    {jobStatus.analyses && (
+                      <div className="data-source-indicator">
+                        <small>Showing results from batch analysis</small>
                       </div>
                     )}
                   </div>
-                ) : jobStatus.status === 'completed' ? (
-                  <div className="no-results">
-                    <p>
-                      {jobStatus.results_note || "No results available. The job completed but no individual file details were returned."}
-                    </p>
-                    {jobStatus.results_source && (
-                      <p className="results-source">Data source: {jobStatus.results_source}</p>
-                    )}
+                  
+                  <div className="batch-summary">
+                    <div className="summary-stats">
+                      <div className="stat-item ai">
+                        <span className="stat-label">AI Generated:</span>
+                        <span className="stat-value">
+                          {normalizedResults.filter(r => r.ai_detected).length}
+                        </span>
+                      </div>
+                      <div className="stat-item human">
+                        <span className="stat-label">Human Created:</span>
+                        <span className="stat-value">
+                          {normalizedResults.filter(r => !r.ai_detected).length}
+                        </span>
+                      </div>
+                      <div className="stat-item cached">
+                        <span className="stat-label">From Cache:</span>
+                        <span className="stat-value">
+                          {normalizedResults.filter(r => r.from_cache).length}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                ) : null;
-              })()}
+                  
+                  {normalizedResults.length > 0 ? (
+                  <div className="results-grid">
+                    {normalizedResults
+                      .slice(0, isExpanded ? normalizedResults.length : 5)
+                      .map((result: IndividualClassificationResult, index: number) => (
+                        <div key={index} className="result-container">
+                          <div 
+                            className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
+                            onClick={() => toggleExpand(index)}
+                          >
+                            <span className="filename">{result.filename}</span>
+                            <span className={`prediction ${result.ai_detected ? 'ai' : 'human'}`}>
+                              {result.predicted_class}
+                            </span>
+                            {result.from_cache && (
+                              <span className="cache-indicator" title="From cache">💾</span>
+                            )}
+                          </div>
+                          
+                          {expandedIndex === index && (
+                            <div className="result-details-expanded">
+                              <div className={`result-card ${result.ai_detected ? 'ai-detected' : 'human-detected'}`}>
+                                <div className="result-header">
+                                  <h3>{result.filename}</h3>
+                                  <div className="result-badges">
+                                    <span className="result-badge">
+                                      {result.predicted_class}
+                                    </span>
+                                    {result.from_cache && (
+                                      <span className="cache-badge" title="From cache">💾 Cached</span>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <div className="confidence-meter">
+                                  <div className="confidence-label">
+                                    Confidence: {result.confidence != null ? 
+                                      `${(result.confidence * 100).toFixed(2)}%` : 'N/A'}
+                                  </div>
+                                  <div className="confidence-bar">
+                                    <div 
+                                      className="confidence-fill"
+                                      style={{ 
+                                        width: `${(result.confidence || 0) * 100}%`,
+                                        backgroundColor: getConfidenceColor(result.confidence || 0)
+                                      }}
+                                    ></div>
+                                  </div>
+                                </div>
+
+                                <div className="result-details">
+                                  <div className="detail-item">
+                                    <span className="detail-label">AI Detection:</span>
+                                    <span className="detail-value">
+                                      {result.ai_detected ? 'AI Generated' : 'Human Created'}
+                                    </span>
+                                  </div>
+                                  <div className="detail-item">
+                                    <span className="detail-label">Model Used:</span>
+                                    <span className="detail-value">{result.model?.toUpperCase() || 'Unknown'}</span>
+                                  </div>
+                                  <div className="detail-item">
+                                    <span className="detail-label">Confidence:</span>
+                                    <span className="detail-value">
+                                      {result.confidence != null ? 
+                                        `${(result.confidence * 100).toFixed(2)}%` : 'N/A'}
+                                    </span>
+                                  </div>
+                                  {result.processing_time && (
+                                    <div className="detail-item">
+                                      <span className="detail-label">Processed:</span>
+                                      <span className="detail-value">
+                                        {new Date(result.processing_time).toLocaleString()}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {result.from_cache && result.cache_timestamp && (
+                                    <div className="detail-item">
+                                      <span className="detail-label">Cached:</span>
+                                      <span className="detail-value">
+                                        {new Date(result.cache_timestamp).toLocaleString()}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="result-actions">
+                                  <button 
+                                    className="download-pdf-btn futuristic-btn"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownloadPDF(result);
+                                    }}
+                                  >
+                                    <span className="btn-icon">📄</span>
+                                    Download PDF
+                                  </button>
+                                  <button 
+                                    className="email-btn futuristic-btn"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEmailResults(result);
+                                    }}
+                                  >
+                                    <span className="btn-icon">✉️</span>
+                                    Email Result
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>) : jobStatus.status === 'completed' ? (
+                  <div className="no-results">
+                    <div className="error-header">
+                      <h3>⚠️ No Analysis Results Available</h3>
+                      <p>The job completed successfully but no analysis results were returned.</p>
+                    </div>
+                    
+                    <div className="debug-info">
+                      <h4>Debug Information:</h4>
+                      <div className="debug-details">
+                        <div className="debug-item">
+                          <strong>Job ID:</strong> {jobId}
+                        </div>
+                        <div className="debug-item">
+                          <strong>Processed:</strong> {jobStatus.processed} / {jobStatus.total_images}
+                        </div>
+                        <div className="debug-item">
+                          <strong>Analyses Field:</strong> {jobStatus.analyses ? `${jobStatus.analyses.length} items` : 'Not present'}
+                        </div>
+                        <div className="debug-item">
+                          <strong>Individual Analyses:</strong> {jobStatus.individual_analyses ? `${jobStatus.individual_analyses.length} items` : 'Not present'}
+                        </div>
+                        <div className="debug-item">
+                          <strong>Results Field:</strong> {jobStatus.results ? `${jobStatus.results.length} items` : 'Not present'}
+                        </div>
+                        {jobStatus.error && (
+                          <div className="debug-item error">
+                            <strong>Error:</strong> {jobStatus.error}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="recovery-actions">
+                      <button 
+                        className="retry-btn futuristic-btn"
+                        onClick={() => jobId && pollJobStatus(jobId)}
+                      >
+                        <span className="btn-icon">🔄</span>
+                        Retry Fetching Results
+                      </button>
+                      <button 
+                        className="support-btn"
+                        onClick={() => {
+                          const debugInfo = {
+                            jobId,
+                            jobStatus: {
+                              status: jobStatus.status,
+                              processed: jobStatus.processed,
+                              total_images: jobStatus.total_images,
+                              hasAnalyses: !!jobStatus.analyses,
+                              hasIndividualAnalyses: !!jobStatus.individual_analyses,
+                              hasResults: !!jobStatus.results,
+                              error: jobStatus.error
+                            }
+                          };
+                          console.log('Support Debug Info:', debugInfo);
+                          alert('Debug information logged to console. Please share this with support.');
+                        }}
+                      >
+                        <span className="btn-icon">📋</span>
+                        Get Debug Info for Support
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                  
+                  {normalizedResults.length > 5 && (
+                    <div className="results-expand">
+                      <button 
+                        className="expand-button"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                      >
+                        {isExpanded ? (
+                          <>
+                            <span>Show less</span>
+                            <span className="expand-icon">▲</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Show all {normalizedResults.length} results</span>
+                            <span className="expand-icon">▼</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : jobStatus.status === 'completed' ? (
+                <div className="no-results">
+                  <p>No analysis results available. The job completed but no results were returned.</p>
+                  {jobStatus.results_note && (
+                    <p className="results-note">{jobStatus.results_note}</p>
+                  )}
+                </div>
+              ) : null}
 
               {jobStatus.error && (
                 <div className="error-message">

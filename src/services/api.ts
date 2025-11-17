@@ -361,7 +361,7 @@ async classifySingleImage(
 
     return response.json();
   }
-  // In your api.ts service, add this method:
+
   async downloadImagePDFFromResult(
     analysisData: ClassificationResult
   ): Promise<Blob> {
@@ -387,7 +387,6 @@ async classifySingleImage(
     return await response.blob();
   }
 
-  // In your api.ts service, update the downloadVideoPDF method:
   async downloadVideoPDFFromResult(
     analysisResults: VideoClassificationResponse
   ): Promise<Blob> {
@@ -434,14 +433,133 @@ async classifySingleImage(
     return response.json();
   }
 
+// Add this method to your ApiService class
   async getBatchJobStatus(jobId: string, includeAnalyses: boolean = false): Promise<BatchJob> {
-    return this.request(`/api/v1/classify/batch/status/${jobId}?include_analyses=${includeAnalyses}`);
+    try {
+      const response = await this.request<BatchJob>(`/api/v1/classify/batch/status/${jobId}?include_analyses=${includeAnalyses}`);
+      
+      // If we're not getting analyses but the job is completed, try to fetch them separately
+      if (response.status === 'completed' && !response.analyses && !response.individual_analyses && !response.results) {
+        console.log('Job completed but no analyses found, trying to fetch analyses separately...');
+        
+        // Try to get analyses with a different endpoint or method
+        try {
+          const analysesResponse = await this.request<any>(`/api/v1/classify/batch/${jobId}/analyses`);
+          if (analysesResponse.analyses) {
+            response.analyses = analysesResponse.analyses;
+          }
+        } catch (analysisError) {
+          console.warn('Could not fetch analyses separately:', analysisError);
+        }
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('Error getting batch job status:', error);
+      throw error;
+    }
+  }
+
+  // ADDED: Download batch PDF using job ID (Option B)
+  async downloadBatchPDF(jobId: string): Promise<Blob> {
+    const token = localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/${jobId}/pdf`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Batch PDF download failed: ${response.status} - ${errorText}`);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      console.error('Error downloading batch PDF:', error);
+      throw error;
+    }
+  }
+
+  // ADDED: Alternative method using files and model (Option A - kept for compatibility)
+  async downloadBatchPDFWithFiles(files: File[], model: string): Promise<Blob> {
+    const formData = new FormData();
+    
+    // Append all files
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    
+    // Append model and other parameters
+    formData.append('model', model);
+    
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/pdf`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          // Don't set Content-Type for FormData - let browser set it with boundary
+        },
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Batch PDF download failed: ${response.status} - ${errorText}`);
+      }
+
+      return await response.blob();
+    } catch (error) {
+      console.error('Error downloading batch PDF:', error);
+      throw error;
+    }
+  }
+
+  // ADDED: Cookie utility method (used by download methods)
+  private getCookie(name: string): string | null {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()!.split(';').shift()!;
+    return null;
   }
 
   async getModels(): Promise<{ models: ModelInfo[] }> {
     return this.request('/api/v1/models');
   }
+
+  // FIXED: Removed 'const' from class method - moved outside the class if needed, or remove entirely
+  // If you need this function elsewhere, you can define it outside the class
 }
+
+// Moved handleBatchResponse outside the class if it's needed
+// If not needed, you can remove it entirely
+const handleBatchResponse = (response: any): BatchJob => {
+  // If the response already has the batch job structure, return it
+  if (response.job_id && response.status) {
+    return response;
+  }
+  
+  // If it's the new analyses format, convert it
+  if (response.analyses) {
+    return {
+      job_id: `batch_${Date.now()}`,
+      status: 'completed',
+      processed: response.analyses.length,
+      total_images: response.analyses.length,
+      analyses: response.analyses,
+      usage: response.usage
+    };
+  }
+  
+  throw new Error('Unsupported batch response format');
+};
 
 export const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
   console.log('📤 Calling PDF endpoint with:', { resultsCount: results.length, reportType });
