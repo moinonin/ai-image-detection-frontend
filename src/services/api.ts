@@ -170,27 +170,54 @@ async classifySingleImage(
       throw new Error(`Classification failed (${response.status})`);
     }
 
-    // For PDF responses, handle blob and extract analysis data from headers
+    // For PDF responses, handle blob directly
     if (reportFormat === 'pdf') {
-      // Parse the JSON response that now includes pdf_content as base64
-      const result = await response.json();
-      console.log('PDF API response:', result);
+      console.log('📄 Handling PDF response for single image');
       
-      if (!result.analysis) {
-        console.warn('API response missing analysis field:', result);
-        throw new Error('Invalid response from server: missing analysis data');
+      // Get the PDF blob directly
+      const pdfBlob = await response.blob();
+      
+      // Try to extract analysis data from headers or return minimal response
+      let analysisData: ClassificationResult | null = null;
+      
+      // Some backends include analysis data in headers or as separate fields
+      // If your backend doesn't, we'll create a minimal response
+      try {
+        // Check if there's a JSON part or if we need to make another request
+        // For now, create a minimal response
+        analysisData = {
+          filename: file.name,
+          predicted_class: 'Analysis Complete',
+          confidence: 0,
+          model: modelType,
+          is_ai: false,
+          probability: 0
+        } as ClassificationResult;
+      } catch (e) {
+        console.warn('Could not extract analysis data from PDF response');
       }
       
-      // Convert base64 PDF content to blob
-      if (result.pdf_content) {
-        const pdfBlob = base64ToBlob(result.pdf_content, 'application/pdf');
-        return {
-          ...result,
-          pdfBlob
-        };
-      } else {
-        throw new Error('PDF content missing from response');
-      }
+      return {
+        analysis: analysisData || {
+          filename: file.name,
+          predicted_class: 'Analysis Complete', 
+          confidence: 0,
+          model: modelType,
+          is_ai: false,
+          probability: 0
+        } as ClassificationResult,
+        cache_info: {
+          from_cache: false,
+          cache_timestamp: null
+        },
+        usage: {
+          free_analyses_used_this_month: 0,
+          free_analyses_remaining: 0, 
+          subscription_used: false,
+          account_id: null
+        },
+        pdfBlob
+      };
     }
 
     // For JSON responses
@@ -334,25 +361,53 @@ async classifySingleImage(
 
     return response.json();
   }
-
-  async downloadVideoPDF(
-    file: File,
-    modelType: string = 'ml',
-    partialAnalysis: boolean = true
+  // In your api.ts service, add this method:
+  async downloadImagePDFFromResult(
+    analysisData: ClassificationResult
   ): Promise<Blob> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('model_type', modelType);
-    formData.append('partial_analysis', partialAnalysis.toString());
-    formData.append('report_format', 'pdf');
-
-    const response = await fetch('/api/classify/video', {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_BASE_URL}/api/v1/generate-pdf`, {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({
+        results: analysisData,
+        reportType: 'individual'
+      }),
     });
 
     if (!response.ok) {
-      throw new Error(`PDF download failed: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`PDF download failed: ${response.status} ${errorText}`);
+    }
+
+    return await response.blob();
+  }
+
+  // In your api.ts service, update the downloadVideoPDF method:
+  async downloadVideoPDFFromResult(
+    analysisResults: VideoClassificationResponse
+  ): Promise<Blob> {
+    const token = localStorage.getItem('token');
+    
+    const response = await fetch(`${API_BASE_URL}/api/v1/generate-pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({
+        results: analysisResults,
+        reportType: 'video'
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`PDF download failed: ${response.status} ${errorText}`);
     }
 
     return await response.blob();

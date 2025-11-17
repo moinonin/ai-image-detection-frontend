@@ -116,23 +116,32 @@ const VideoClassification: React.FC = () => {
     console.log('Email video results:', result);
   };
 
+  // Update the handleDownloadPDF function in your VideoClassification component
+  // In your VideoClassification component, replace handleDownloadPDF with:
   const handleDownloadPDF = async (): Promise<void> => {
-    if (!selectedFile || !result) return;
+    if (!result) return;
 
     setLoading(true);
     try {
-      console.log('Downloading PDF report...');
-      const pdfBlob = await classificationService.downloadVideoPDF(
-        selectedFile,
-        modelType,
-        partialAnalysis
-      );
+      console.log('Full result structure:', JSON.stringify(result, null, 2));
+      console.log('Analyses array:', result.analyses);
+      console.log('First analysis:', result.analyses?.[0]);
+      console.log('Analysis results:', result.analyses?.[0]?.analysis_results);
+      console.log('Downloading PDF with existing results...');
       
+      const pdfBlob = await classificationService.downloadVideoPDFFromResult(result);
+      
+      console.log('PDF blob size:', pdfBlob.size);
+      
+      if (pdfBlob.size === 0) {
+        throw new Error('PDF file is empty');
+      }
+
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `video_analysis_report_${selectedFile.name.split('.')[0]}.pdf`;
+      a.download = `video_analysis_report_${selectedFile?.name.split('.')[0] || 'result'}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -140,7 +149,7 @@ const VideoClassification: React.FC = () => {
       console.log('PDF downloaded successfully');
     } catch (error: any) {
       console.error('PDF download failed:', error);
-      setError('PDF download failed. Please try again.');
+      setError(`PDF download failed: ${error.message}`);
     } finally {
       setLoading(false);
     }

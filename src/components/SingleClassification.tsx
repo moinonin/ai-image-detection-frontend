@@ -68,13 +68,13 @@ const SingleClassification: React.FC = () => {
       console.log('Sending request with:', { 
         file: selectedFile.name, 
         modelType, 
-        reportFormat 
+        reportFormat: 'json' // Always use JSON now
       });
       
       const result = await classificationService.classifySingleImage(
         selectedFile, 
         modelType,
-        reportFormat
+        'json' // Always use JSON for initial analysis
       );
       
       console.log('API result:', result);
@@ -115,16 +115,37 @@ const SingleClassification: React.FC = () => {
     console.log('Email results:', result);
   };
 
-  const handleDownloadPDF = (): void => {
-    if (result?.pdfBlob) {
-      const url = window.URL.createObjectURL(result.pdfBlob);
+  // In your SingleClassification component
+  const handleDownloadPDF = async (): Promise<void> => {
+    if (!result?.analysis) return;
+
+    setLoading(true);
+    try {
+      console.log('Downloading PDF using API service method...');
+      
+      const pdfBlob = await classificationService.downloadImagePDFFromResult(result.analysis);
+      
+      console.log('PDF blob size:', pdfBlob.size);
+      
+      if (pdfBlob.size === 0) {
+        throw new Error('PDF file is empty');
+      }
+
+      const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `classification_report_${selectedFile?.name || 'result'}.pdf`;
+      a.download = `image_analysis_${selectedFile?.name.split('.')[0] || 'result'}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
+      
+      console.log('PDF downloaded successfully');
+    } catch (error: any) {
+      console.error('PDF download failed:', error);
+      setError(`PDF download failed: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -211,7 +232,7 @@ const SingleClassification: React.FC = () => {
               </select>
             </div>
 
-            <div className="report-format-selection">
+            {/*<div className="report-format-selection">
               <label htmlFor="report-format">Report Format:</label>
               <select 
                 id="report-format"
@@ -222,7 +243,7 @@ const SingleClassification: React.FC = () => {
                 <option value="json">JSON</option>
                 <option value="pdf">PDF</option>
               </select>
-            </div>
+            </div>*/}
 
             <button 
               type="submit" 
@@ -353,17 +374,20 @@ const SingleClassification: React.FC = () => {
                     Email Results
                   </button>
 
-                  {(reportFormat === "pdf" && result?.pdfBlob) && (
+                  {/* Always show PDF button when we have results */}
+                  {analysisResult && (
                     <button
                       className="pdf-btn futuristic-btn"
                       onClick={handleDownloadPDF}
+                      disabled={loading}
                     >
                       <span className="btn-icon">📄</span>
-                      Download PDF Report
+                      {loading ? 'Generating PDF...' : 'Download PDF Report'}
                     </button>
                   )}
 
-                  {reportFormat === "json" && (
+                  {/* Always show JSON button when we have results */}
+                  {analysisResult && (
                     <button
                       className="json-btn futuristic-btn"
                       onClick={() => {
