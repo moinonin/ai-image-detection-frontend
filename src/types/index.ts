@@ -77,9 +77,26 @@ export interface BatchAnalysisItem {
   from_cache: boolean;
   cache_used: boolean;
   timestamp: string;
+
+  id: string;
+  // Add other analysis properties based on your data
+  image_url?: string;
+  prediction?: string;
+  confidence?: number;
   
 }
+export interface ApiResponse<T = any> {
+  data: T;
+  status: number;
+  message?: string;
+  error?: string;
+}
 
+export interface AnalysesResponse {
+  analyses: ClassificationResult[];
+  total: number;
+  job_id: string;
+}
 export interface BatchUsage {
   free_analyses_used_this_month: number;
   free_analyses_remaining: number;
@@ -94,6 +111,14 @@ export interface BatchClassificationResponse {
   pdfBlob?: Blob;
 }
 
+export interface BatchJobDebug {
+  analyses_count: number;
+  analysis_count_in_db: number;
+  include_analyses_param: boolean;
+  job_data_status: string;
+  results_source: string | null;
+}
+
 export interface BatchJob {
   job_id: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -101,12 +126,21 @@ export interface BatchJob {
   processed: number;
   total_images: number;
   analyses?: BatchAnalysisItem[];
-  results?: IndividualClassificationResult[];
+  //results?: IndividualClassificationResult[];
   individual_analyses?: IndividualClassificationResult[];
   usage?: BatchUsage;
   error?: string;
   results_note?: string;
   results_source?: string;
+  results: any[];
+  // Add the _debug property
+  _debug?: {
+    analyses_count: number;
+    analysis_count_in_db: number;
+    include_analyses_param: boolean;
+    job_data_status: string;
+    results_source: string | null;
+  };
 }
 
 export interface ModelInfo {
@@ -421,6 +455,7 @@ export interface BatchJobResponse {
   error?: string;
   results_note?: string;
   results_source?: string;
+  data: any;
 }
 
 // In types/index.tsx

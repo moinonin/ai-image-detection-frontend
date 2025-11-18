@@ -237,38 +237,31 @@ async classifySingleImage(
   }
 }
 
-  // Async batch job methods - these save to database
-  /*
-  async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
-    const formData = new FormData();
-    files.forEach(file => formData.append('files', file));
-    formData.append('model', model);
-    
+  // Add this generic GET method to ApiService class
+  async get<T>(endpoint: string): Promise<T> {
     const token = localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/async`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'GET',
         headers: {
-          Authorization: token ? `Bearer ${token}` : '',
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: formData,
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to start batch job: ${response.status} - ${errorText}`);
+        throw new Error(`GET request failed: ${response.status} - ${errorText}`);
       }
-      
-      const result = await response.json();
-      console.log('Batch job started:', result);
-      return result;
+
+      return await response.json();
     } catch (error) {
-      console.error('Error starting batch job:', error);
+      console.error('Error in GET request:', error);
       throw error;
     }
-  } */
+  }
   // Batch classification
   async startBatchJobSync(
     files: File[], 
@@ -487,7 +480,7 @@ async classifySingleImage(
   ): Promise<Blob> {
     const token = localStorage.getItem('token');
     
-    const response = await fetch(`${API_BASE_URL}/api/v1/generate-batch-pdf`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/generate-pdf`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -626,7 +619,7 @@ async classifySingleImage(
   }
 
   // Updated batch PDF download to handle BatchJobResponse
-  async downloadBatchPDF(results: BatchJobResponse): Promise<Blob> {
+  async downloadBatchPDF(selectedFiles: File[], model: string, results: BatchJobResponse): Promise<Blob> {
     const token = localStorage.getItem('token');
     
     try {
