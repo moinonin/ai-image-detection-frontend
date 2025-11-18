@@ -4225,3 +4225,126 @@ body {
 .dismiss-warning:hover {
   background: var(--hover-color);
 }
+
+/* Batch Classification Specific Styles */
+.batch-classification .prediction {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.8em;
+  text-transform: uppercase;
+}
+
+.batch-classification .prediction.batch-ai {
+  background-color: #ff4444;
+  color: white;
+}
+
+.batch-classification .prediction.batch-human {
+  background-color: #00c853;
+  color: white;
+}
+
+.batch-classification .result-badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9em;
+}
+
+.batch-classification .result-badge.batch-ai-badge {
+  background-color: #ff4444;
+  color: white;
+  border: 2px solid #cc0000;
+}
+
+.batch-classification .result-badge.batch-human-badge {
+  background-color: #00c853;
+  color: white;
+  border: 2px solid #009624;
+}
+
+.batch-classification .result-card.batch-ai-detected {
+  border-left: 4px solid #ff4444;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffeaea 100%);
+}
+
+.batch-classification .result-card.batch-human-detected {
+  border-left: 4px solid #00c853;
+  background: linear-gradient(135deg, #f5fff7 0%, #eaffee 100%);
+}
+
+.batch-classification .result-card {
+  padding: 16px;
+  border-radius: 8px;
+  margin: 8px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.batch-classification .result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.batch-classification .result-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+/* Confidence meter styles */
+.batch-classification .confidence-meter {
+  margin: 12px 0;
+}
+
+.batch-classification .confidence-label {
+  font-size: 0.9em;
+  margin-bottom: 4px;
+  color: #666;
+}
+
+.batch-classification .confidence-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.batch-classification .confidence-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Result details grid */
+.batch-classification .result-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.batch-classification .detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.batch-classification .detail-label {
+  font-weight: bold;
+  color: #666;
+}
+
+.batch-classification .detail-value {
+  color: #333;
+}
+
+/* Result actions */
+.batch-classification .result-actions {
+  margin-top: 16px;
+  text-align: right;
+}

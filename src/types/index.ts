@@ -326,6 +326,7 @@ export interface BatchResult {
   [key: string]: any;
   pdfBlob?: Blob;
   reportFormat?: string;
+  features: any;
 }
 
 // Individual result type
@@ -351,6 +352,7 @@ export interface IndividualClassificationResult {
   model_slug?: string;
   ground_truth?: string;
   groundTruth?: string;
+  features: any;
 }
 
 export interface FileValidationError {
@@ -473,6 +475,47 @@ export interface BatchJobBase {
   results_note?: string;
   results_source?: string;
 }
+
+// Add these interfaces near the top of your file, after the existing interfaces
+
+export interface AnalysisData {
+  filename: string;
+  predicted_class: string;
+  is_ai: boolean;
+  confidence: number | null;
+  probability: number | null;
+  model: string;
+  features: any;
+  analysis?: any;
+  analysis_results?: any;
+}
+
+export interface BatchAnalysesResponse {
+  analyses?: Array<{
+    analysis: AnalysisData;
+  }>;
+  results?: Array<{
+    analysis_results: AnalysisData;
+  }>;
+  length?: number;
+}
+
+export interface BatchAnalysisResult {
+  filename: string;
+  predicted_class: string;
+  is_ai: boolean;
+  confidence: number | 0;
+  probability: number | 0;
+  model: string;
+  features: any;
+  analysis_type?: string;
+  total_images?: number;
+  analyzed_images?: number;
+  user?: string;
+  [key: string]: any;
+}
+// Update the IndividualClassificationResult interface if needed
+// (This should probably match what's in your ../types file)
 
 // Then extend for specific cases - they'll all have required user
 export interface BatchJob extends BatchJobBase {

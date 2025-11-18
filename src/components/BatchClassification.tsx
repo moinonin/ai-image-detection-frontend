@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { classificationService } from '../services/api';
+import { classificationService, } from '../services/api';
 import { 
   BatchJob, 
-  IndividualClassificationResult, 
-  AnalysesResponse,
-  BatchJobResponse 
+  IndividualClassificationResult,
+  BatchJobResponse,
+  AnalysisData,
+  BatchAnalysesResponse,
+  BatchAnalysisResult
 } from '../types';
 
 function getCookie(name: string): string | null {
@@ -61,7 +63,8 @@ const BatchClassification: React.FC = () => {
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
   // Results state
-  const [analyses, setAnalyses] = useState<IndividualClassificationResult[]>([]);
+  //const [analyses, setAnalyses] = useState<IndividualClassificationResult[]>([]);
+  const [analyses, setAnalyses] = useState<BatchAnalysisResult[]>([]);
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,9 +72,45 @@ const BatchClassification: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-  // Safe debug info accessor
-  const getDebugInfo = () => {
+// Add this adapter function
+// Add the adapter function
+  const adaptToIndividualClassificationResult = (
+    batchResult: BatchAnalysisResult
+  ): IndividualClassificationResult => {
+    return {
+      // Core properties
+      filename: batchResult.filename,
+      predicted_class: batchResult.predicted_class,
+      is_ai: batchResult.is_ai,
+      confidence: batchResult.confidence,
+      probability: batchResult.probability,
+      model: batchResult.model,
+      features: batchResult.features,
+      
+      // Required properties from IndividualClassificationResult
+      analysis_type: batchResult.analysis_type || 'batch',
+      total_images: batchResult.total_images || 1,
+      analyzed_images: batchResult.analyzed_images || 1,
+      user: batchResult.user || 'batch_user',
+      
+      // Missing properties with sensible defaults
+      ai_detected: batchResult.is_ai,
+      from_cache: batchResult.from_cache !== undefined ? batchResult.from_cache : false,
+      cache_timestamp: batchResult.cache_timestamp || null,
+      processing_time: batchResult.processing_time || new Date().toISOString()
+    };
+  };
+  
+  // Update the getDebugInfo function with better typing
+  const getDebugInfo = (): { 
+    analysesInDb: number; 
+    analysesCount: number; 
+    includeAnalyses: boolean; 
+    resultsSource: string | null; 
+    jobStatus: string 
+  } | null => {
     if (!jobStatus?._debug) return null;
+    
     return {
       analysesInDb: jobStatus._debug.analysis_count_in_db ?? 0,
       analysesCount: jobStatus._debug.analyses_count ?? 0,
@@ -83,7 +122,7 @@ const BatchClassification: React.FC = () => {
 
   // Fetch analyses when job completes but results are empty
   useEffect(() => {
-    // Update the fetchAnalysesForJob function with the correct endpoints
+    // Update the fetchAnalysesForJob function with proper types
     const fetchAnalysesForJob = async () => {
       const debugInfo = getDebugInfo();
       
@@ -106,31 +145,67 @@ const BatchClassification: React.FC = () => {
             `/api/v1/classify/new-batch/status/${jobStatus.job_id}?include_analyses=true`
           ];
 
-          let analysesData = null;
+          let analysesData: BatchAnalysisResult[] | null = null;
+          
           for (const endpoint of endpoints) {
             try {
               console.log(`Testing endpoint: ${endpoint}`);
-              // USE THE NEW GENERIC GET METHOD
-              const response = await classificationService.get<BatchJobResponse>(endpoint);
+              const response = await classificationService.get<any>(endpoint);
               console.log(`✅ ${endpoint} returned:`, response);
               
-              // Handle response data extraction
-              if (response.analyses) {
-                analysesData = response.analyses.map((item: any) => item.analysis);
-              } else if (response.results) {
-                analysesData = response.results;
+              let extractedData: BatchAnalysisResult[] = [];
+              
+              // Handle different response structures
+              if (response.analyses && Array.isArray(response.analyses)) {
+                extractedData = response.analyses
+                  .map((item: any) => item.analysis || item)
+                  .filter(Boolean);
+              } else if (response.results && Array.isArray(response.results)) {
+                extractedData = response.results
+                  .map((item: any) => item.analysis_results || item)
+                  .filter(Boolean);
               }
               
-              if (analysesData && analysesData.length > 0) break;
+              if (extractedData.length > 0) {
+                analysesData = extractedData;
+                console.log(`✅ Found ${analysesData.length} analyses from ${endpoint}`);
+                break;
+              }
             } catch (err) {
               console.log(`❌ ${endpoint} failed:`, err);
             }
           }
 
-          if (analysesData) {
-            setAnalyses(Array.isArray(analysesData) ? analysesData : [analysesData]);
+          if (analysesData && analysesData.length > 0) {
+            // Clean and normalize the data
+            const cleanedAnalyses: BatchAnalysisResult[] = analysesData
+              .map((item: any) => {
+                const analysis = item.analysis || item.analysis_results || item;
+                
+                return {
+                  filename: analysis.filename || item.filename || 'Unknown',
+                  predicted_class: analysis.predicted_class || item.predicted_class || 'Unknown',
+                  is_ai: analysis.is_ai !== undefined ? analysis.is_ai : 
+                        (item.is_ai !== undefined ? item.is_ai : 
+                        (analysis.predicted_class?.toLowerCase().includes('ai') || false)),
+                  confidence: analysis.confidence !== undefined ? analysis.confidence : 
+                            (item.confidence !== undefined ? item.confidence : null),
+                  probability: analysis.probability !== undefined ? analysis.probability : 
+                              (item.probability !== undefined ? item.probability : null),
+                  model: analysis.model || item.model || model,
+                  features: analysis.features || item.features || {},
+                  analysis_type: 'batch',
+                  total_images: 1,
+                  analyzed_images: 1,
+                  user: jobStatus?.user || 'batch_user'
+                };
+              })
+              .filter((item: BatchAnalysisResult) => item.filename !== 'Unknown');
+
+            setAnalyses(cleanedAnalyses);
+            console.log(`✅ Set ${cleanedAnalyses.length} cleaned analyses in state`);
           } else {
-            throw new Error('No analyses found');
+            throw new Error('No analyses found in any endpoint');
           }
         } catch (err: any) {
           console.error('Failed to fetch analyses:', err);
@@ -144,12 +219,37 @@ const BatchClassification: React.FC = () => {
     fetchAnalysesForJob();
   }, [jobStatus, analyses.length, isLoadingAnalyses]);
 
-  // Get display results (either from jobStatus or separately fetched analyses)
-  const getDisplayResults = (): IndividualClassificationResult[] => {
+  // Update getDisplayResults with better typing
+  const getDisplayResults = (): BatchAnalysisResult[] => {
     if (analyses.length > 0) {
       return analyses;
     }
-    return jobStatus?.results || [];
+    
+    if (jobStatus?.results && Array.isArray(jobStatus.results)) {
+      return jobStatus.results
+        .map((result: any) => {
+          const analysis = result.analysis_results || result.analysis || result;
+          return {
+            filename: analysis.filename || result.filename || 'Unknown',
+            predicted_class: analysis.predicted_class || result.predicted_class || 'Unknown',
+            is_ai: analysis.is_ai !== undefined ? analysis.is_ai : 
+                  (result.is_ai !== undefined ? result.is_ai : false),
+            confidence: analysis.confidence !== undefined ? analysis.confidence : 
+                      (result.confidence !== undefined ? result.confidence : null),
+            probability: analysis.probability !== undefined ? analysis.probability : 
+                        (result.probability !== undefined ? result.probability : null),
+            model: analysis.model || result.model || model,
+            features: analysis.features || result.features || {},
+            analysis_type: 'batch',
+            total_images: 1,
+            analyzed_images: 1,
+            user: jobStatus?.user || 'batch_user'
+          };
+        })
+        .filter((item: BatchAnalysisResult) => item.filename !== 'Unknown');
+    }
+    
+    return [];
   };
 
   const validateFiles = (files: File[]): FileValidationError | null => {
@@ -403,13 +503,14 @@ const BatchClassification: React.FC = () => {
     }
   };
 
-  const handleDownloadPDF = async (result: IndividualClassificationResult): Promise<void> => {
+  const handleDownloadPDF = async (result: BatchAnalysisResult): Promise<void> => {
     try {
       console.log('📤 Generating PDF for individual result:', {
         filename: result.filename,
       });
 
-      const pdfBlob = await generatePDFReport([result], 'individual');
+      const individualResult = adaptToIndividualClassificationResult(result);
+      const pdfBlob = await generatePDFReport([individualResult], 'individual');
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.style.display = 'none';
@@ -703,10 +804,19 @@ const BatchClassification: React.FC = () => {
                   <div className="results-grid">
                     {displayResults
                       .slice(0, isExpanded ? displayResults.length : 5)
-                      .map((result, index) => {
-                        // Safely get the predicted class with fallback
+                      .map((result: BatchAnalysisResult, index: number) => {
+                        // Debug log to see what we're working with
+                        console.log(`Result ${index}:`, result);
+                        
+                        // Safely extract values with proper fallbacks
+                        const filename = result.filename || `Image ${index + 1}`;
                         const predictedClass = result.predicted_class || 'Unknown';
-                        const isAI = predictedClass.toLowerCase().includes('ai') || result.is_ai;
+                        const isAI = result.is_ai !== undefined 
+                          ? result.is_ai 
+                          : predictedClass.toLowerCase().includes('ai');
+                        const confidence = result.confidence !== undefined ? result.confidence : null;
+                        const probability = result.probability !== undefined ? result.probability : null;
+                        const modelUsed = result.model || model;
                         
                         return (
                           <div key={index} className="result-container">
@@ -714,7 +824,7 @@ const BatchClassification: React.FC = () => {
                               className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
                               onClick={() => toggleExpand(index)}
                             >
-                              <span className="filename">{result.filename || `Image ${index + 1}`}</span>
+                              <span className="filename">{filename}</span>
                               <span className={`prediction ${isAI ? 'batch-ai' : 'batch-human'}`}>
                                 {predictedClass}
                               </span>
@@ -724,7 +834,7 @@ const BatchClassification: React.FC = () => {
                               <div className="result-details-expanded">
                                 <div className={`result-card ${isAI ? 'batch-ai-detected' : 'batch-human-detected'}`}>
                                   <div className="result-header">
-                                    <h3>{result.filename}</h3>
+                                    <h3>{filename}</h3>
                                     <span className={`result-badge ${isAI ? 'batch-ai-badge' : 'batch-human-badge'}`}>
                                       {predictedClass}
                                     </span>
@@ -732,33 +842,39 @@ const BatchClassification: React.FC = () => {
                                   
                                   <div className="confidence-meter">
                                     <div className="confidence-label">
-                                      Confidence: {result.confidence != null ? `${(result.confidence * 100).toFixed(2)}%` : 'N/A'}
+                                      Confidence: {confidence !== null ? `${(confidence * 100).toFixed(2)}%` : 'N/A'}
                                     </div>
-                                    <div className="confidence-bar">
-                                      <div 
-                                        className="confidence-fill"
-                                        style={{ 
-                                          width: `${(result.confidence || 0) * 100}%`,
-                                          backgroundColor: getConfidenceColor(result.confidence || 0)
-                                        }}
-                                      ></div>
-                                    </div>
+                                    {confidence !== null && (
+                                      <div className="confidence-bar">
+                                        <div 
+                                          className="confidence-fill"
+                                          style={{ 
+                                            width: `${(confidence || 0) * 100}%`,
+                                            backgroundColor: getConfidenceColor(confidence || 0)
+                                          }}
+                                        ></div>
+                                      </div>
+                                    )}
                                   </div>
 
                                   <div className="result-details">
                                     <div className="detail-item">
                                       <span className="detail-label">Model Used:</span>
-                                      <span className="detail-value">{result.model?.toUpperCase() || model.toUpperCase()}</span>
+                                      <span className="detail-value">{modelUsed.toUpperCase()}</span>
                                     </div>
-                                    {result.probability != null && (
+                                    {probability !== null && (
                                       <div className="detail-item">
                                         <span className="detail-label">Probability Score:</span>
-                                        <span className="detail-value">{result.probability.toFixed(4)}</span>
+                                        <span className="detail-value">{probability.toFixed(4)}</span>
                                       </div>
                                     )}
                                     <div className="detail-item">
                                       <span className="detail-label">Analysis Type:</span>
                                       <span className="detail-value">Batch Analysis</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">AI Detected:</span>
+                                      <span className="detail-value">{isAI ? 'Yes' : 'No'}</span>
                                     </div>
                                   </div>
 
