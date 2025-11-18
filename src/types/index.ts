@@ -88,21 +88,22 @@ export interface BatchUsage {
 }
 
 export interface BatchClassificationResponse {
+  //analyses: BatchAnalysisItem[];
   analyses: BatchAnalysisItem[];
-  usage: UsageInfo;
+  usage: BatchUsage;
   pdfBlob?: Blob;
 }
 
 export interface BatchJob {
   job_id: string;
-  status: 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  user: string;
   processed: number;
   total_images: number;
-  // Multiple possible result formats for backward compatibility
+  analyses?: BatchAnalysisItem[];
   results?: IndividualClassificationResult[];
   individual_analyses?: IndividualClassificationResult[];
-  analyses?: BatchAnalysisItem[]; // Add this for new backend format
-  usage?: BatchUsage; // Add this for usage information
+  usage?: BatchUsage;
   error?: string;
   results_note?: string;
   results_source?: string;
@@ -394,13 +395,59 @@ export interface BatchAnalysisResponse {
 
 export interface BatchJobStatus {
   job_id: string;
-  status: 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  user: string; // Change from optional to required
   processed: number;
   total_images: number;
   results?: IndividualClassificationResult[];
   individual_analyses?: IndividualClassificationResult[];
-  analyses?: BatchAnalysisResponse['analyses']; // Add this to match backend
+  analyses?: BatchAnalysisItem[];
+  usage?: BatchUsage;
   error?: string;
   results_note?: string;
   results_source?: string;
+}
+
+export interface BatchJobResponse {
+  job_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  user: string;
+  total_images: number;
+  processed: number;
+  analyses?: BatchAnalysisItem[];
+  results?: IndividualClassificationResult[];
+  individual_analyses?: IndividualClassificationResult[];
+  usage?: BatchUsage;
+  error?: string;
+  results_note?: string;
+  results_source?: string;
+}
+
+// In types/index.tsx
+export interface BatchJobBase {
+  job_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  user: string; // Required in base
+  processed: number;
+  total_images: number;
+  results?: IndividualClassificationResult[];
+  individual_analyses?: IndividualClassificationResult[];
+  analyses?: BatchAnalysisItem[];
+  usage?: BatchUsage;
+  error?: string;
+  results_note?: string;
+  results_source?: string;
+}
+
+// Then extend for specific cases - they'll all have required user
+export interface BatchJob extends BatchJobBase {
+  // Add any BatchJob-specific properties here
+}
+
+export interface BatchJobStatus extends BatchJobBase {
+  // Add any BatchJobStatus-specific properties here
+}
+
+export interface BatchJobResponse extends BatchJobBase {
+  // BatchJobResponse specific properties
 }

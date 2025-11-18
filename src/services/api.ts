@@ -1,4 +1,4 @@
-import { User, AuthResponse, ClassificationResult, BatchJob, ModelInfo, VideoClassificationResponse, UsageInfo, CacheInfo } from '../types';
+import { User, AuthResponse, ClassificationResult, BatchUsage, ModelInfo, VideoClassificationResponse, UsageInfo, CacheInfo, BatchJobStatus, BatchJobResponse } from '../types';
 
 type ReportFormat = 'json' | 'pdf';
 
@@ -237,6 +237,38 @@ async classifySingleImage(
   }
 }
 
+  // Async batch job methods - these save to database
+  /*
+  async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    formData.append('model', model);
+    
+    const token = localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/async`, {
+        method: 'POST',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to start batch job: ${response.status} - ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Batch job started:', result);
+      return result;
+    } catch (error) {
+      console.error('Error starting batch job:', error);
+      throw error;
+    }
+  } */
   // Batch classification
   async startBatchJobSync(
     files: File[], 
@@ -314,6 +346,94 @@ async classifySingleImage(
 
     return response.json();
   }
+  // Synchronous batch classification (what your backend actually provides)
+  async classifyBatch(
+    files: File[], 
+    model: string = 'ml',
+    reportFormat: ReportFormat = 'json',
+    useCache: boolean = true,
+    accountId?: string
+  ): Promise<BatchClassificationResponse> {
+    const token = localStorage.getItem('token');
+    
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    formData.append('model', model);
+    formData.append('report_format', reportFormat);
+    formData.append('use_cache', useCache.toString());
+    if (accountId) {
+      formData.append('account_id', accountId);
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
+        method: 'POST',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Batch classification failed: ${response.status} - ${errorText}`);
+      }
+
+      if (reportFormat === 'pdf') {
+        const pdfBlob = await response.blob();
+        return {
+          analyses: [],
+          usage: { 
+            free_analyses_used_this_month: 0, 
+            free_analyses_remaining: 0, 
+            subscription_used: false, 
+            account_id: null 
+          },
+          pdfBlob
+        };
+      }
+
+      const result = await response.json();
+      console.log('Batch classification result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error in batch classification:', error);
+      throw error;
+    }
+  }
+  // Add this method to your ApiService class
+  async getBatchClassificationResult(jobId: string): Promise<BatchClassificationResponse> {
+    const token = localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/status/${jobId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to get batch status: ${response.status} - ${errorText}`);
+      }
+
+      const statusResponse = await response.json();
+      
+      // If your status endpoint returns the full results when job is complete
+      if (statusResponse.status === 'completed' && statusResponse.results) {
+        return statusResponse;
+      } else {
+        throw new Error(`Batch job ${jobId} is not completed yet. Status: ${statusResponse.status}`);
+      }
+    } catch (error) {
+      console.error('Error fetching batch classification results:', error);
+      throw error;
+    }
+  }
 
   // Video classification
   async classifyVideo(
@@ -367,7 +487,7 @@ async classifySingleImage(
   ): Promise<Blob> {
     const token = localStorage.getItem('token');
     
-    const response = await fetch(`${API_BASE_URL}/api/v1/generate-pdf`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/generate-batch-pdf`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -413,101 +533,114 @@ async classifySingleImage(
   }
 
   // Async batch job methods
+  
+  // In api.tsx - Add usage checking
   async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
+    const token = localStorage.getItem('token');
+    
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
     formData.append('model', model);
-    const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/async`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to start batch job');
-    }
-    return response.json();
-  }
-
-// Add this method to your ApiService class
-  async getBatchJobStatus(jobId: string, includeAnalyses: boolean = false): Promise<BatchJob> {
+    
     try {
-      const response = await this.request<BatchJob>(`/api/v1/classify/batch/status/${jobId}?include_analyses=${includeAnalyses}`);
-      
-      // If we're not getting analyses but the job is completed, try to fetch them separately
-      if (response.status === 'completed' && !response.analyses && !response.individual_analyses && !response.results) {
-        console.log('Job completed but no analyses found, trying to fetch analyses separately...');
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/async`, {
+        method: 'POST',
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
         
-        // Try to get analyses with a different endpoint or method
-        try {
-          const analysesResponse = await this.request<any>(`/api/v1/classify/batch/${jobId}/analyses`);
-          if (analysesResponse.analyses) {
-            response.analyses = analysesResponse.analyses;
-          }
-        } catch (analysisError) {
-          console.warn('Could not fetch analyses separately:', analysisError);
+        // Check for usage limit exceeded error
+        if (response.status === 402 || errorText.includes('exceeded') || errorText.includes('usage') || errorText.includes('payment')) {
+          throw new Error(`USAGE_LIMIT_EXCEEDED: ${errorText}`);
         }
+        
+        throw new Error(`Failed to start batch job: ${response.status} - ${errorText}`);
       }
       
-      return response;
+      const result = await response.json();
+      console.log('Batch job started:', result);
+      return result;
     } catch (error) {
-      console.error('Error getting batch job status:', error);
+      console.error('Error starting batch job:', error);
       throw error;
     }
   }
 
-  // ADDED: Download batch PDF using job ID (Option B)
-  async downloadBatchPDF(jobId: string): Promise<Blob> {
+  // Add method to get current usage
+  async getCurrentUsage(): Promise<BatchUsage> {
     const token = localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/${jobId}/pdf`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/usage/current`, {
         method: 'GET',
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
         },
         credentials: 'include',
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Batch PDF download failed: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to get usage: ${response.status} - ${errorText}`);
       }
 
-      return await response.blob();
+      return await response.json();
     } catch (error) {
-      console.error('Error downloading batch PDF:', error);
+      console.error('Error fetching usage:', error);
+      throw error;
+    }
+  }
+  // In your API service
+  async getBatchJobStatus(jobId: string): Promise<BatchJobResponse> {
+    const token = localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/status/${jobId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to get batch job status: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Batch job status:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching batch job status:', error);
       throw error;
     }
   }
 
-  // ADDED: Alternative method using files and model (Option A - kept for compatibility)
-  async downloadBatchPDFWithFiles(files: File[], model: string): Promise<Blob> {
-    const formData = new FormData();
-    
-    // Append all files
-    files.forEach(file => {
-      formData.append('files', file);
-    });
-    
-    // Append model and other parameters
-    formData.append('model', model);
-    
+  // Updated batch PDF download to handle BatchJobResponse
+  async downloadBatchPDF(results: BatchJobResponse): Promise<Blob> {
     const token = localStorage.getItem('token');
-
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch/pdf`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/generate-batch-pdf`, {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : '',
-          // Don't set Content-Type for FormData - let browser set it with boundary
         },
         credentials: 'include',
-        body: formData,
+        body: JSON.stringify({
+          results: results,
+          reportType: 'batch'
+        }),
       });
 
       if (!response.ok) {
@@ -540,7 +673,7 @@ async classifySingleImage(
 
 // Moved handleBatchResponse outside the class if it's needed
 // If not needed, you can remove it entirely
-const handleBatchResponse = (response: any): BatchJob => {
+{/*const handleBatchResponse = (response: any): BatchJob => {
   // If the response already has the batch job structure, return it
   if (response.job_id && response.status) {
     return response;
@@ -559,7 +692,7 @@ const handleBatchResponse = (response: any): BatchJob => {
   }
   
   throw new Error('Unsupported batch response format');
-};
+};*/}
 
 export const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
   console.log('📤 Calling PDF endpoint with:', { resultsCount: results.length, reportType });

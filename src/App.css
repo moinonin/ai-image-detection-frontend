@@ -4138,3 +4138,90 @@ body {
 .support-btn:hover {
   background: var(--bg-primary);
 }
+/* track usage css */
+.usage-display {
+  margin-bottom: 20px;
+}
+
+.usage-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.usage-stats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.usage-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.stat-value.zero {
+  color: var(--error-color);
+}
+
+.stat-value.active {
+  color: var(--success-color);
+}
+
+.stat-value.inactive {
+  color: var(--warning-color);
+}
+
+.usage-warning {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-color);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.warning-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.warning-icon {
+  font-size: 1.2em;
+}
+
+.upgrade-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.upgrade-btn {
+  background: linear-gradient(45deg, #ff6b35, #ff8e53);
+}
+
+.dismiss-warning {
+  background: transparent;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dismiss-warning:hover {
+  background: var(--hover-color);
+}

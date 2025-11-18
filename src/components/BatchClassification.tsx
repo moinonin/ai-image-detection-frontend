@@ -1,37 +1,168 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { classificationService } from '../services/api';
-import { BatchJob, IndividualClassificationResult, FileValidationError, BatchAnalysisItem, BatchUsage } from '../types';
+import { 
+  IndividualClassificationResult, 
+  FileValidationError, 
+  BatchJobResponse,
+  BatchUsage,
+  BatchAnalysisItem 
+} from '../types';
 
-function getCookie(name: string): string | null {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()!.split(';').shift()!;
-  return null;
-}
+// Constants
+const MODEL_TYPES = ['ml', 'net', 'scalpel'] as const;
+const MAX_FILE_SIZE_MB = 0.5;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const POLLING_INTERVAL = 3000; // 3 seconds
+
+// Helper function declared outside component
+const normalizeResults = (jobResponse: BatchJobResponse | null): IndividualClassificationResult[] => {
+  if (!jobResponse) {
+    console.log('normalizeResults: jobResponse is null');
+    return [];
+  }
+
+  console.log('=== NORMALIZING BATCH RESULTS ===');
+  console.log('Full job response:', jobResponse);
+  console.log('Available fields:', Object.keys(jobResponse));
+  console.log('Analyses field:', jobResponse.analyses);
+  console.log('Results field:', jobResponse.results);
+  console.log('Individual analyses field:', jobResponse.individual_analyses);
+
+  let normalized: IndividualClassificationResult[] = [];
+
+  // Check all possible result locations with detailed logging
+  if (jobResponse.analyses && jobResponse.analyses.length > 0) {
+    console.log(`Found analyses array with ${jobResponse.analyses.length} items`);
+    
+    normalized = jobResponse.analyses.map((analysis: BatchAnalysisItem, index: number) => {
+      console.log(`Processing analysis ${index + 1}:`, analysis);
+      
+      // Extract the analysis results
+      const analysisResults = analysis.analysis_results;
+      console.log(`Analysis ${index + 1} results:`, analysisResults);
+      
+      return {
+        filename: analysis.filename || analysisResults.filename || `file_${index}`,
+        model: analysisResults.model || 'unknown',
+        analysis_type: analysisResults.analysis_type || 'batch',
+        total_images: analysisResults.total_images || 1,
+        analyzed_images: analysisResults.analyzed_images || 1,
+        user: analysisResults.user || jobResponse.user || 'unknown',
+        ai_detected: analysisResults.ai_detected !== undefined ? analysisResults.ai_detected : 
+                     (analysisResults.predicted_class?.toLowerCase().includes('ai') || false),
+        confidence: analysisResults.confidence || analysisResults.probability || 0,
+        predicted_class: analysisResults.predicted_class || 'Unknown',
+        probability: analysisResults.probability || analysisResults.confidence || 0,
+        from_cache: analysis.from_cache || analysisResults.from_cache || false,
+        cache_timestamp: analysis.timestamp || analysisResults.cache_timestamp || null,
+        processing_time: analysisResults.processing_time || analysis.timestamp || new Date().toISOString(),
+        // Legacy fields for compatibility
+        is_ai: analysisResults.is_ai || analysisResults.ai_detected || false,
+        predictedClass: analysisResults.predictedClass || analysisResults.predicted_class,
+        model_slug: analysisResults.model_slug || analysisResults.model
+      };
+    });
+  } 
+  else if (jobResponse.results && jobResponse.results.length > 0) {
+    console.log(`Found results array with ${jobResponse.results.length} items`);
+    normalized = jobResponse.results.map((result, index) => ({
+      ...result,
+      // Ensure all required fields are present
+      filename: result.filename || `file_${index}`,
+      model: result.model || 'unknown',
+      analysis_type: result.analysis_type || 'batch',
+      total_images: result.total_images || 1,
+      analyzed_images: result.analyzed_images || 1,
+      user: result.user || jobResponse.user || 'unknown',
+    }));
+  }
+  else if (jobResponse.individual_analyses && jobResponse.individual_analyses.length > 0) {
+    console.log(`Found individual_analyses array with ${jobResponse.individual_analyses.length} items`);
+    normalized = jobResponse.individual_analyses.map((result, index) => ({
+      ...result,
+      // Ensure all required fields are present
+      filename: result.filename || `file_${index}`,
+      model: result.model || 'unknown',
+      analysis_type: result.analysis_type || 'batch',
+      total_images: result.total_images || 1,
+      analyzed_images: result.analyzed_images || 1,
+      user: result.user || jobResponse.user || 'unknown',
+    }));
+  }
+  else {
+    console.log('No results found in any field. Available array fields:', {
+      analyses: jobResponse.analyses?.length || 0,
+      results: jobResponse.results?.length || 0,
+      individual_analyses: jobResponse.individual_analyses?.length || 0
+    });
+  }
+
+  console.log(`Normalized ${normalized.length} results`);
+  if (normalized.length > 0) {
+    console.log('First normalized result:', normalized[0]);
+  }
+  
+  return normalized;
+};
 
 const BatchClassification: React.FC = () => {
+  // State
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const MODEL_TYPES = ['ml', 'net', 'scalpel'];
-  const [model, setModel] = useState('scalpel');
+  const [model, setModel] = useState<string>('scalpel');
   const [loading, setLoading] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
-  const [jobStatus, setJobStatus] = useState<BatchJob | null>(null);
+  const [jobStatus, setJobStatus] = useState<BatchJobResponse | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const reportFormat: 'pdf' | 'json' = 'pdf';
   const [validationError, setValidationError] = useState<FileValidationError | null>(null);
+  const [currentUsage, setCurrentUsage] = useState<BatchUsage | null>(null);
+  const [usageWarning, setUsageWarning] = useState<string | null>(null);
+  const [processingComplete, setProcessingComplete] = useState(false);
 
-  // Client-side file size validation constants
-  const MAX_FILE_SIZE_MB = 0.5;
-  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+  // Refs
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pollingInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const validateFiles = (files: File[]): FileValidationError | null => {
+  // Derived state
+  const normalizedResults = normalizeResults(jobStatus);
+
+  // Effects
+  useEffect(() => {
+    fetchCurrentUsage();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pollingInterval.current) {
+        clearInterval(pollingInterval.current);
+      }
+    };
+  }, []);
+
+  // Data fetching
+  const fetchCurrentUsage = async () => {
+    try {
+      // Try to get current usage from the classification service
+      const usage = await classificationService.getCurrentUsage();
+      console.log('Fetched current usage:', usage);
+      setCurrentUsage(usage);
+      checkUsageLimits(usage, selectedFiles.length);
+    } catch (error) {
+      console.warn('Could not fetch current usage:', error);
+      // Set default usage if API fails
+      setCurrentUsage({
+        free_analyses_used_this_month: 0,
+        free_analyses_remaining: 5, // Default free analyses
+        subscription_used: false,
+        account_id: null
+      });
+    }
+  };
+
+  // Validation functions
+  const validateFiles = useCallback((files: File[]): FileValidationError | null => {
     const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE_BYTES);
     
-    if (oversizedFiles.length === 0) {
-      return null;
-    }
+    if (oversizedFiles.length === 0) return null;
 
     return {
       error: "Some files exceed size limits",
@@ -50,109 +181,107 @@ const BatchClassification: React.FC = () => {
       })),
       accepted_files: files.filter(file => file.size <= MAX_FILE_SIZE_BYTES)
     };
-  };
+  }, []);
 
-  // Helper function to normalize analysis data from different sources
-  const getNormalizedResults = (jobStatus: BatchJob | null): IndividualClassificationResult[] => {
-    if (!jobStatus) return [];
+  // Usage management
+  const checkUsageLimits = useCallback((usage: BatchUsage, fileCount: number) => {
+    console.log('Checking usage limits:', { usage, fileCount });
     
-    console.log('=== NORMALIZING RESULTS ===');
-    console.log('Available data sources:', {
-      analyses: jobStatus.analyses?.length || 0,
-      individual_analyses: jobStatus.individual_analyses?.length || 0,
-      results: jobStatus.results?.length || 0
-    });
-    
-    // Priority 1: Direct analyses array (new backend format)
-    if (jobStatus.analyses && jobStatus.analyses.length > 0) {
-      console.log('Using analyses array with', jobStatus.analyses.length, 'items');
-      return jobStatus.analyses.map((analysis: BatchAnalysisItem) => {
-        const result = {
-          ...analysis.analysis_results,
-          // Ensure consistent field names
-          is_ai: analysis.analysis_results.ai_detected,
-          predicted_class: analysis.analysis_results.predicted_class,
-          confidence: analysis.analysis_results.confidence,
-          probability: analysis.analysis_results.probability,
-          model: analysis.analysis_results.model,
-          from_cache: analysis.from_cache,
-          cache_timestamp: analysis.analysis_results.cache_timestamp,
-          processing_time: analysis.analysis_results.processing_time
-        };
-        console.log('Normalized analysis result:', result);
-        return result;
-      });
+    if (usage.subscription_used) {
+      setUsageWarning(null);
+      return;
     }
-    
-    // Priority 2: Individual analyses (fallback)
-    if (jobStatus.individual_analyses && jobStatus.individual_analyses.length > 0) {
-      console.log('Using individual_analyses array with', jobStatus.individual_analyses.length, 'items');
-      return jobStatus.individual_analyses;
-    }
-    
-    // Priority 3: Results (legacy fallback)
-    if (jobStatus.results && jobStatus.results.length > 0) {
-      console.log('Using results array with', jobStatus.results.length, 'items');
-      return jobStatus.results;
-    }
-    
-    console.log('No results found in any data source');
-    return [];
-  };
 
-  const renderDownloadButton = () => {
-    if (reportFormat === 'pdf') {
-      return (
-        <button 
-          className="pdf-btn futuristic-btn"
-          //onClick={() => handleDownloadBatchPDF(jobStatus)}
-          onClick={handleDownloadBatchPDF}
-        >
-          <span className="btn-icon">📄</span>
-          Download Batch PDF
-        </button>
-      );
+    const remaining = usage.free_analyses_remaining;
+    if (remaining <= 0) {
+      setUsageWarning('You have exceeded your free analysis limit. Please upgrade to a subscription to continue.');
+    } else if (fileCount > remaining) {
+      setUsageWarning(`You have ${remaining} free analyses remaining but selected ${fileCount} files. Only the first ${remaining} files will be processed.`);
+    } else {
+      setUsageWarning(null);
     }
-    if (reportFormat === 'json') {
-      return (
-        <button 
-          className="pdf-btn futuristic-btn"
-          onClick={() => handleDownloadBatchPDF()}
-          disabled={!jobStatus}
-        >
-          <span className="btn-icon">📄</span>
-          Download Batch PDF
-        </button>
-      );
-    }
-    return null;
-  };
+  }, []);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const files = Array.from(event.target.files);
+  // Job management
+  const pollJobStatus = async (jobId: string) => {
+    try {
+      console.log(`Polling job status for: ${jobId}`);
+      const status = await classificationService.getBatchJobStatus(jobId);
       
-      // Validate files immediately when selected
-      const validationResult = validateFiles(files);
-      if (validationResult) {
-        setValidationError(validationResult);
-        // Still set selected files so user can see all files, but validation error will prevent submission
-        setSelectedFiles(files);
-      } else {
-        setSelectedFiles(files);
-        setValidationError(null);
+      console.log('=== POLLING RESPONSE ===');
+      console.log('Job status:', status.status);
+      console.log('Processed:', status.processed, '/', status.total_images);
+      console.log('Has analyses:', !!status.analyses, 'Count:', status.analyses?.length);
+      console.log('Has results:', !!status.results, 'Count:', status.results?.length);
+      console.log('Has individual_analyses:', !!status.individual_analyses, 'Count:', status.individual_analyses?.length);
+      console.log('Has usage:', !!status.usage);
+      
+      setJobStatus(status);
+
+      // Update current usage if available in job status
+      if (status.usage) {
+        console.log('Updating usage from job status:', status.usage);
+        setCurrentUsage(status.usage);
       }
+
+      // Stop polling if job is completed or failed
+      if (status.status === 'completed' || status.status === 'failed') {
+        stopPolling();
+        setLoading(false);
+        setProcessingComplete(true);
+        
+        console.log('=== JOB COMPLETED ===');
+        console.log('Final status:', status);
+        console.log('Normalized results count:', normalizeResults(status).length);
+        
+        // Update usage after job completion
+        if (status.usage) {
+          setCurrentUsage(status.usage);
+        } else {
+          // If no usage in response, refetch current usage
+          fetchCurrentUsage();
+        }
+      }
+    } catch (error) {
+      console.error('Error polling job status:', error);
+    }
+  };
+
+  const startPolling = (jobId: string) => {
+    // Poll immediately first time
+    pollJobStatus(jobId);
+    
+    // Then set up interval for subsequent polls
+    pollingInterval.current = setInterval(() => pollJobStatus(jobId), POLLING_INTERVAL);
+  };
+
+  const stopPolling = () => {
+    if (pollingInterval.current) {
+      clearInterval(pollingInterval.current);
+      pollingInterval.current = null;
+    }
+  };
+
+  // File handlers
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+    
+    const files = Array.from(event.target.files);
+    const validationResult = validateFiles(files);
+    
+    setSelectedFiles(files);
+    setValidationError(validationResult);
+    
+    // Check usage limits when files change
+    if (currentUsage) {
+      checkUsageLimits(currentUsage, files.length);
     }
   };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    setDragActive(e.type === "dragenter" || e.type === "dragover");
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -160,49 +289,85 @@ const BatchClassification: React.FC = () => {
     e.stopPropagation();
     setDragActive(false);
     
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files);
-      
-      // Validate files immediately when dropped
-      const validationResult = validateFiles(files);
-      if (validationResult) {
-        setValidationError(validationResult);
-        setSelectedFiles(files);
-      } else {
-        setSelectedFiles(files);
-        setValidationError(null);
-      }
+    if (!e.dataTransfer.files?.length) return;
+    
+    const files = Array.from(e.dataTransfer.files);
+    const validationResult = validateFiles(files);
+    
+    setSelectedFiles(files);
+    setValidationError(validationResult);
+    
+    // Check usage limits when files change
+    if (currentUsage) {
+      checkUsageLimits(currentUsage, files.length);
     }
   };
 
+  const removeFile = (index: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    setSelectedFiles(newFiles);
+    setValidationError(validateFiles(newFiles));
+    
+    // Check usage limits when files change
+    if (currentUsage) {
+      checkUsageLimits(currentUsage, newFiles.length);
+    }
+  };
+
+  // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedFiles.length === 0) return;
 
-    // Check for client-side validation errors before submitting
     const clientValidationError = validateFiles(selectedFiles);
     if (clientValidationError) {
       setValidationError(clientValidationError);
-      return; // Prevent submission
+      return;
+    }
+
+    // Check usage limits
+    let filesToProcess = selectedFiles;
+    if (currentUsage && !currentUsage.subscription_used) {
+      if (currentUsage.free_analyses_remaining <= 0) {
+        setUsageWarning('You have exceeded your free analysis limit. Please upgrade to a subscription to continue.');
+        return;
+      }
+      
+      if (selectedFiles.length > currentUsage.free_analyses_remaining) {
+        filesToProcess = selectedFiles.slice(0, currentUsage.free_analyses_remaining);
+        setUsageWarning(`Processing only ${filesToProcess.length} of ${selectedFiles.length} files due to usage limits.`);
+        // Don't setSelectedFiles here to avoid confusing the user
+      }
     }
 
     setLoading(true);
     setValidationError(null);
     setJobStatus(null);
     setJobId(null);
+    setUsageWarning(null);
+    setProcessingComplete(false);
 
     try {
-      const response = await classificationService.startBatchJob(
-        selectedFiles, 
-        model
-      );
+      console.log('Starting async batch job with:', {
+        fileCount: filesToProcess.length,
+        model: model,
+        files: filesToProcess.map(f => f.name),
+        currentUsage: currentUsage
+      });
+
+      const response = await classificationService.startBatchJob(filesToProcess, model);
+      console.log('Batch job started:', response);
       setJobId(response.job_id);
-      pollJobStatus(response.job_id);
+      startPolling(response.job_id);
     } catch (error: any) {
       console.error('Failed to start batch job:', error);
       
-      // Check if this is a file validation error (from backend or client-side)
-      if (error.error && error.summary && error.details) {
+      if (error.message?.includes('USAGE_LIMIT_EXCEEDED')) {
+        const errorMessage = error.message.replace('USAGE_LIMIT_EXCEEDED: ', '');
+        setUsageWarning(errorMessage);
+        // Refetch usage to get current state
+        fetchCurrentUsage();
+      } else if (error.error && error.summary && error.details) {
         setValidationError(error as FileValidationError);
       } else {
         alert('Failed to start batch processing. Please try again.');
@@ -214,13 +379,10 @@ const BatchClassification: React.FC = () => {
   const handleProceedWithAcceptedFiles = () => {
     if (!validationError) return;
 
-    // Filter selected files to only include accepted ones
-    const acceptedFilenames = validationError.details
-      .filter(file => file.status === 'accepted')
-      .map(file => file.filename);
-
     const acceptedFiles = selectedFiles.filter(file => 
-      acceptedFilenames.includes(file.name)
+      validationError.details.some(detail => 
+        detail.filename === file.name && detail.status === 'accepted'
+      )
     );
 
     if (acceptedFiles.length === 0) {
@@ -232,16 +394,13 @@ const BatchClassification: React.FC = () => {
     setValidationError(null);
     setLoading(true);
 
-    // Retry the submission with only accepted files
     classificationService.startBatchJob(acceptedFiles, model)
       .then(response => {
         setJobId(response.job_id);
-        pollJobStatus(response.job_id);
+        startPolling(response.job_id);
       })
       .catch(error => {
-        console.error('Failed to start batch job with accepted files:', error);
-        
-        // Handle backend validation error even with filtered files
+        console.error('Failed with accepted files:', error);
         if (error.error && error.summary && error.details) {
           setValidationError(error as FileValidationError);
         } else {
@@ -251,50 +410,51 @@ const BatchClassification: React.FC = () => {
       });
   };
 
-  const pollJobStatus = async (jobId: string) => {
-    const interval = setInterval(async () => {
-      try {
-        const status = await classificationService.getBatchJobStatus(jobId, true);
-        console.log('=== BATCH JOB STATUS DEBUG ===');
-        console.log('Full status object:', status);
-        console.log('Status:', status.status);
-        console.log('Analyses exists:', !!status.analyses);
-        console.log('Analyses length:', status.analyses?.length);
-        console.log('Individual analyses exists:', !!status.individual_analyses);
-        console.log('Individual analyses length:', status.individual_analyses?.length);
-        console.log('Results exists:', !!status.results);
-        console.log('Results length:', status.results?.length);
-        console.log('Processed:', status.processed, 'Total images:', status.total_images);
-        
-        if (status.analyses && status.analyses.length > 0) {
-          console.log('First analysis item:', status.analyses[0]);
-        }
-        
-        setJobStatus(status);
-        
-        if (status.status === 'completed' || status.status === 'failed') {
-          console.log('=== JOB COMPLETED ===');
-          console.log('Final status:', status);
-          clearInterval(interval);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Error polling job status:', error);
-        clearInterval(interval);
-        setLoading(false);
-      }
-    }, 2000);
-  };
-
-  const removeFile = (index: number) => {
-    const newFiles = selectedFiles.filter((_, i) => i !== index);
-    setSelectedFiles(newFiles);
+  // Download handlers
+  const handleDownloadBatchPDF = async () => {
+    if (!jobStatus) {
+      console.error('No job status available for PDF download');
+      return;
+    }
     
-    // Revalidate after removal
-    const validationResult = validateFiles(newFiles);
-    setValidationError(validationResult);
+    try {
+      const pdfBlob = await classificationService.downloadBatchPDF(jobStatus);
+      downloadBlob(pdfBlob, `batch-classification-report-${jobStatus.job_id}.pdf`);
+    } catch (error: any) {
+      console.error('Batch PDF download failed:', error);
+      alert(`Failed to download PDF: ${error.message}`);
+    }
   };
 
+  const handleDownloadBatchJSON = () => {
+    if (!jobStatus) {
+      console.error('No job status available for JSON download');
+      return;
+    }
+    
+    try {
+      const jsonString = JSON.stringify(jobStatus, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      downloadBlob(blob, `batch-classification-report-${jobStatus.job_id}.json`);
+    } catch (error) {
+      console.error('Batch JSON download failed:', error);
+      alert('Failed to download JSON file');
+    }
+  };
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
+  // UI helpers
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'processing': return 'var(--warning-color)';
@@ -303,125 +463,190 @@ const BatchClassification: React.FC = () => {
       default: return 'var(--text-secondary)';
     }
   };
-  
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-  const toggleExpand = (index: number) => {
-    setExpandedIndex(expandedIndex === index ? null : index);
+  const renderUsageWarning = () => {
+    if (!usageWarning) return null;
+
+    return (
+      <div className="usage-warning">
+        <div className="warning-header">
+          <span className="warning-icon">⚠️</span>
+          <h4>Usage Limit Warning</h4>
+        </div>
+        <p>{usageWarning}</p>
+        {currentUsage && !currentUsage.subscription_used && currentUsage.free_analyses_remaining <= 0 && (
+          <div className="upgrade-actions">
+            <button 
+              className="upgrade-btn futuristic-btn"
+              onClick={() => {
+                // Redirect to subscription page or show upgrade modal
+                alert('Redirecting to subscription page...');
+                // window.location.href = '/subscription';
+              }}
+            >
+              <span className="btn-icon">⭐</span>
+              Upgrade to Subscription
+            </button>
+            <button 
+              className="dismiss-warning"
+              onClick={() => setUsageWarning(null)}
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+      </div>
+    );
   };
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence > 0.8) return '#00ff00';
-    if (confidence > 0.6) return '#ffff00';
-    return '#ff4444';
+  const renderFileItem = (file: File, index: number) => {
+    const fileSizeMB = file.size / (1024 * 1024);
+    const isOversized = fileSizeMB > MAX_FILE_SIZE_MB;
+    
+    return (
+      <div key={index} className={`file-item ${isOversized ? 'oversized' : ''}`}>
+        <span className="file-name">{file.name}</span>
+        <span className="file-size">({fileSizeMB.toFixed(2)} MB)</span>
+        <button 
+          type="button" 
+          className="remove-file"
+          onClick={() => removeFile(index)}
+        >
+          ✕
+        </button>
+      </div>
+    );
   };
 
-  const handleEmailBatchResults = async (jobStatus: BatchJob): Promise<void> => {
-    try {
-      console.log('Emailing batch results:', jobStatus);
-      alert('Batch email functionality would be implemented here');
-    } catch (error) {
-      console.error('Failed to email batch results:', error);
-      alert('Failed to send email. Please try again.');
-    }
+  const renderValidationError = () => {
+    if (!validationError) return null;
+
+    return (
+      <div className="validation-error">
+        <div className="error-header">
+          <h3>📁 File Validation Results</h3>
+          <span className="error-badge">{validationError.error}</span>
+        </div>
+        
+        <div className="validation-summary">
+          <div className="summary-item accepted">
+            <span className="summary-label">Accepted:</span>
+            <span className="summary-value">{validationError.summary.accepted}</span>
+          </div>
+          <div className="summary-item rejected">
+            <span className="summary-label">Rejected:</span>
+            <span className="summary-value">{validationError.summary.rejected}</span>
+          </div>
+          <div className="summary-item size">
+            <span className="summary-label">Max File Size:</span>
+            <span className="summary-value">{validationError.summary.max_file_size_MB} MB</span>
+          </div>
+        </div>
+
+        <div className="file-details">
+          <h4>File Details:</h4>
+          {validationError.details.map((file, index) => (
+            <div key={index} className={`file-detail ${file.status}`}>
+              <span className="file-name">{file.filename}</span>
+              <span className="file-size">{file.file_size_MB.toFixed(2)} MB</span>
+              <span className={`file-status ${file.status}`}>
+                {file.status === 'accepted' ? '✓' : '✗'} {file.status}
+              </span>
+              {file.reason && <span className="file-reason">{file.reason}</span>}
+            </div>
+          ))}
+        </div>
+
+        <div className="validation-actions">
+          {validationError.summary.accepted > 0 && (
+            <button 
+              type="button"
+              className="proceed-btn futuristic-btn"
+              onClick={handleProceedWithAcceptedFiles}
+            >
+              <span className="btn-icon">🚀</span>
+              Proceed with {validationError.summary.accepted} Accepted Files
+            </button>
+          )}
+          <button 
+            type="button"
+            className="dismiss-btn"
+            onClick={() => setValidationError(null)}
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    );
   };
 
-  const handleDownloadBatchPDF = async (): Promise<void> => {
-    if (!jobId) return;
-
-    setPdfLoading(true);
-    try {
-      console.log('Downloading batch PDF report for job:', jobId);
-      const pdfBlob = await classificationService.downloadBatchPDF(jobId);
-      
-      const url = window.URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `batch_analysis_report_${jobId}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      
-      console.log('Batch PDF downloaded successfully');
-    } catch (error: any) {
-      console.error('Batch PDF download failed:', error);
-      alert('Batch PDF download failed. Please try again.');
-    } finally {
-      setPdfLoading(false);
-    }
-  };
-
-  const handleDownloadPDF = async (
-    resultOrResults: IndividualClassificationResult | IndividualClassificationResult[]
-  ): Promise<void> => {
-    try {
-      const results = Array.isArray(resultOrResults) ? resultOrResults : [resultOrResults];
-      
-      console.log('📤 Generating PDF for individual result:', {
-        filename: results[0].filename,
-        resultsCount: results.length
-      });
-
-      const pdfBlob = await generatePDFReport(results, 'individual');
-
-      const url = window.URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `analysis_${results[0].filename}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-
-      console.log('Individual PDF downloaded successfully');
-    } catch (error: any) {
-      console.error('Individual PDF download failed:', error);
-      alert(error.message || 'PDF download failed. Please try again.');
-    }
-  };
-
-  const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
-    const token = localStorage.getItem('auth_token') || 
-                  sessionStorage.getItem('auth_token') ||
-                  getCookie('auth_token');
-    
-    console.log('📤 Calling PDF endpoint with authentication');
-    
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const response = await fetch('/api/v1/generate-pdf', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ results, reportType }),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ PDF generation failed:', response.status, errorText);
-      
-      if (response.status === 401) {
-        throw new Error('Authentication required. Please log in again.');
+  const renderResultsGrid = () => {
+    if (!normalizedResults.length) {
+      if (jobStatus?.status === 'completed') {
+        return (
+          <div className="no-results">
+            <p>No analysis results were returned.</p>
+            <div className="debug-info">
+              <p><strong>Debug Information:</strong></p>
+              <p>Job Status: {jobStatus.status}</p>
+              <p>Processed: {jobStatus.processed} / {jobStatus.total_images}</p>
+              <p>Analyses field: {jobStatus.analyses ? `${jobStatus.analyses.length} items` : 'Not present'}</p>
+              <p>Results field: {jobStatus.results ? `${jobStatus.results.length} items` : 'Not present'}</p>
+            </div>
+          </div>
+        );
       }
-      
-      throw new Error(`Failed to generate PDF: ${response.status}`);
+      return null;
     }
-    
-    return response.blob();
-  };
 
-  const handleEmailResults = (result: any) => {
-    console.log('Email single result:', result);
-  };
+    return (
+      <div className="results-preview">
+        <div className="results-header">
+          <h4>Analysis Results ({normalizedResults.length} images):</h4>
+        </div>
+        
+        <div className="batch-summary">
+          <div className="summary-stats">
+            <div className="stat-item ai">
+              <span className="stat-label">AI Generated:</span>
+              <span className="stat-value">
+                {normalizedResults.filter(r => r.ai_detected).length}
+              </span>
+            </div>
+            <div className="stat-item human">
+              <span className="stat-label">Human Created:</span>
+              <span className="stat-value">
+                {normalizedResults.filter(r => !r.ai_detected).length}
+              </span>
+            </div>
+            <div className="stat-item cached">
+              <span className="stat-label">From Cache:</span>
+              <span className="stat-value">
+                {normalizedResults.filter(r => r.from_cache).length}
+              </span>
+            </div>
+          </div>
+        </div>
 
-  const normalizedResults = getNormalizedResults(jobStatus);
+        <div className="results-grid">
+          {normalizedResults.map((result, index) => (
+            <div key={index} className="result-item">
+              <span className="filename">{result.filename}</span>
+              <span className={`prediction ${result.ai_detected ? 'ai' : 'human'}`}>
+                {result.predicted_class}
+              </span>
+              <span className="confidence">
+                {result.confidence != null ? `${(result.confidence * 100).toFixed(1)}%` : 'N/A'}
+              </span>
+              {result.from_cache && (
+                <span className="cache-indicator" title="From cache">💾</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="batch-classification">
@@ -431,7 +656,42 @@ const BatchClassification: React.FC = () => {
         <p className="file-size-info">Maximum file size: {MAX_FILE_SIZE_MB} MB per file</p>
       </div>
 
+      {/* Usage Information */}
+      <div className="usage-display">
+        <div className="usage-card">
+          <h3>Your Usage</h3>
+          <div className="usage-stats">
+            <div className="usage-stat">
+              <span className="stat-label">Free Analyses Used:</span>
+              <span className="stat-value">
+                {currentUsage ? currentUsage.free_analyses_used_this_month : 'Loading...'}
+              </span>
+            </div>
+            <div className="usage-stat">
+              <span className="stat-label">Free Analyses Remaining:</span>
+              <span className={`stat-value ${currentUsage && currentUsage.free_analyses_remaining === 0 ? 'zero' : ''}`}>
+                {currentUsage ? currentUsage.free_analyses_remaining : 'Loading...'}
+              </span>
+            </div>
+            <div className="usage-stat">
+              <span className="stat-label">Subscription:</span>
+              <span className={`stat-value ${currentUsage && currentUsage.subscription_used ? 'active' : 'inactive'}`}>
+                {currentUsage ? (currentUsage.subscription_used ? 'Active' : 'Not Active') : 'Loading...'}
+              </span>
+            </div>
+          </div>
+          {currentUsage && !currentUsage.subscription_used && currentUsage.free_analyses_remaining === 0 && (
+            <div className="upgrade-prompt">
+              <p>You've used all your free analyses! Upgrade to continue.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {renderUsageWarning()}
+
       <div className="batch-container">
+        {/* Upload Section */}
         <div className="upload-section">
           <form onSubmit={handleSubmit} className="upload-form">
             <div 
@@ -459,7 +719,7 @@ const BatchClassification: React.FC = () => {
                   }
                 </p>
                 <p className="file-size-note">Max file size: {MAX_FILE_SIZE_MB} MB</p>
-                <label htmlFor={fileInputRef.current?.id || 'file-upload'} className="browse-btn" onClick={() => fileInputRef.current?.click()}>
+                <label className="browse-btn" onClick={() => fileInputRef.current?.click()}>
                   Browse Files
                 </label>
               </div>
@@ -469,86 +729,12 @@ const BatchClassification: React.FC = () => {
               <div className="selected-files">
                 <h4>Selected Files:</h4>
                 <div className="files-list">
-                  {selectedFiles.map((file, index) => {
-                    const fileSizeMB = file.size / (1024 * 1024);
-                    const isOversized = fileSizeMB > MAX_FILE_SIZE_MB;
-                    
-                    return (
-                      <div key={index} className={`file-item ${isOversized ? 'oversized' : ''}`}>
-                        <span className="file-name">{file.name}</span>
-                        <span className="file-size">({fileSizeMB.toFixed(2)} MB)</span>
-                        <button 
-                          type="button" 
-                          className="remove-file"
-                          onClick={() => removeFile(index)}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    );
-                  })}
+                  {selectedFiles.map(renderFileItem)}
                 </div>
               </div>
             )}
 
-            {/* File Validation Error Display */}
-            {validationError && (
-              <div className="validation-error">
-                <div className="error-header">
-                  <h3>📁 File Validation Results</h3>
-                  <span className="error-badge">{validationError.error}</span>
-                </div>
-                
-                <div className="validation-summary">
-                  <div className="summary-item accepted">
-                    <span className="summary-label">Accepted:</span>
-                    <span className="summary-value">{validationError.summary.accepted}</span>
-                  </div>
-                  <div className="summary-item rejected">
-                    <span className="summary-label">Rejected:</span>
-                    <span className="summary-value">{validationError.summary.rejected}</span>
-                  </div>
-                  <div className="summary-item size">
-                    <span className="summary-label">Max File Size:</span>
-                    <span className="summary-value">{validationError.summary.max_file_size_MB} MB</span>
-                  </div>
-                </div>
-
-                <div className="file-details">
-                  <h4>File Details:</h4>
-                  {validationError.details.map((file, index) => (
-                    <div key={index} className={`file-detail ${file.status}`}>
-                      <span className="file-name">{file.filename}</span>
-                      <span className="file-size">{file.file_size_MB.toFixed(2)} MB</span>
-                      <span className={`file-status ${file.status}`}>
-                        {file.status === 'accepted' ? '✓' : '✗'} {file.status}
-                      </span>
-                      {file.reason && <span className="file-reason">{file.reason}</span>}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="validation-actions">
-                  {validationError.summary.accepted > 0 && (
-                    <button 
-                      type="button"
-                      className="proceed-btn futuristic-btn"
-                      onClick={handleProceedWithAcceptedFiles}
-                    >
-                      <span className="btn-icon">🚀</span>
-                      Proceed with {validationError.summary.accepted} Accepted Files
-                    </button>
-                  )}
-                  <button 
-                    type="button"
-                    className="dismiss-btn"
-                    onClick={() => setValidationError(null)}
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              </div>
-            )}
+            {renderValidationError()}
 
             <div className="model-selection">
               <label htmlFor="batch-model">Detection Model:</label>
@@ -583,6 +769,7 @@ const BatchClassification: React.FC = () => {
           </form>
         </div>
 
+        {/* Job Status Section */}
         {jobStatus && (
           <div className="job-status">
             <h2>Batch Processing Status</h2>
@@ -613,10 +800,10 @@ const BatchClassification: React.FC = () => {
                 </div>
               </div>
 
-              {/* Usage Information */}
+              {/* Usage information from job status */}
               {jobStatus.usage && (
                 <div className="usage-info">
-                  <h4>Usage Summary</h4>
+                  <h4>Usage After This Job</h4>
                   <div className="usage-stats">
                     <div className="usage-item">
                       <span className="usage-label">Free Analyses Used:</span>
@@ -638,260 +825,24 @@ const BatchClassification: React.FC = () => {
 
               <div className="action-buttons">
                 <button 
-                  className="email-btn futuristic-btn"
-                  onClick={() => handleEmailBatchResults(jobStatus)}
+                  className="pdf-btn futuristic-btn"
+                  onClick={handleDownloadBatchPDF}
+                  disabled={jobStatus.status !== 'completed'}
                 >
-                  <span className="btn-icon">✉️</span>
-                  Email Batch Report
+                  <span className="btn-icon">📄</span>
+                  {jobStatus.status === 'completed' ? 'Download Batch PDF' : 'Processing...'}
                 </button>
-                
-                {renderDownloadButton()}
+                <button 
+                  className="json-btn futuristic-btn"
+                  onClick={handleDownloadBatchJSON}
+                  disabled={jobStatus.status !== 'completed'}
+                >
+                  <span className="btn-icon">📊</span>
+                  {jobStatus.status === 'completed' ? 'Download Batch JSON' : 'Processing...'}
+                </button>
               </div>
-              
-              {/* Enhanced Results Section */}
-              {normalizedResults.length > 0 ? (
-                <div className="results-preview">
-                  <div className="results-header">
-                    <h4>Analysis Results ({normalizedResults.length} images):</h4>
-                    {jobStatus.analyses && (
-                      <div className="data-source-indicator">
-                        <small>Showing results from batch analysis</small>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="batch-summary">
-                    <div className="summary-stats">
-                      <div className="stat-item ai">
-                        <span className="stat-label">AI Generated:</span>
-                        <span className="stat-value">
-                          {normalizedResults.filter(r => r.ai_detected).length}
-                        </span>
-                      </div>
-                      <div className="stat-item human">
-                        <span className="stat-label">Human Created:</span>
-                        <span className="stat-value">
-                          {normalizedResults.filter(r => !r.ai_detected).length}
-                        </span>
-                      </div>
-                      <div className="stat-item cached">
-                        <span className="stat-label">From Cache:</span>
-                        <span className="stat-value">
-                          {normalizedResults.filter(r => r.from_cache).length}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {normalizedResults.length > 0 ? (
-                  <div className="results-grid">
-                    {normalizedResults
-                      .slice(0, isExpanded ? normalizedResults.length : 5)
-                      .map((result: IndividualClassificationResult, index: number) => (
-                        <div key={index} className="result-container">
-                          <div 
-                            className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
-                            onClick={() => toggleExpand(index)}
-                          >
-                            <span className="filename">{result.filename}</span>
-                            <span className={`prediction ${result.ai_detected ? 'ai' : 'human'}`}>
-                              {result.predicted_class}
-                            </span>
-                            {result.from_cache && (
-                              <span className="cache-indicator" title="From cache">💾</span>
-                            )}
-                          </div>
-                          
-                          {expandedIndex === index && (
-                            <div className="result-details-expanded">
-                              <div className={`result-card ${result.ai_detected ? 'ai-detected' : 'human-detected'}`}>
-                                <div className="result-header">
-                                  <h3>{result.filename}</h3>
-                                  <div className="result-badges">
-                                    <span className="result-badge">
-                                      {result.predicted_class}
-                                    </span>
-                                    {result.from_cache && (
-                                      <span className="cache-badge" title="From cache">💾 Cached</span>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                <div className="confidence-meter">
-                                  <div className="confidence-label">
-                                    Confidence: {result.confidence != null ? 
-                                      `${(result.confidence * 100).toFixed(2)}%` : 'N/A'}
-                                  </div>
-                                  <div className="confidence-bar">
-                                    <div 
-                                      className="confidence-fill"
-                                      style={{ 
-                                        width: `${(result.confidence || 0) * 100}%`,
-                                        backgroundColor: getConfidenceColor(result.confidence || 0)
-                                      }}
-                                    ></div>
-                                  </div>
-                                </div>
 
-                                <div className="result-details">
-                                  <div className="detail-item">
-                                    <span className="detail-label">AI Detection:</span>
-                                    <span className="detail-value">
-                                      {result.ai_detected ? 'AI Generated' : 'Human Created'}
-                                    </span>
-                                  </div>
-                                  <div className="detail-item">
-                                    <span className="detail-label">Model Used:</span>
-                                    <span className="detail-value">{result.model?.toUpperCase() || 'Unknown'}</span>
-                                  </div>
-                                  <div className="detail-item">
-                                    <span className="detail-label">Confidence:</span>
-                                    <span className="detail-value">
-                                      {result.confidence != null ? 
-                                        `${(result.confidence * 100).toFixed(2)}%` : 'N/A'}
-                                    </span>
-                                  </div>
-                                  {result.processing_time && (
-                                    <div className="detail-item">
-                                      <span className="detail-label">Processed:</span>
-                                      <span className="detail-value">
-                                        {new Date(result.processing_time).toLocaleString()}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {result.from_cache && result.cache_timestamp && (
-                                    <div className="detail-item">
-                                      <span className="detail-label">Cached:</span>
-                                      <span className="detail-value">
-                                        {new Date(result.cache_timestamp).toLocaleString()}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="result-actions">
-                                  <button 
-                                    className="download-pdf-btn futuristic-btn"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDownloadPDF(result);
-                                    }}
-                                  >
-                                    <span className="btn-icon">📄</span>
-                                    Download PDF
-                                  </button>
-                                  <button 
-                                    className="email-btn futuristic-btn"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEmailResults(result);
-                                    }}
-                                  >
-                                    <span className="btn-icon">✉️</span>
-                                    Email Result
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                  </div>) : jobStatus.status === 'completed' ? (
-                  <div className="no-results">
-                    <div className="error-header">
-                      <h3>⚠️ No Analysis Results Available</h3>
-                      <p>The job completed successfully but no analysis results were returned.</p>
-                    </div>
-                    
-                    <div className="debug-info">
-                      <h4>Debug Information:</h4>
-                      <div className="debug-details">
-                        <div className="debug-item">
-                          <strong>Job ID:</strong> {jobId}
-                        </div>
-                        <div className="debug-item">
-                          <strong>Processed:</strong> {jobStatus.processed} / {jobStatus.total_images}
-                        </div>
-                        <div className="debug-item">
-                          <strong>Analyses Field:</strong> {jobStatus.analyses ? `${jobStatus.analyses.length} items` : 'Not present'}
-                        </div>
-                        <div className="debug-item">
-                          <strong>Individual Analyses:</strong> {jobStatus.individual_analyses ? `${jobStatus.individual_analyses.length} items` : 'Not present'}
-                        </div>
-                        <div className="debug-item">
-                          <strong>Results Field:</strong> {jobStatus.results ? `${jobStatus.results.length} items` : 'Not present'}
-                        </div>
-                        {jobStatus.error && (
-                          <div className="debug-item error">
-                            <strong>Error:</strong> {jobStatus.error}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="recovery-actions">
-                      <button 
-                        className="retry-btn futuristic-btn"
-                        onClick={() => jobId && pollJobStatus(jobId)}
-                      >
-                        <span className="btn-icon">🔄</span>
-                        Retry Fetching Results
-                      </button>
-                      <button 
-                        className="support-btn"
-                        onClick={() => {
-                          const debugInfo = {
-                            jobId,
-                            jobStatus: {
-                              status: jobStatus.status,
-                              processed: jobStatus.processed,
-                              total_images: jobStatus.total_images,
-                              hasAnalyses: !!jobStatus.analyses,
-                              hasIndividualAnalyses: !!jobStatus.individual_analyses,
-                              hasResults: !!jobStatus.results,
-                              error: jobStatus.error
-                            }
-                          };
-                          console.log('Support Debug Info:', debugInfo);
-                          alert('Debug information logged to console. Please share this with support.');
-                        }}
-                      >
-                        <span className="btn-icon">📋</span>
-                        Get Debug Info for Support
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-                  
-                  {normalizedResults.length > 5 && (
-                    <div className="results-expand">
-                      <button 
-                        className="expand-button"
-                        onClick={() => setIsExpanded(!isExpanded)}
-                      >
-                        {isExpanded ? (
-                          <>
-                            <span>Show less</span>
-                            <span className="expand-icon">▲</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Show all {normalizedResults.length} results</span>
-                            <span className="expand-icon">▼</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : jobStatus.status === 'completed' ? (
-                <div className="no-results">
-                  <p>No analysis results available. The job completed but no results were returned.</p>
-                  {jobStatus.results_note && (
-                    <p className="results-note">{jobStatus.results_note}</p>
-                  )}
-                </div>
-              ) : null}
+              {renderResultsGrid()}
 
               {jobStatus.error && (
                 <div className="error-message">
