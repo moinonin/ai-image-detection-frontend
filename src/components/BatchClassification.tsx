@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { classificationService, } from '../services/api';
+import { classificationService } from '../services/api';
 import { 
   BatchJob, 
   IndividualClassificationResult,
   BatchJobResponse,
-  AnalysisData,
-  BatchAnalysesResponse,
-  BatchAnalysisResult
+  BatchAnalysisResult,
+  SingleClassificationResponse,
+  BatchClassificationResponse
 } from '../types';
+
+type ClassificationResponse = SingleClassificationResponse | BatchClassificationResponse;
 
 function getCookie(name: string): string | null {
   const value = `; ${document.cookie}`;
@@ -51,29 +53,77 @@ const BatchClassification: React.FC = () => {
   const [model, setModel] = useState('scalpel');
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  //const [result, setResult] = useState<ClassificationResponse | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<BatchJobWithDebug | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const reportFormat: 'pdf' | 'json' = 'pdf';
   const [validationError, setValidationError] = useState<FileValidationError | null>(null);
+
+  const [analysisResults, setAnalysisResults] = useState<BatchClassificationResponse | null>(null);
+  const [showUsageLimitModal, setShowUsageLimitModal] = useState(false);
+  const [usageLimitMessage, setUsageLimitMessage] = useState('');
+  const [apiError, setApiError] = useState(''); // Renamed from 'error' to avoid conflict
   
   // Client-side file size validation constants
   const MAX_FILE_SIZE_MB = 0.5;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
   // Results state
-  //const [analyses, setAnalyses] = useState<IndividualClassificationResult[]>([]);
   const [analyses, setAnalyses] = useState<BatchAnalysisResult[]>([]);
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [resultsError, setResultsError] = useState<string | null>(null); // Renamed from 'error'
 
   // UI state
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-// Add this adapter function
-// Add the adapter function
+  // Handle batch classification with usage limits
+  const handleBatchClassification = async (files: File[], model: string, accountId?: string) => {
+    // Reset states
+    setApiError('');
+    setAnalysisResults(null);
+    setShowUsageLimitModal(false);
+    setUsageLimitMessage('');
+
+    try {
+      const result = await classificationService.startBatchJobSync(
+        files, 
+        model, 
+        'json', 
+        true, 
+        accountId
+      );
+      
+      // Convert API response to match your types
+      const compatibleResult: BatchClassificationResponse = {
+        ...result,
+        analyses: result.analyses.map((analysis, index) => ({
+          id: `batch-${Date.now()}-${index}`, // Generate a temporary ID
+          ...analysis
+        }))
+      };
+      
+      // Process successful result
+      setAnalysisResults(compatibleResult);
+      
+    } catch (error: any) {
+      console.error('Classification error:', error);
+      
+      // Check if it's a usage limit error
+      if (error.message?.includes('USAGE_LIMIT_EXCEEDED')) {
+        // Show usage limit exceeded modal or message
+        setShowUsageLimitModal(true);
+        setUsageLimitMessage(error.message.replace('USAGE_LIMIT_EXCEEDED: ', ''));
+      } else {
+        // Handle other errors normally
+        setApiError(error.message || 'An error occurred during classification');
+      }
+    }
+  };
+
+  // Add this adapter function
   const adaptToIndividualClassificationResult = (
     batchResult: BatchAnalysisResult
   ): IndividualClassificationResult => {
@@ -122,7 +172,6 @@ const BatchClassification: React.FC = () => {
 
   // Fetch analyses when job completes but results are empty
   useEffect(() => {
-    // Update the fetchAnalysesForJob function with proper types
     const fetchAnalysesForJob = async () => {
       const debugInfo = getDebugInfo();
       
@@ -135,7 +184,7 @@ const BatchClassification: React.FC = () => {
         !isLoadingAnalyses
       ) {
         setIsLoadingAnalyses(true);
-        setError(null);
+        setResultsError(null);
         
         try {
           console.log(`Fetching ${debugInfo.analysesInDb} analyses for job ${jobStatus.job_id}`);
@@ -209,7 +258,7 @@ const BatchClassification: React.FC = () => {
           }
         } catch (err: any) {
           console.error('Failed to fetch analyses:', err);
-          setError(err.message || 'Failed to fetch analyses');
+          setResultsError(err.message || 'Failed to fetch analyses');
         } finally {
           setIsLoadingAnalyses(false);
         }
@@ -217,7 +266,7 @@ const BatchClassification: React.FC = () => {
     };
 
     fetchAnalysesForJob();
-  }, [jobStatus, analyses.length, isLoadingAnalyses]);
+  }, [jobStatus, analyses.length, isLoadingAnalyses, model]);
 
   // Update getDisplayResults with better typing
   const getDisplayResults = (): BatchAnalysisResult[] => {
@@ -351,12 +400,12 @@ const BatchClassification: React.FC = () => {
     setJobStatus(null);
     setJobId(null);
     setAnalyses([]);
-    setError(null);
+    setResultsError(null);
+    setApiError('');
 
     try {
-      const response = await classificationService.startBatchJob(selectedFiles, model);
-      setJobId(response.job_id);
-      pollJobStatus(response.job_id);
+      // Use the new sync batch classification with usage limits
+      await handleBatchClassification(selectedFiles, model);
     } catch (error: any) {
       console.error('Failed to start batch job:', error);
       if (error.error && error.summary && error.details) {
@@ -364,6 +413,7 @@ const BatchClassification: React.FC = () => {
       } else {
         alert('Failed to start batch processing. Please try again.');
       }
+    } finally {
       setLoading(false);
     }
   };
@@ -388,13 +438,11 @@ const BatchClassification: React.FC = () => {
     setValidationError(null);
     setLoading(true);
     setAnalyses([]);
-    setError(null);
+    setResultsError(null);
+    setApiError('');
 
-    classificationService.startBatchJob(acceptedFiles, model)
-      .then(response => {
-        setJobId(response.job_id);
-        pollJobStatus(response.job_id);
-      })
+    // Use the new sync batch classification
+    handleBatchClassification(acceptedFiles, model)
       .catch(error => {
         console.error('Failed to start batch job with accepted files:', error);
         if (error.error && error.summary && error.details) {
@@ -573,6 +621,20 @@ const BatchClassification: React.FC = () => {
         <p className="file-size-info">Maximum file size: {MAX_FILE_SIZE_MB} MB per file</p>
       </div>
 
+      {/* API Error Display */}
+      {apiError && (
+        <div className="error-message" style={{
+          padding: '1rem',
+          backgroundColor: '#f8d7da',
+          color: '#721c24',
+          borderRadius: '4px',
+          marginBottom: '1rem',
+          border: '1px solid #f5c6cb'
+        }}>
+          {apiError}
+        </div>
+      )}
+
       <div className="batch-container">
         <div className="upload-section">
           <form onSubmit={handleSubmit} className="upload-form">
@@ -724,6 +786,121 @@ const BatchClassification: React.FC = () => {
           </form>
         </div>
 
+        {/* Usage Information Display */}
+        {analysisResults?.usage && (
+          <div className="usage-info" style={{ 
+            marginTop: '2rem', 
+            padding: '1rem', 
+            backgroundColor: '#f8f9fa', 
+            borderRadius: '8px',
+            border: '1px solid #e9ecef'
+          }}>
+            <h3 style={{ marginBottom: '1rem', color: '#495057' }}>Usage Information</h3>
+            <div className="detail-item" style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              marginBottom: '0.5rem' 
+            }}>
+              <span className="detail-label" style={{ fontWeight: '500' }}>
+                Free Analyses Remaining:
+              </span>
+              <span className="detail-value" style={{ fontWeight: '600' }}>
+                {analysisResults.usage.free_analyses_remaining}
+              </span>
+            </div>
+            <div className="detail-item" style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              marginBottom: '0.5rem' 
+            }}>
+              <span className="detail-label" style={{ fontWeight: '500' }}>
+                Used This Month:
+              </span>
+              <span className="detail-value" style={{ fontWeight: '600' }}>
+                {analysisResults.usage.free_analyses_used_this_month}
+              </span>
+            </div>
+            {analysisResults.usage.subscription_used && (
+              <div className="detail-item" style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                marginBottom: '0.5rem' 
+              }}>
+                <span className="detail-label" style={{ fontWeight: '500' }}>
+                  Subscription:
+                </span>
+                <span className="detail-value" style={{ 
+                  fontWeight: '600', 
+                  color: '#28a745' 
+                }}>
+                  Active
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Usage Limit Modal */}
+        {showUsageLimitModal && (
+          <div className="modal-overlay" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}>
+            <div className="modal-content" style={{
+              backgroundColor: 'white',
+              padding: '2rem',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '90%'
+            }}>
+              <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>
+                Usage Limit Exceeded
+              </h2>
+              <p style={{ marginBottom: '2rem' }}>{usageLimitMessage}</p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button 
+                  onClick={() => setShowUsageLimitModal(false)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowUsageLimitModal(false);
+                    // Optionally navigate to subscription page
+                    // navigate('/subscription');
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Upgrade Plan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {jobStatus && (
           <div className="job-status">
             <h2>Batch Processing Status</h2>
@@ -779,9 +956,9 @@ const BatchClassification: React.FC = () => {
               )}
 
               {/* Error display */}
-              {error && (
+              {resultsError && (
                 <div className="error-message">
-                  <strong>Error loading results:</strong> {error}
+                  <strong>Error loading results:</strong> {resultsError}
                 </div>
               )}
 

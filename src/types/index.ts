@@ -78,12 +78,11 @@ export interface BatchAnalysisItem {
   cache_used: boolean;
   timestamp: string;
 
-  id: string;
+  id?: string;
   // Add other analysis properties based on your data
   image_url?: string;
   prediction?: string;
   confidence?: number;
-  
 }
 export interface ApiResponse<T = any> {
   data: T;
@@ -498,6 +497,7 @@ export interface BatchAnalysesResponse {
     analysis_results: AnalysisData;
   }>;
   length?: number;
+  usage: UsageInfo;
 }
 
 export interface BatchAnalysisResult {

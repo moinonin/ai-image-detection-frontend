@@ -262,7 +262,8 @@ async classifySingleImage(
       throw error;
     }
   }
-  // Batch classification
+
+  // Batch classification - FIXED version
   async startBatchJobSync(
     files: File[], 
     model: string = 'ml',
@@ -314,18 +315,41 @@ async classifySingleImage(
       body: formData,
     });
 
+    // FIXED: Handle response body reading properly - don't read it twice
     if (!response.ok) {
+      // Clone the response to read it as text without consuming the body
+      const responseClone = response.clone();
+      let errorData;
+      
       try {
-        const errorData = await response.json();
-        if (errorData.error && errorData.summary) {
-          throw errorData;
+        // First try to parse as JSON
+        errorData = await response.json();
+      } catch (jsonError) {
+        // If JSON parsing fails, try as text
+        try {
+          const errorText = await responseClone.text();
+          errorData = { detail: errorText };
+        } catch (textError) {
+          errorData = { detail: `Request failed with status ${response.status}` };
         }
-      } catch (parseError) {
-        const errorText = await response.text();
-        console.error('Backend error:', response.status, errorText);
-        throw new Error(`Batch job start failed (${response.status})`);
       }
-      throw new Error(`Batch job start failed (${response.status})`);
+
+      // Handle usage limit exceeded (402 Payment Required)
+      if (response.status === 402) {
+        const errorMessage = errorData.detail || errorData.error || 'Usage limit exceeded';
+        const usageLimitError = new Error(`USAGE_LIMIT_EXCEEDED: ${errorMessage}`);
+        (usageLimitError as any).status = 402;
+        (usageLimitError as any).usageData = errorData;
+        throw usageLimitError;
+      }
+      
+      // Handle other errors with their specific structures
+      if (errorData.error && errorData.summary) {
+        throw errorData;
+      }
+      
+      // Generic error
+      throw new Error(errorData.detail || errorData.error || `Batch job start failed (${response.status})`);
     }
 
     if (reportFormat === 'pdf') {
@@ -339,7 +363,8 @@ async classifySingleImage(
 
     return response.json();
   }
-  // Synchronous batch classification (what your backend actually provides)
+
+  // Also update the classifyBatch method to handle usage limits consistently
   async classifyBatch(
     files: File[], 
     model: string = 'ml',
@@ -368,8 +393,17 @@ async classifySingleImage(
         body: formData,
       });
 
+      // FIXED: Add consistent usage limit handling here too
       if (!response.ok) {
         const errorText = await response.text();
+        
+        // Handle usage limit exceeded
+        if (response.status === 402) {
+          const usageLimitError = new Error(`USAGE_LIMIT_EXCEEDED: ${errorText}`);
+          (usageLimitError as any).status = 402;
+          throw usageLimitError;
+        }
+        
         throw new Error(`Batch classification failed: ${response.status} - ${errorText}`);
       }
 
