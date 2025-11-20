@@ -513,6 +513,8 @@ export interface BatchAnalysisResult {
   analyzed_images?: number;
   user?: string;
   [key: string]: any;
+
+  
 }
 // Update the IndividualClassificationResult interface if needed
 // (This should probably match what's in your ../types file)

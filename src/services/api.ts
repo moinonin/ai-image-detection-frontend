@@ -3,6 +3,7 @@ import { User, AuthResponse, ClassificationResult, BatchUsage, ModelInfo, VideoC
 type ReportFormat = 'json' | 'pdf';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
+
 function base64ToBlob(base64: string, contentType: string = ''): Blob {
   const byteCharacters = atob(base64);
   const byteArrays = [];
@@ -122,120 +123,114 @@ class ApiService {
     });
   }
 
-// Fixed single image classification
-async classifySingleImage(
-  file: File, 
-  modelType: string = 'ml', 
-  reportFormat: ReportFormat = 'json',
-  useCache: boolean = true,
-  accountId?: string
-): Promise<SingleClassificationResponse> {
-  const token = localStorage.getItem('token');
-  
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('model_type', modelType);
-    formData.append('report_format', reportFormat);
-    formData.append('use_cache', useCache.toString());
-    if (accountId) {
-      formData.append('account_id', accountId);
-    }
-
-    const response = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
-      body: formData,
-    });
+  // Fixed single image classification
+  async classifySingleImage(
+    file: File, 
+    modelType: string = 'ml', 
+    reportFormat: ReportFormat = 'json',
+    useCache: boolean = true,
+    accountId?: string
+  ): Promise<SingleClassificationResponse> {
+    const token = localStorage.getItem('token');
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Backend error:', response.status, errorText);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('model_type', modelType);
+      formData.append('report_format', reportFormat);
+      formData.append('use_cache', useCache.toString());
+      if (accountId) {
+        formData.append('account_id', accountId);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/single`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: formData,
+      });
       
-      try {
-        const errorData = JSON.parse(errorText);
-        if (errorData.error && errorData.summary) {
-          const fileSizeError = new Error(errorData.error);
-          fileSizeError.name = 'FileSizeError';
-          (fileSizeError as any).details = errorData;
-          throw fileSizeError;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend error:', response.status, errorText);
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error && errorData.summary) {
+            const fileSizeError = new Error(errorData.error);
+            fileSizeError.name = 'FileSizeError';
+            (fileSizeError as any).details = errorData;
+            throw fileSizeError;
+          }
+        } catch (parseError) {
+          throw new Error(`Classification failed (${response.status}): ${errorText}`);
         }
-      } catch (parseError) {
-        throw new Error(`Classification failed (${response.status}): ${errorText}`);
+        
+        throw new Error(`Classification failed (${response.status})`);
+      }
+
+      // For PDF responses, handle blob directly
+      if (reportFormat === 'pdf') {
+        console.log('📄 Handling PDF response for single image');
+        
+        const pdfBlob = await response.blob();
+        
+        let analysisData: ClassificationResult | null = null;
+        
+        try {
+          analysisData = {
+            filename: file.name,
+            predicted_class: 'Analysis Complete',
+            confidence: 0,
+            model: modelType,
+            is_ai: false,
+            probability: 0
+          } as ClassificationResult;
+        } catch (e) {
+          console.warn('Could not extract analysis data from PDF response');
+        }
+        
+        return {
+          analysis: analysisData || {
+            filename: file.name,
+            predicted_class: 'Analysis Complete', 
+            confidence: 0,
+            model: modelType,
+            is_ai: false,
+            probability: 0
+          } as ClassificationResult,
+          cache_info: {
+            from_cache: false,
+            cache_timestamp: null
+          },
+          usage: {
+            free_analyses_used_this_month: 0,
+            free_analyses_remaining: 0, 
+            subscription_used: false,
+            account_id: null
+          },
+          pdfBlob
+        };
+      }
+
+      // For JSON responses
+      const result = await response.json();
+      console.log('Raw API response:', result);
+      
+      if (!result.analysis) {
+        console.warn('API response missing analysis field:', result);
+        throw new Error('Invalid response from server: missing analysis data');
       }
       
-      throw new Error(`Classification failed (${response.status})`);
+      return result;
+      
+    } catch (error) {
+      console.error('Classification service error:', error);
+      throw error;
     }
-
-    // For PDF responses, handle blob directly
-    if (reportFormat === 'pdf') {
-      console.log('📄 Handling PDF response for single image');
-      
-      // Get the PDF blob directly
-      const pdfBlob = await response.blob();
-      
-      // Try to extract analysis data from headers or return minimal response
-      let analysisData: ClassificationResult | null = null;
-      
-      // Some backends include analysis data in headers or as separate fields
-      // If your backend doesn't, we'll create a minimal response
-      try {
-        // Check if there's a JSON part or if we need to make another request
-        // For now, create a minimal response
-        analysisData = {
-          filename: file.name,
-          predicted_class: 'Analysis Complete',
-          confidence: 0,
-          model: modelType,
-          is_ai: false,
-          probability: 0
-        } as ClassificationResult;
-      } catch (e) {
-        console.warn('Could not extract analysis data from PDF response');
-      }
-      
-      return {
-        analysis: analysisData || {
-          filename: file.name,
-          predicted_class: 'Analysis Complete', 
-          confidence: 0,
-          model: modelType,
-          is_ai: false,
-          probability: 0
-        } as ClassificationResult,
-        cache_info: {
-          from_cache: false,
-          cache_timestamp: null
-        },
-        usage: {
-          free_analyses_used_this_month: 0,
-          free_analyses_remaining: 0, 
-          subscription_used: false,
-          account_id: null
-        },
-        pdfBlob
-      };
-    }
-
-    // For JSON responses
-    const result = await response.json();
-    console.log('Raw API response:', result);
-    
-    if (!result.analysis) {
-      console.warn('API response missing analysis field:', result);
-      throw new Error('Invalid response from server: missing analysis data');
-    }
-    
-    return result;
-    
-  } catch (error) {
-    console.error('Classification service error:', error);
-    throw error;
   }
-}
 
   // Add this generic GET method to ApiService class
   async get<T>(endpoint: string): Promise<T> {
@@ -306,62 +301,64 @@ async classifySingleImage(
     }
 
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
-      body: formData,
-    });
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/batch`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: formData,
+      });
 
-    // FIXED: Handle response body reading properly - don't read it twice
-    if (!response.ok) {
-      // Clone the response to read it as text without consuming the body
-      const responseClone = response.clone();
-      let errorData;
-      
-      try {
-        // First try to parse as JSON
-        errorData = await response.json();
-      } catch (jsonError) {
-        // If JSON parsing fails, try as text
+      if (!response.ok) {
+        const responseClone = response.clone();
+        let errorData;
+        
         try {
-          const errorText = await responseClone.text();
-          errorData = { detail: errorText };
-        } catch (textError) {
-          errorData = { detail: `Request failed with status ${response.status}` };
+          errorData = await response.json();
+        } catch (jsonError) {
+          try {
+            const errorText = await responseClone.text();
+            errorData = { detail: errorText };
+          } catch (textError) {
+            errorData = { detail: `Request failed with status ${response.status}` };
+          }
         }
+
+        // Handle usage limit exceeded (402 Payment Required)
+        if (response.status === 402) {
+          const errorMessage = errorData.detail || errorData.error || 'Usage limit exceeded';
+          const usageLimitError = new Error(`USAGE_LIMIT_EXCEEDED: ${errorMessage}`);
+          (usageLimitError as any).status = 402;
+          (usageLimitError as any).usageData = errorData;
+          throw usageLimitError;
+        }
+        
+        if (errorData.error && errorData.summary) {
+          throw errorData;
+        }
+        
+        throw new Error(errorData.detail || errorData.error || `Batch job start failed (${response.status})`);
       }
 
-      // Handle usage limit exceeded (402 Payment Required)
-      if (response.status === 402) {
-        const errorMessage = errorData.detail || errorData.error || 'Usage limit exceeded';
-        const usageLimitError = new Error(`USAGE_LIMIT_EXCEEDED: ${errorMessage}`);
-        (usageLimitError as any).status = 402;
-        (usageLimitError as any).usageData = errorData;
-        throw usageLimitError;
+      if (reportFormat === 'pdf') {
+        const pdfBlob = await response.blob();
+        return {
+          analyses: [],
+          usage: { free_analyses_used_this_month: 0, free_analyses_remaining: 0, subscription_used: false, account_id: null },
+          pdfBlob
+        } as BatchClassificationResponse;
       }
-      
-      // Handle other errors with their specific structures
-      if (errorData.error && errorData.summary) {
-        throw errorData;
-      }
-      
-      // Generic error
-      throw new Error(errorData.detail || errorData.error || `Batch job start failed (${response.status})`);
+
+      const result = await response.json();
+      console.log('Batch classification raw result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error in batch classification:', error);
+      throw error;
     }
-
-    if (reportFormat === 'pdf') {
-      const pdfBlob = await response.blob();
-      return {
-        analyses: [],
-        usage: { free_analyses_used_this_month: 0, free_analyses_remaining: 0, subscription_used: false, account_id: null },
-        pdfBlob
-      } as BatchClassificationResponse;
-    }
-
-    return response.json();
   }
 
   // Also update the classifyBatch method to handle usage limits consistently
@@ -393,11 +390,9 @@ async classifySingleImage(
         body: formData,
       });
 
-      // FIXED: Add consistent usage limit handling here too
       if (!response.ok) {
         const errorText = await response.text();
         
-        // Handle usage limit exceeded
         if (response.status === 402) {
           const usageLimitError = new Error(`USAGE_LIMIT_EXCEEDED: ${errorText}`);
           (usageLimitError as any).status = 402;
@@ -429,6 +424,7 @@ async classifySingleImage(
       throw error;
     }
   }
+
   // Add this method to your ApiService class
   async getBatchClassificationResult(jobId: string): Promise<BatchClassificationResponse> {
     const token = localStorage.getItem('token');
@@ -450,7 +446,6 @@ async classifySingleImage(
 
       const statusResponse = await response.json();
       
-      // If your status endpoint returns the full results when job is complete
       if (statusResponse.status === 'completed' && statusResponse.results) {
         return statusResponse;
       } else {
@@ -560,8 +555,6 @@ async classifySingleImage(
   }
 
   // Async batch job methods
-  
-  // In api.tsx - Add usage checking
   async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
     const token = localStorage.getItem('token');
     
@@ -582,7 +575,6 @@ async classifySingleImage(
       if (!response.ok) {
         const errorText = await response.text();
         
-        // Check for usage limit exceeded error
         if (response.status === 402 || errorText.includes('exceeded') || errorText.includes('usage') || errorText.includes('payment')) {
           throw new Error(`USAGE_LIMIT_EXCEEDED: ${errorText}`);
         }
@@ -624,7 +616,7 @@ async classifySingleImage(
       throw error;
     }
   }
-  // In your API service
+
   async getBatchJobStatus(jobId: string): Promise<BatchJobResponse> {
     const token = localStorage.getItem('token');
     
@@ -693,33 +685,7 @@ async classifySingleImage(
   async getModels(): Promise<{ models: ModelInfo[] }> {
     return this.request('/api/v1/models');
   }
-
-  // FIXED: Removed 'const' from class method - moved outside the class if needed, or remove entirely
-  // If you need this function elsewhere, you can define it outside the class
 }
-
-// Moved handleBatchResponse outside the class if it's needed
-// If not needed, you can remove it entirely
-{/*const handleBatchResponse = (response: any): BatchJob => {
-  // If the response already has the batch job structure, return it
-  if (response.job_id && response.status) {
-    return response;
-  }
-  
-  // If it's the new analyses format, convert it
-  if (response.analyses) {
-    return {
-      job_id: `batch_${Date.now()}`,
-      status: 'completed',
-      processed: response.analyses.length,
-      total_images: response.analyses.length,
-      analyses: response.analyses,
-      usage: response.usage
-    };
-  }
-  
-  throw new Error('Unsupported batch response format');
-};*/}
 
 export const generatePDFReport = async (results: any[], reportType: string = 'individual') => {
   console.log('📤 Calling PDF endpoint with:', { resultsCount: results.length, reportType });
