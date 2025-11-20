@@ -1,7 +1,65 @@
-import React from 'react';
+// Updated Resources component with the models section
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getModels } from '../services/api';
+
+interface Model {
+  id: string;
+  name: string;
+  description: string;
+}
 
 const Resources: React.FC = () => {
+  const [models, setModels] = useState<Model[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const data = await getModels();
+        setModels(data.models);
+      } catch (error) {
+        console.error('Error fetching models:', error);
+        // Fallback data in case API fails
+        setModels([
+          {
+            id: "ML",
+            name: "AICASSIE(ML)",
+            description: "Excels at identifying human content with high precision (92.9% AI detection accuracy).\nMaintains strong overall performance (89.2%) accuracy while minimizing false positives."
+          },
+          {
+            id: "NET",
+            name: "AITASHA (NET)",
+            description: "Highly sensitive AI detector with excellent recall (93.8%), catching nearly all AI content.\nTends to be aggressive, prioritizing comprehensive AI detection over precision, which results in more false positives."
+          },
+          {
+            id: "SCALPEL",
+            name: "AISUSSIE (SCALPEL)",
+            description: "Well-balanced AI detector with excellent precision (93.3%) and strong overall accuracy (91.9%).\nReliably identifies AI content while rarely misclassifying human work, making it highly trustworthy."
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
+
+  // Function to get the appropriate neon color and icon based on model ID
+  const getModelStyle = (modelId: string) => {
+    switch (modelId) {
+      case 'ML':
+        return { colorClass: 'neon-blue', icon: '🧠' };
+      case 'NET':
+        return { colorClass: 'neon-purple', icon: '🕸️' };
+      case 'SCALPEL':
+        return { colorClass: 'neon-green', icon: '✂️' };
+      default:
+        return { colorClass: 'neon-blue', icon: '🤖' };
+    }
+  };
+
   return (
     <div className="resources">
       {/* Header Section */}
@@ -105,6 +163,109 @@ const Resources: React.FC = () => {
               Analyze Videos
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Available Models Section */}
+      <section className="tools-section">
+        <div className="models-content">
+          <h2 className="av-models">Available AI Models</h2>
+          <p className="resources-subtitle">
+            Choose from our specialized AI detection models, each optimized for different use cases 
+            and performance characteristics. Select the model that best fits your verification needs.
+          </p>
+          
+          {loading ? (
+            <div className="models-loading">
+              <div className="loading-spinner"></div>
+              <p>Loading available models...</p>
+            </div>
+          ) : (
+            <div className="tools-grid">
+              {models.map((model) => {
+                const { colorClass, icon } = getModelStyle(model.id);
+                return (
+                  <div key={model.id} className={`tool-card ${colorClass}`}>
+                    <div className="tool-icon">{icon}</div>
+                    <h3>{model.name}</h3>
+                    <p className="tool-description">
+                      {model.description.split('\n').map((line, index) => (
+                        <React.Fragment key={index}>
+                          {line}
+                          {index < model.description.split('\n').length - 1 && <br />}
+                        </React.Fragment>
+                      ))}
+                    </p>
+                    <div className="tool-features">
+                      {model.id === 'ML' && (
+                        <>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            97.9% AI Detection Accuracy
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            95.2% Overall Performance
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            High Precision
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            Minimal False Positives
+                          </div>
+                        </>
+                      )}
+                      {model.id === 'NET' && (
+                        <>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            94.8% Recall Rate
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            Highly Sensitive
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            Comprehensive AI Detection
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            Aggressive Detection
+                          </div>
+                        </>
+                      )}
+                      {model.id === 'SCALPEL' && (
+                        <>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            98.3% Precision
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            96.9% Overall Accuracy
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            Well-Balanced
+                          </div>
+                          <div className="feature-item">
+                            <span className="feature-check">✓</span>
+                            Highly Trustworthy
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="tool-cta disabled">
+                      Model Active
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

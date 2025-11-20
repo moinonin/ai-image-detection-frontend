@@ -687,8 +687,28 @@ class ApiService {
     return null;
   }
 
-  async getModels(): Promise<{ models: ModelInfo[] }> {
-    return this.request('/api/v1/models');
+  //async getModels(): Promise<{ models: ModelInfo[] }> {
+   // return this.request('/api/v1/models');
+  //}
+
+  static async getModels(): Promise<{ models: ModelInfo[] }> {
+    try {
+      const response = await fetch('/api/v1/models', { // Adjust the endpoint as needed
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch models');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching models:', error);
+      throw error;
+    }
   }
 }
 
@@ -722,3 +742,4 @@ export const generatePDFReport = async (results: any[], reportType: string = 'in
 
 export const authService = new ApiService();
 export const classificationService = new ApiService();
+export const getModels = ApiService.getModels;
