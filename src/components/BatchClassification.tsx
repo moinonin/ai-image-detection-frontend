@@ -1074,7 +1074,7 @@ const BatchClassification: React.FC = () => {
                   }}>
                     Need a custom plan?{' '}
                     <a 
-                      href="/about" 
+                      href="/about#contact-info" 
                       style={{ 
                         color: 'var(--primary-color)',
                         textDecoration: 'none'

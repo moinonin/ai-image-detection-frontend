@@ -440,7 +440,7 @@ const SingleClassification: React.FC = () => {
                       </div>
 
                       <div className="contact-support">
-                        <p>Need help choosing? <a href="/contact">Contact our support team</a></p>
+                        <p>Need help choosing? <a href="/about">Contact our support team</a></p>
                       </div>
                     </div>
                   </div>

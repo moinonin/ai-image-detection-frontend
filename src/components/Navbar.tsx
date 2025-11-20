@@ -14,6 +14,11 @@ const Navbar: React.FC = () => {
     setIsMenuOpen(false);
   };
 
+  const handleLogin = () => {
+    navigate('/login');
+    setIsMenuOpen(false);
+  };
+
   const isActive = (path: string) => {
     return location.pathname === path ? 'active' : '';
   };
@@ -65,18 +70,29 @@ const Navbar: React.FC = () => {
               About
             </Link>
           </li>
+          {user && (
+            <li>
+              <Link to="/profile" className={isActive('/profile')} onClick={closeMenu}>
+                Profile
+              </Link>
+            </li>
+          )}
           <li>
-            <Link to="/profile" className={isActive('/profile')} onClick={closeMenu}>
-              Profile
-            </Link>
-          </li>
-          <li>
-            <button 
-              onClick={handleLogout}
-              className="logout-btn"
-            >
-              Logout
-            </button>
+            {user ? (
+              <button 
+                onClick={handleLogout}
+                className="logout-btn"
+              >
+                Logout
+              </button>
+            ) : (
+              <button 
+                onClick={handleLogin}
+                className="logout-btn"
+              >
+                Login
+              </button>
+            )}
           </li>
         </ul>
 
