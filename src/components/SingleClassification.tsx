@@ -427,15 +427,13 @@ const SingleClassification: React.FC = () => {
                       <div className="plan-actions">
                         <button 
                           className="plan-btn explorer"
-                          onClick={() => window.location.href = '/pricing?plan=explorer'}
-                        >
+                          onClick={() => window.location.href = '/pricing?plan=explorer'}>
                           <span className="plan-name">Explorer Plan</span>
                           <span className="plan-price">$19/month</span>
                         </button>
                         <button 
                           className="plan-btn pro primary"
-                          onClick={() => window.location.href = '/pricing?plan=pro'}
-                        >
+                          onClick={() => window.location.href = '/pricing?plan=pro'}>
                           <span className="plan-name">Pro Plan</span>
                           <span className="plan-price">$79/month</span>
                         </button>

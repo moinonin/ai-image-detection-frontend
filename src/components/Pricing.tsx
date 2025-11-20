@@ -13,7 +13,7 @@ const Pricing: React.FC = () => {
           <p className="price">$19/month</p>
           <ul>
             <li><strong>100 image analyses</strong> per month</li>
-            <li><strong>3 video analyses</strong> (up to 5 min each)</li>
+            <li><strong>3 video analyses</strong> (up to 5 min)</li>
             <li>Single file processing</li>
             <li>Basic PDF reports</li>
             <li>Email support (48h response)</li>
@@ -28,7 +28,7 @@ const Pricing: React.FC = () => {
           <p className="price">$79/month</p>
           <ul>
             <li><strong>500 image analyses</strong> per month</li>
-            <li><strong>20 video analyses</strong> (up to 30 min each)</li>
+            <li><strong>20 video analyses</strong> (up to 30 min)</li>
             <li>Batch image processing (up to 10 files)</li>
             <li>Smart video frame sampling</li>
             <li>Advanced PDF reports with visual evidence</li>
@@ -45,7 +45,7 @@ const Pricing: React.FC = () => {
           <p className="price">$199/month</p>
           <ul>
             <li><strong>2,000 image analyses</strong> per month</li>
-            <li><strong>50 video analyses</strong> (up to 60 min each)</li>
+            <li><strong>50 video analyses</strong> (up to 60 min)</li>
             <li>Unlimited batch processing</li>
             <li>Full video analysis (no sampling)</li>
             <li>Custom report branding</li>
@@ -94,7 +94,7 @@ const Pricing: React.FC = () => {
       </div>
 
       {/* Free Trial Notice */}
-      <div className="free-trial-notice">
+      <div className="free-trial-notice" onClick={() => window.location.href = '/register'}>
         <h3>Start with a Free Trial</h3>
         <p>Try all Professional features for 14 days with 5 free image analyses and 1 video analysis</p>
         <button className="trial-cta">Start Free Trial</button>

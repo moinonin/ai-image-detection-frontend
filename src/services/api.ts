@@ -259,6 +259,7 @@ class ApiService {
   }
 
   // Batch classification - FIXED version
+  // In your api.tsx - update the startBatchJobSync method to better handle usage limits
   async startBatchJobSync(
     files: File[], 
     model: string = 'ml',
@@ -327,6 +328,8 @@ class ApiService {
           }
         }
 
+        console.log('Batch classification error response:', { status: response.status, errorData });
+
         // Handle usage limit exceeded (402 Payment Required)
         if (response.status === 402) {
           const errorMessage = errorData.detail || errorData.error || 'Usage limit exceeded';
@@ -336,10 +339,12 @@ class ApiService {
           throw usageLimitError;
         }
         
+        // Handle file validation errors from backend
         if (errorData.error && errorData.summary) {
           throw errorData;
         }
         
+        // Handle other errors
         throw new Error(errorData.detail || errorData.error || `Batch job start failed (${response.status})`);
       }
 

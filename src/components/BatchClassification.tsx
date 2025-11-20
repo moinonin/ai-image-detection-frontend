@@ -89,7 +89,6 @@ const BatchClassification: React.FC = () => {
     });
   }, [analyses, analysisResults, jobStatus, loading]);
 
-  // Handle batch classification with usage limits - FIXED
   const handleBatchClassification = async (files: File[], model: string, accountId?: string) => {
     setApiError('');
     setAnalysisResults(null);
@@ -145,9 +144,27 @@ const BatchClassification: React.FC = () => {
     } catch (error: any) {
       console.error('Classification error:', error);
       
+      // Check if it's a usage limit error
       if (error.message?.includes('USAGE_LIMIT_EXCEEDED')) {
+        const rawMessage = error.message.replace('USAGE_LIMIT_EXCEEDED: ', '');
+        
+        // Try to parse the JSON message for better formatting
+        try {
+          const parsedMessage = JSON.parse(rawMessage);
+          if (parsedMessage.detail) {
+            setUsageLimitMessage(parsedMessage.detail);
+          } else {
+            setUsageLimitMessage(rawMessage);
+          }
+        } catch (parseError) {
+          // If it's not JSON, use the raw message
+          setUsageLimitMessage(rawMessage);
+        }
+        
         setShowUsageLimitModal(true);
-        setUsageLimitMessage(error.message.replace('USAGE_LIMIT_EXCEEDED: ', ''));
+      } else if (error.error && error.summary) {
+        // This is a file validation error from the backend
+        setValidationError(error as FileValidationError);
       } else {
         setApiError(error.message || 'An error occurred during classification');
       }
@@ -412,8 +429,27 @@ const BatchClassification: React.FC = () => {
       }
     }
   };
-
-  // Handle submit - FIXED loading state
+  const checkUsageBeforeSubmit = async () => {
+    try {
+      const usage = await classificationService.getCurrentUsage();
+      console.log('Current usage:', usage);
+      
+      // If the user doesn't have enough analyses for the selected files
+      if (usage.free_analyses_remaining < selectedFiles.length && !usage.subscription_used) {
+        setUsageLimitMessage(
+          `You have ${usage.free_analyses_remaining} free analyses remaining, but you're trying to process ${selectedFiles.length} images. Please upgrade your plan or reduce the number of images.`
+        );
+        setShowUsageLimitModal(true);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to check usage:', error);
+      return true; // Continue anyway if we can't check usage
+    }
+  };
+  // Update handleSubmit to use pre-validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedFiles.length === 0) return;
@@ -421,6 +457,12 @@ const BatchClassification: React.FC = () => {
     const clientValidationError = validateFiles(selectedFiles);
     if (clientValidationError) {
       setValidationError(clientValidationError);
+      return;
+    }
+
+    // Check usage before proceeding
+    const canProceed = await checkUsageBeforeSubmit();
+    if (!canProceed) {
       return;
     }
 
@@ -432,21 +474,27 @@ const BatchClassification: React.FC = () => {
     setResultsError(null);
     setApiError('');
     setAnalysisResults(null);
+    setShowUsageLimitModal(false);
+    setUsageLimitMessage('');
 
     try {
       await handleBatchClassification(selectedFiles, model);
     } catch (error: any) {
       console.error('Failed to start batch job:', error);
-      if (error.error && error.summary && error.details) {
-        setValidationError(error as FileValidationError);
-      } else {
-        setApiError(error.message || 'Failed to start batch processing');
+      
+      if (!error.message?.includes('USAGE_LIMIT_EXCEEDED')) {
+        if (error.error && error.summary && error.details) {
+          setValidationError(error as FileValidationError);
+        } else {
+          setApiError(error.message || 'Failed to start batch processing');
+        }
       }
     } finally {
       setLoading(false);
     }
   };
 
+  // Update handleProceedWithAcceptedFiles as well:
   const handleProceedWithAcceptedFiles = () => {
     if (!validationError) return;
 
@@ -469,14 +517,20 @@ const BatchClassification: React.FC = () => {
     setAnalyses([]);
     setResultsError(null);
     setApiError('');
+    setShowUsageLimitModal(false); // Reset usage limit modal
+    setUsageLimitMessage(''); // Reset usage limit message
 
     handleBatchClassification(acceptedFiles, model)
       .catch(error => {
         console.error('Failed to start batch job with accepted files:', error);
-        if (error.error && error.summary && error.details) {
-          setValidationError(error as FileValidationError);
-        } else {
-          setApiError(error.message || 'Failed to start batch processing');
+        
+        // Don't set API error for usage limit exceeded - it's handled by the modal
+        if (!error.message?.includes('USAGE_LIMIT_EXCEEDED')) {
+          if (error.error && error.summary && error.details) {
+            setValidationError(error as FileValidationError);
+          } else {
+            setApiError(error.message || 'Failed to start batch processing');
+          }
         }
         setLoading(false);
       });
@@ -865,65 +919,180 @@ const BatchClassification: React.FC = () => {
             )}
           </div>
         )}
-
-        {/* Usage Limit Modal */}
-        {showUsageLimitModal && (
-          <div className="modal-overlay" style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
-          }}>
-            <div className="modal-content" style={{
-              backgroundColor: 'white',
-              padding: '2rem',
-              borderRadius: '8px',
-              maxWidth: '500px',
-              width: '90%'
+          {/* Enhanced Usage Limit Modal */}
+          {showUsageLimitModal && (
+            <div className="modal-overlay" style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000
             }}>
-              <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>
-                Usage Limit Exceeded
-              </h2>
-              <p style={{ marginBottom: '2rem' }}>{usageLimitMessage}</p>
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                <button 
-                  onClick={() => setShowUsageLimitModal(false)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Close
-                </button>
-                <button 
-                  onClick={() => {
-                    setShowUsageLimitModal(false);
-                  }}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Upgrade Plan
-                </button>
+              <div className="modal-content" style={{
+                background: 'linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%)',
+                border: '1px solid var(--card-border)',
+                borderRadius: '15px',
+                padding: '2.5rem',
+                maxWidth: '500px',
+                width: '90%',
+                color: 'var(--text-primary)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
+              }}>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚫</div>
+                  <h2 style={{ 
+                    color: 'var(--error-color)',
+                    marginBottom: '1rem',
+                    background: 'linear-gradient(45deg, var(--error-color), #ff6b6b)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}>
+                    Usage Limit Exceeded
+                  </h2>
+                  <p style={{ 
+                    color: 'var(--text-secondary)',
+                    lineHeight: '1.6',
+                    marginBottom: '0.5rem'
+                  }}>
+                    {usageLimitMessage}
+                  </p>
+                  <p style={{ 
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.9rem',
+                    fontStyle: 'italic'
+                  }}>
+                    Each image in a batch counts as one analysis toward your monthly limit.
+                  </p>
+                </div>
+
+                <div style={{ 
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '10px',
+                  padding: '1.5rem',
+                  marginBottom: '2rem',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  <h4 style={{ 
+                    color: 'var(--primary-color)',
+                    marginBottom: '1rem',
+                    textAlign: 'center'
+                  }}>
+                    Available Plans
+                  </h4>
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ 
+                      textAlign: 'center',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(0, 255, 255, 0.3)',
+                      minWidth: '120px'
+                    }}>
+                      <div style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>Explorer Plan</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>$19</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>100 analyses/month</div>
+                    </div>
+                    <div style={{ 
+                      textAlign: 'center',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(0, 255, 136, 0.3)',
+                      minWidth: '120px',
+                      background: 'rgba(0, 255, 136, 0.1)'
+                    }}>
+                      <div style={{ fontWeight: 'bold', color: 'var(--accent-color)' }}>Pro</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>$79</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>500 analyses/month</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button 
+                    onClick={() => setShowUsageLimitModal(false)}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--card-border)',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    }}
+                  >
+                    Maybe Later
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowUsageLimitModal(false);
+                      // Navigate to pricing page or open subscription modal
+                      window.open('/pricing', '_blank');
+                    }}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      background: 'linear-gradient(45deg, var(--primary-color), var(--secondary-color))',
+                      color: 'var(--primary-bg)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 255, 255, 0.4)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    Upgrade Plan
+                  </button>
+                </div>
+
+                <div style={{ 
+                  textAlign: 'center', 
+                  marginTop: '1.5rem',
+                  paddingTop: '1.5rem',
+                  borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                }}>
+                  <p style={{ 
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.8rem'
+                  }}>
+                    Need a custom plan?{' '}
+                    <a 
+                      href="/about" 
+                      style={{ 
+                        color: 'var(--primary-color)',
+                        textDecoration: 'none'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.textDecoration = 'underline';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.textDecoration = 'none';
+                      }}
+                    >
+                      Contact us
+                    </a>
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Results Display - MOVED OUTSIDE jobStatus */}
         {displayResults.length > 0 && (
