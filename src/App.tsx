@@ -15,6 +15,7 @@ import Pricing from './components/Pricing';
 import About from './components/About';
 import './App.css';
 import Resources from './components/Resources';
+import Footer from './components/Footer';
 
 const App: React.FC = () => {
   return (
@@ -59,6 +60,7 @@ const PublicLayout: React.FC = () => {
           <Route path="/resources" element={<Resources />} />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 };
@@ -82,6 +84,7 @@ const ProtectedLayout: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      <Footer />
     </div>
   );
 };
