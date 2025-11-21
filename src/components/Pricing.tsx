@@ -96,7 +96,7 @@ const Pricing: React.FC = () => {
       {/* Free Trial Notice */}
       <div className="free-trial-notice" onClick={() => window.location.href = '/register'}>
         <h3>Start with a Free Trial</h3>
-        <p>Try all Professional features for 14 days with 5 free image analyses and 1 video analysis</p>
+        <p>Try all Professional features under free tier with 5 free image and/or video analyses every month</p>
         <button className="trial-cta">Start Free Trial</button>
       </div>
     </div>
