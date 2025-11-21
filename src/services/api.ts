@@ -1,27 +1,8 @@
-import { User, AuthResponse, ClassificationResult, BatchUsage, ModelInfo, VideoClassificationResponse, UsageInfo, CacheInfo, BatchJobStatus, BatchJobResponse } from '../types';
+import { User, AuthResponse, ClassificationResult, BatchUsage, ModelInfo, VideoClassificationResponse, UsageInfo, CacheInfo, BatchJobResponse } from '../types';
 
 type ReportFormat = 'json' | 'pdf';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
-
-function base64ToBlob(base64: string, contentType: string = ''): Blob {
-  const byteCharacters = atob(base64);
-  const byteArrays = [];
-  
-  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-    const slice = byteCharacters.slice(offset, offset + 512);
-    
-    const byteNumbers = new Array(slice.length);
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-    
-    const byteArray = new Uint8Array(byteNumbers);
-    byteArrays.push(byteArray);
-  }
-  
-  return new Blob(byteArrays, { type: contentType });
-}
 
 // Extended interfaces to include pdfBlob
 interface SingleClassificationResponse {
@@ -650,7 +631,7 @@ class ApiService {
   }
 
   // Updated batch PDF download to handle BatchJobResponse
-  async downloadBatchPDF(selectedFiles: File[], model: string, results: BatchJobResponse): Promise<Blob> {
+  async downloadBatchPDF(_selectedFiles: File[], _model: string, results: BatchJobResponse): Promise<Blob> {
     const token = localStorage.getItem('token');
     
     try {
@@ -677,14 +658,6 @@ class ApiService {
       console.error('Error downloading batch PDF:', error);
       throw error;
     }
-  }
-
-  // ADDED: Cookie utility method (used by download methods)
-  private getCookie(name: string): string | null {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()!.split(';').shift()!;
-    return null;
   }
 
   //async getModels(): Promise<{ models: ModelInfo[] }> {

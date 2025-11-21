@@ -52,7 +52,6 @@ const BatchClassification: React.FC = () => {
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [model, setModel] = useState('scalpel');
   const [loading, setLoading] = useState(false);
-  const [pdfLoading, setPdfLoading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<BatchJobWithDebug | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -536,35 +535,6 @@ const BatchClassification: React.FC = () => {
       });
   };
 
-  const pollJobStatus = async (jobId: string) => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await classificationService.get<BatchJobResponse>(
-          `/api/v1/classify/batch/status/${jobId}`
-        );
-        
-        console.log('Polling response:', response);
-        
-        if (response && (response.status || response.job_id)) {
-          setJobStatus(response as BatchJobWithDebug);
-          
-          if (response.status === 'completed' || response.status === 'failed') {
-            clearInterval(interval);
-            setLoading(false);
-          }
-        } else {
-          console.error('Invalid job status response');
-          clearInterval(interval);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error('Error polling job status:', error);
-        clearInterval(interval);
-        setLoading(false);
-      }
-    }, 2000);
-  };
-
   const removeFile = (index: number) => {
     const newFiles = selectedFiles.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
@@ -585,12 +555,6 @@ const BatchClassification: React.FC = () => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence > 0.8) return '#00ff00';
-    if (confidence > 0.6) return '#ffff00';
-    return '#ff4444';
-  };
-
   const handleEmailBatchResults = async (jobStatus: BatchJobWithDebug): Promise<void> => {
     try {
       console.log('Emailing batch results:', jobStatus);
@@ -604,7 +568,6 @@ const BatchClassification: React.FC = () => {
   const handleDownloadBatchPDF = async (jobStatus: BatchJobWithDebug | null): Promise<void> => {
     if (!jobStatus) return;
 
-    setPdfLoading(true);
     try {
       console.log('Downloading batch PDF report...');
       const pdfBlob = await classificationService.downloadBatchPDF(
@@ -626,8 +589,6 @@ const BatchClassification: React.FC = () => {
     } catch (error: any) {
       console.error('Batch PDF download failed:', error);
       alert('Batch PDF download failed. Please try again.');
-    } finally {
-      setPdfLoading(false);
     }
   };
 
@@ -905,7 +866,7 @@ const BatchClassification: React.FC = () => {
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 marginBottom: '0.5rem' 
-              }}>
+            }}>
                 <span className="detail-label" style={{ fontWeight: '500' }}>
                   Subscription:
                 </span>

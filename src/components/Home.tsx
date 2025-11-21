@@ -29,7 +29,7 @@ const Home: React.FC = () => {
           <Link to="/resources" className="cta-button">
             Analyze Your Media
           </Link>
-          <p className="cta-note">No credit card required • First 10 analyses free</p>
+          <p className="cta-note">No credit card required • First 5 analyses free</p>
         </div>
       </section>
 

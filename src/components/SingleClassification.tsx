@@ -22,7 +22,7 @@ const SingleClassification: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [modelType, setModelType] = useState('ml');
-  const [reportFormat, setReportFormat] = useState<ReportFormat>('pdf');
+  const reportFormat: ReportFormat = 'pdf';
   const [result, setResult] = useState<SingleClassificationResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -232,19 +232,6 @@ const SingleClassification: React.FC = () => {
               </select>
             </div>
 
-            {/*<div className="report-format-selection">
-              <label htmlFor="report-format">Report Format:</label>
-              <select 
-                id="report-format"
-                value={reportFormat} 
-                onChange={(e) => setReportFormat(e.target.value as ReportFormat)}
-                className="report-format-select"
-              >
-                <option value="json">JSON</option>
-                <option value="pdf">PDF</option>
-              </select>
-            </div>*/}
-
             <button 
               type="submit" 
               disabled={!selectedFile || loading}
@@ -272,14 +259,6 @@ const SingleClassification: React.FC = () => {
                   <h3>{analysisResult.filename || selectedFile?.name || 'Unknown File'}</h3>
                   <span className="result-badge">{getPredictedClass()}</span>
                 </div>
-
-                {/* Show a warning if we're using fallback data */}
-                {/*analysisResult.predicted_class === 'Analysis Complete' && (
-                  <div className="data-warning">
-                    <span className="warning-icon">⚠️</span>
-                    <span>Showing basic analysis results. Full details available in PDF report.</span>
-                  </div>
-                )*/}
 
                 {result?.cache_info && (
                   <div className="cache-info">
