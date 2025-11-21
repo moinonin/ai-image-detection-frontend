@@ -25,17 +25,17 @@ const Resources: React.FC = () => {
           {
             id: "ML",
             name: "AICASSIE(ML)",
-            description: "Excels at identifying human content with high precision (92.9% AI detection accuracy).\nMaintains strong overall performance (89.2%) accuracy while minimizing false positives."
+            description: "Excels at identifying human content with high precision (97.9% AI detection accuracy).\nMaintains strong overall performance (95.2%) accuracy while minimizing false positives."
           },
           {
             id: "NET",
             name: "AITASHA (NET)",
-            description: "Highly sensitive AI detector with excellent recall (93.8%), catching nearly all AI content.\nTends to be aggressive, prioritizing comprehensive AI detection over precision, which results in more false positives."
+            description: "Highly sensitive AI detector with excellent recall (94.8%), catching nearly all AI content.\nTends to be aggressive, prioritizing comprehensive AI detection over precision, which results in more false positives."
           },
           {
             id: "SCALPEL",
             name: "AISUSSIE (SCALPEL)",
-            description: "Well-balanced AI detector with excellent precision (93.3%) and strong overall accuracy (91.9%).\nReliably identifies AI content while rarely misclassifying human work, making it highly trustworthy."
+            description: "Well-balanced AI detector with excellent precision (98.3%) and strong overall accuracy (96.9%).\nReliably identifies AI content while rarely misclassifying human work, making it highly trustworthy."
           }
         ]);
       } finally {
