@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Pricing: React.FC = () => {
   return (
@@ -94,10 +95,12 @@ const Pricing: React.FC = () => {
       </div>
 
       {/* Free Trial Notice */}
-      <div className="free-trial-notice" onClick={() => window.location.href = '/register'}>
+      <div className="free-trial-notice">
         <h3>Start with a Free Trial</h3>
         <p>Try all Professional features under free tier with 5 free image and/or video analyses every month</p>
-        <button className="trial-cta">Start Free Trial</button>
+        <Link to="/register">
+          <button className="trial-cta">Start Free Trial</button>
+        </Link>
       </div>
     </div>
   );
