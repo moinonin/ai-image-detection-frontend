@@ -5183,3 +5183,102 @@ body {
     justify-content: center;
   }
 }
+
+/* FIX: Proper 3-column layout */
+.result-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto; /* filename | prediction | confidence */
+  align-items: center;
+  cursor: pointer;
+  padding: 12px;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  gap: 10px;
+}
+
+.filename {
+  color: #e0e0e0;
+  font-weight: 500;
+  text-align: left;
+  /* This takes the first column and pushes prediction to 50% */
+}
+
+.prediction {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  /* This starts exactly at 50% due to grid layout */
+  white-space: nowrap;
+}
+
+.confidence-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+  /* This stays at the far right */
+}
+
+/* Remove the prediction-container since we're using grid directly */
+.prediction-container {
+  display: contents; /* This makes the children participate in the grid */
+}
+
+/* FORCE CORRECT COLORS */
+.prediction.batch-ai {
+  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%) !important;
+  color: white !important;
+  border: 2px solid #cc0000 !important;
+  box-shadow: 0 2px 10px rgba(255, 68, 68, 0.3) !important;
+}
+
+.prediction.batch-human {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%) !important;
+  color: white !important;
+  border: 2px solid #00cc66 !important;
+  box-shadow: 0 2px 10px rgba(0, 255, 136, 0.3) !important;
+}
+
+.result-badge.batch-ai-badge {
+  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%) !important;
+  color: white !important;
+  border: 2px solid #cc0000 !important;
+}
+
+.result-badge.batch-human-badge {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%) !important;
+  color: white !important;
+  border: 2px solid #00cc66 !important;
+}
+
+.confidence-badge.ai {
+  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%) !important;
+  color: white !important;
+}
+
+.confidence-badge.human {
+  background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%) !important;
+  color: white !important;
+}
+
+.confidence-fill.ai {
+  background: linear-gradient(90deg, #ff6b6b 0%, #ff4444 50%, #cc0000 100%) !important;
+}
+
+.confidence-fill.human {
+  background: linear-gradient(90deg, #00ff88 0%, #00cc66 50%, #009944 100%) !important;
+}

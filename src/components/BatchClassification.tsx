@@ -1064,21 +1064,28 @@ const BatchClassification: React.FC = () => {
                 .slice(0, isExpanded ? displayResults.length : 5)
                 .map((result: BatchAnalysisResult, index: number) => {
                   const filename = result.filename || `Image ${index + 1}`;
-                  const predictedClass = result.predicted_class || 'Unknown';
-                  const isAI = result.is_ai !== undefined ? result.is_ai : false;
-                  const confidence = result.confidence !== undefined ? result.confidence : null;
-                  const probability = result.probability !== undefined ? result.probability : null;
-                  const modelUsed = result.model || model;
-                  const analysisType = result.analysis_type || 'batch';
-                  const totalImages = result.total_images || 1;
-                  const analyzedImages = result.analyzed_images || 1;
-                  const features = result.features || {};
-                  const fromCache = result.from_cache || false;
-                  const cacheTimestamp = result.cache_timestamp || null;
-                  const processingTime = result.processing_time || new Date().toISOString();
+                  
+                  // Get data from the right place
+                  const analysisData = result.analysis_results || result;
+                  const predictedClass = analysisData.predicted_class || 'Unknown';
+                  const confidence = analysisData.confidence !== undefined ? analysisData.confidence : null;
+                  const probability = analysisData.probability !== undefined ? analysisData.probability : null;
+                  const modelUsed = analysisData.model || model;
+                  const analysisType = analysisData.analysis_type || 'batch';
+                  const totalImages = analysisData.total_images || 1;
+                  const analyzedImages = analysisData.analyzed_images || 1;
+                  const features = analysisData.features || {};
+                  const fromCache = analysisData.from_cache || false;
+                  const cacheTimestamp = analysisData.cache_timestamp || null;
+                  const processingTime = analysisData.processing_time || new Date().toISOString();
+
+                  // Determine isAI directly from predicted_class text (this works!)
+                  const isAI = predictedClass.toLowerCase().includes('ai') || 
+                              predictedClass.toLowerCase().includes('generated');
 
                   return (
                     <div key={index} className="result-container">
+                      {/* Result Item - Fixed structure */}
                       <div 
                         className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
                         onClick={() => toggleExpand(index)}
@@ -1087,13 +1094,14 @@ const BatchClassification: React.FC = () => {
                         <span className={`prediction ${isAI ? 'batch-ai' : 'batch-human'}`}>
                           {predictedClass}
                         </span>
-                        {confidence !== null && (
+                        {/*confidence !== null && (
                           <span className={`confidence-badge ${isAI ? 'ai' : 'human'}`}>
                             {(confidence * 100).toFixed(1)}%
                           </span>
-                        )}
+                        )*/}
                       </div>
                       
+                      {/* Expanded Details - Fixed structure */}
                       {expandedIndex === index && (
                         <div className="result-details-expanded">
                           <div className={`result-card ${isAI ? 'batch-ai-detected' : 'batch-human-detected'}`}>
@@ -1207,6 +1215,7 @@ const BatchClassification: React.FC = () => {
                 })}
             </div>
             
+            {/* Show More/Less Button - Fixed structure */}
             {displayResults.length > 5 && (
               <div className="results-expand">
                 <button 
