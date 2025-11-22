@@ -1,4 +1,4 @@
-import { User, AuthResponse, ClassificationResult, BatchUsage, ModelInfo, VideoClassificationResponse, UsageInfo, CacheInfo, BatchJobResponse } from '../types';
+import { User, AuthResponse, ClassificationResult, BatchUsage, ModelInfo, VideoClassificationResponse, UsageInfo, CacheInfo, BatchJobResponse, VerifyResetTokenResponse } from '../types';
 
 type ReportFormat = 'json' | 'pdf';
 
@@ -94,6 +94,13 @@ class ApiService {
     return this.request('/api/v1/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ token, new_password: newPassword }),
+    });
+  }
+
+  async verifyResetToken(token: string): Promise<VerifyResetTokenResponse> {
+    return this.request<VerifyResetTokenResponse>('/api/v1/auth/verify-reset-token', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
     });
   }
 

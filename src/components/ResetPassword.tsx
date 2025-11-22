@@ -1,46 +1,140 @@
-import React, { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { authService } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { resetPassword, resetLoading, resetMessage } = useAuth();
+  const { verifyResetToken } = useAuth();
+  
   const tokenFromUrl = searchParams.get('token');
   
   const [formData, setFormData] = useState({
-    token: tokenFromUrl || '',
     newPassword: '',
     confirmPassword: ''
   });
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [tokenValid, setTokenValid] = useState(!!tokenFromUrl);
+  const [verifying, setVerifying] = useState(true);
+
+  // Auto-verify token on component mount
+  useEffect(() => {
+    const checkToken = async () => {
+      if (!tokenFromUrl) {
+        setTokenValid(false);
+        setVerifying(false);
+        return;
+      }
+
+      try {
+        const isValid = await verifyResetToken(tokenFromUrl);
+        setTokenValid(isValid);
+      } catch (error) {
+        setTokenValid(false);
+      } finally {
+        setVerifying(false);
+      }
+    };
+
+    checkToken();
+  }, [tokenFromUrl, verifyResetToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage('');
+    
+    if (!tokenFromUrl) {
+      return;
+    }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setMessage('Passwords do not match');
-      setLoading(false);
       return;
     }
 
     if (formData.newPassword.length < 6) {
-      setMessage('Password must be at least 6 characters long');
-      setLoading(false);
       return;
     }
 
     try {
-      await authService.resetPassword(formData.token, formData.newPassword);
-      setMessage('Password reset successfully! You can now login with your new password.');
-      setFormData(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));
+      await resetPassword(tokenFromUrl, formData.newPassword);
+      // Success message is handled by AuthContext
+      setFormData({ newPassword: '', confirmPassword: '' });
+      
+      // Redirect to login after success
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
     } catch (error) {
-      setMessage('Failed to reset password. The token may be invalid or expired.');
-    } finally {
-      setLoading(false);
+      // Error handling is done in AuthContext
     }
   };
+
+  if (verifying) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-logo">⏳</div>
+            <h1>Verifying Reset Link</h1>
+            <p className="auth-subtitle">Please wait while we verify your reset link...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!tokenFromUrl) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-logo">❌</div>
+            <h1>Invalid Reset Link</h1>
+            <p className="auth-subtitle">This reset link is missing the required token</p>
+          </div>
+
+          <div className="message error">
+            Please use the complete reset link from your email, or request a new one.
+          </div>
+
+          <div className="auth-link">
+            <p>
+              <Link to="/forgot-password">Request New Reset Link</Link>
+            </p>
+            <p>
+              <Link to="/login">Back to Login</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!tokenValid) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-logo">⚠️</div>
+            <h1>Invalid Reset Token</h1>
+            <p className="auth-subtitle">This reset link is invalid or has expired</p>
+          </div>
+
+          <div className="message error">
+            This reset token is no longer valid. Please request a new password reset link.
+          </div>
+
+          <div className="auth-link">
+            <p>
+              <Link to="/forgot-password">Request New Reset Link</Link>
+            </p>
+            <p>
+              <Link to="/login">Back to Login</Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-container">
@@ -48,23 +142,10 @@ const ResetPassword: React.FC = () => {
         <div className="auth-header">
           <div className="auth-logo">🔄</div>
           <h1>Create New Password</h1>
-          <p className="auth-subtitle">Enter your reset token and new password</p>
+          <p className="auth-subtitle">Enter your new password below</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="token">Reset Token</label>
-            <input
-              type="text"
-              id="token"
-              value={formData.token}
-              onChange={(e) => setFormData(prev => ({ ...prev, token: e.target.value }))}
-              className="form-input"
-              required
-              placeholder="Enter the token from your email"
-            />
-          </div>
-
           <div className="form-group">
             <label htmlFor="newPassword">New Password</label>
             <input
@@ -76,6 +157,7 @@ const ResetPassword: React.FC = () => {
               required
               minLength={6}
               placeholder="Enter your new password"
+              disabled={resetLoading}
             />
           </div>
 
@@ -90,17 +172,22 @@ const ResetPassword: React.FC = () => {
               required
               minLength={6}
               placeholder="Confirm your new password"
+              disabled={resetLoading}
             />
           </div>
 
-          {message && (
-            <div className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>
-              {message}
+          {resetMessage && (
+            <div className={`message ${resetMessage.includes('successfully') ? 'success' : 'error'}`}>
+              {resetMessage}
             </div>
           )}
 
-          <button type="submit" disabled={loading} className="auth-btn">
-            {loading ? 'Resetting Password...' : 'Reset Password'}
+          <button 
+            type="submit" 
+            disabled={resetLoading || formData.newPassword !== formData.confirmPassword || formData.newPassword.length < 6}
+            className="auth-btn"
+          >
+            {resetLoading ? 'Resetting Password...' : 'Reset Password'}
           </button>
         </form>
 
