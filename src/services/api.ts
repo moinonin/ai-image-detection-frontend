@@ -673,7 +673,7 @@ class ApiService {
 
   static async getModels(): Promise<{ models: ModelInfo[] }> {
     try {
-      const response = await fetch('/api/v1/models', { // Adjust the endpoint as needed
+      const response = await fetch(`${API_BASE_URL}/api/v1/models`, { // Adjust the endpoint as needed
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
