@@ -1,56 +1,11 @@
-import { User, AuthResponse, ClassificationResult, BatchUsage, ModelInfo, VideoClassificationResponse, UsageInfo, CacheInfo, BatchJobResponse, VerifyResetTokenResponse } from '../types';
+import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse } from '../types';
+import { usageService } from '../services/usageService';
 
 type ReportFormat = 'json' | 'pdf';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
 
-// Extended interfaces to include pdfBlob
-interface SingleClassificationResponse {
-  analysis: ClassificationResult;
-  cache_info: CacheInfo;
-  usage: UsageInfo;
-  pdfBlob?: Blob;
-}
-
-interface BatchClassificationResponse {
-  analyses: Array<{
-    filename: string;
-    analysis_results: any;
-    from_cache: boolean;
-    cache_used: boolean;
-    timestamp: string;
-  }>;
-  usage: UsageInfo;
-  pdfBlob?: Blob;
-}
-
 class ApiService {
-  /*
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = localStorage.getItem('token');
-    
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers,
-    };
-
-    const config: RequestInit = {
-      headers,
-      credentials: 'include',
-      ...options,
-    };
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error || `HTTP error! status: ${response.status}`);
-    }
-
-    return response.json();
-  } */
-
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = localStorage.getItem('token');
     
@@ -194,7 +149,78 @@ class ApiService {
     }
   }
 
-  // Fixed single image classification
+  // NEW: Get current usage information
+  async getCurrentUsage(): Promise<CurrentUsageResponse> {
+    return usageService.getCurrentUsage();
+  }
+
+  // UPDATED: Get plan limits for a specific product - fixed endpoint
+  async getPlanLimits(productId: string): Promise<PlanLimitsResponse> {
+    const token = localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/products/${encodeURIComponent(productId)}/limits`, {
+        method: 'GET',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to get plan limits: ${response.status} - ${errorText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching plan limits:', error);
+      throw error;
+    }
+  }
+
+
+  // IMPROVED: Check if user has remaining quota for a specific analysis type
+  async checkUsageQuota(analysisType: 'image' | 'video'): Promise<{
+    hasQuota: boolean;
+    message?: string;
+    usage?: CurrentUsageResponse;
+  }> {
+    try {
+      const usage = await this.getCurrentUsage();
+      const remaining = usage.usage.remaining_this_month[analysisType];
+      
+      console.log(`📊 Usage check for ${analysisType}:`, {
+        remaining,
+        currentPlan: usage.usage.current_plan,
+        usedThisMonth: usage.usage.used_this_month[analysisType],
+        planLimit: usage.usage.plan_limits[analysisType]
+      });
+
+      if (remaining <= 0) {
+        return {
+          hasQuota: false,
+          message: `No remaining ${analysisType} analyses for this month. Current plan: ${usage.usage.current_plan}, Used: ${usage.usage.used_this_month[analysisType]}/${usage.usage.plan_limits[analysisType]}`,
+          usage
+        };
+      }
+
+      return {
+        hasQuota: true,
+        usage
+      };
+    } catch (error) {
+      console.error('Error checking usage quota:', error);
+      // If we can't check usage, allow the request to proceed
+      // but log the error for debugging
+      return {
+        hasQuota: true
+      };
+    }
+  }
+
+  // SIMPLIFIED: Single image classification with usage check
   async classifySingleImage(
     file: File, 
     modelType: string = 'ml', 
@@ -205,6 +231,17 @@ class ApiService {
     const token = localStorage.getItem('token');
     
     try {
+      // Enhanced usage check that can trigger UI components
+      const quotaCheck = await this.checkUsageQuota('image');
+      if (!quotaCheck.hasQuota) {
+        // Create an error that components can use to show upgrade UI
+        const error = new Error(`USAGE_LIMIT_EXCEEDED: ${quotaCheck.message}`);
+        (error as any).status = 402;
+        (error as any).usageData = quotaCheck.usage;
+        (error as any).showUpgrade = true;
+        throw error;
+      }
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('model_type', modelType);
@@ -227,6 +264,22 @@ class ApiService {
         const errorText = await response.text();
         console.error('Backend error:', response.status, errorText);
         
+        // Enhanced error handling for usage limits
+        if (response.status === 402) {
+          let usageData;
+          try {
+            usageData = await this.getCurrentUsage();
+          } catch (e) {
+            console.error('Failed to fetch usage data for error:', e);
+          }
+          
+          const error = new Error(`USAGE_LIMIT_EXCEEDED: ${errorText}`);
+          (error as any).status = 402;
+          (error as any).usageData = usageData;
+          (error as any).showUpgrade = true;
+          throw error;
+        }
+        
         try {
           const errorData = JSON.parse(errorText);
           if (errorData.error && errorData.summary) {
@@ -235,12 +288,11 @@ class ApiService {
             (fileSizeError as any).details = errorData;
             throw fileSizeError;
           }
-        } catch (parseError) {
-          throw new Error(`Classification failed (${response.status}): ${errorText}`);
+          } catch (error) {
+            console.error('Classification service error:', error);
+            throw error;
+          }
         }
-        
-        throw new Error(`Classification failed (${response.status})`);
-      }
 
       // For PDF responses, handle blob directly
       if (reportFormat === 'pdf') {
@@ -329,8 +381,7 @@ class ApiService {
     }
   }
 
-  // Batch classification - FIXED version
-  // In your api.tsx - update the startBatchJobSync method to better handle usage limits
+  // UPDATED: Batch classification with usage check
   async startBatchJobSync(
     files: File[], 
     model: string = 'ml',
@@ -361,6 +412,25 @@ class ApiService {
         accepted_files: files.filter(file => file.size <= MAX_FILE_SIZE_BYTES)
       };
       throw oversizedError;
+    }
+
+    // FIXED: Properly check usage quota
+    const quotaCheck = await this.checkUsageQuota('image');
+    if (!quotaCheck.hasQuota) {
+      const error = new Error(`USAGE_LIMIT_EXCEEDED: ${quotaCheck.message}`);
+      (error as any).status = 402;
+      (error as any).usageData = quotaCheck.usage;
+      (error as any).showUpgrade = true;
+      throw error;
+    }
+
+    // Check if we have enough quota for all files
+    if (quotaCheck.usage && files.length > quotaCheck.usage.usage.remaining_this_month.image) {
+      const error = new Error(`USAGE_LIMIT_EXCEEDED: Requested ${files.length} analyses but only ${quotaCheck.usage.usage.remaining_this_month.image} remaining. Current plan: ${quotaCheck.usage.usage.current_plan}, Used: ${quotaCheck.usage.usage.used_this_month.image}/${quotaCheck.usage.usage.plan_limits.image}`);
+      (error as any).status = 402;
+      (error as any).usageData = quotaCheck.usage;
+      (error as any).showUpgrade = true;
+      throw error;
     }
 
     const formData = new FormData();
@@ -437,7 +507,7 @@ class ApiService {
     }
   }
 
-  // Also update the classifyBatch method to handle usage limits consistently
+  // UPDATED: classifyBatch with usage check
   async classifyBatch(
     files: File[], 
     model: string = 'ml',
@@ -447,6 +517,16 @@ class ApiService {
   ): Promise<BatchClassificationResponse> {
     const token = localStorage.getItem('token');
     
+    // FIXED: Properly check usage quota
+    const quotaCheck = await this.checkUsageQuota('image');
+    if (!quotaCheck.hasQuota) {
+      const error = new Error(`USAGE_LIMIT_EXCEEDED: ${quotaCheck.message}`);
+      (error as any).status = 402;
+      (error as any).usageData = quotaCheck.usage;
+      (error as any).showUpgrade = true;
+      throw error;
+    }
+
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
     formData.append('model', model);
@@ -472,6 +552,7 @@ class ApiService {
         if (response.status === 402) {
           const usageLimitError = new Error(`USAGE_LIMIT_EXCEEDED: ${errorText}`);
           (usageLimitError as any).status = 402;
+          (usageLimitError as any).showUpgrade = true;
           throw usageLimitError;
         }
         
@@ -533,7 +614,7 @@ class ApiService {
     }
   }
 
-  // Video classification
+  // FIXED: Video classification with proper usage check
   async classifyVideo(
     file: File, 
     model: string, 
@@ -542,49 +623,94 @@ class ApiService {
     useCache: boolean = true,
     accountId?: string
   ): Promise<VideoClassificationResponse> {
-    const formData = new FormData();
-    formData.append('files', file);
-    formData.append('model', model);
-    formData.append('partial', partial ? 'true' : 'false');
-    formData.append('report_format', reportFormat);
-    formData.append('use_cache', useCache.toString());
-    if (accountId) {
-      formData.append('account_id', accountId);
-    }
-
     const token = localStorage.getItem('token');
-    const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
-      body: formData,
-    });
+    
+    try {
+      // FIXED: Properly check usage quota
+      const quotaCheck = await this.checkUsageQuota('video');
+      if (!quotaCheck.hasQuota) {
+        // Create an error that components can use to show upgrade UI
+        const error = new Error(`USAGE_LIMIT_EXCEEDED: ${quotaCheck.message}`);
+        (error as any).status = 402;
+        (error as any).usageData = quotaCheck.usage;
+        (error as any).showUpgrade = true;
+        throw error;
+      }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Backend error:', response.status, errorText);
-      throw new Error(`Video classification failed (${response.status})`);
+      const formData = new FormData();
+      formData.append('files', file);
+      formData.append('model', model);
+      formData.append('partial', partial ? 'true' : 'false');
+      formData.append('report_format', reportFormat);
+      formData.append('use_cache', useCache.toString());
+      if (accountId) {
+        formData.append('account_id', accountId);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/classify/videos`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend error:', response.status, errorText);
+        
+        // Enhanced error handling for usage limits
+        if (response.status === 402) {
+          let usageData;
+          try {
+            usageData = await this.getCurrentUsage();
+          } catch (e) {
+            console.error('Failed to fetch usage data for error:', e);
+          }
+          
+          const error = new Error(`USAGE_LIMIT_EXCEEDED: ${errorText}`);
+          (error as any).status = 402;
+          (error as any).usageData = usageData;
+          (error as any).showUpgrade = true;
+          throw error;
+        }
+        
+        throw new Error(`Video classification failed (${response.status})`);
+      }
+
+      if (reportFormat === 'pdf') {
+        const pdfBlob = await response.blob();
+        return {
+          analyses: [],
+          usage: { free_analyses_used_this_month: 0, free_analyses_remaining: 0, subscription_used: false, account_id: null },
+          pdfBlob
+        } as VideoClassificationResponse;
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Video classification service error:', error);
+      throw error;
     }
-
-    if (reportFormat === 'pdf') {
-      const pdfBlob = await response.blob();
-      return {
-        analyses: [],
-        usage: { free_analyses_used_this_month: 0, free_analyses_remaining: 0, subscription_used: false, account_id: null },
-        pdfBlob
-      } as VideoClassificationResponse;
-    }
-
-    return response.json();
   }
 
+  // ADD: Usage check for PDF downloads
   async downloadImagePDFFromResult(
     analysisData: ClassificationResult
   ): Promise<Blob> {
     const token = localStorage.getItem('token');
     
+    // Check usage for PDF generation (counts as image analysis)
+    const quotaCheck = await this.checkUsageQuota('image');
+    if (!quotaCheck.hasQuota) {
+      const error = new Error(`USAGE_LIMIT_EXCEEDED: ${quotaCheck.message}`);
+      (error as any).status = 402;
+      (error as any).usageData = quotaCheck.usage;
+      (error as any).showUpgrade = true;
+      throw error;
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/v1/generate-pdf`, {
       method: 'POST',
       headers: {
@@ -630,10 +756,29 @@ class ApiService {
     return await response.blob();
   }
 
-  // Async batch job methods
+  // UPDATED: Async batch job with usage check
   async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
     const token = localStorage.getItem('token');
     
+    // Check usage quota before proceeding
+    const hasQuota = await this.checkUsageQuota('image');
+    if (!hasQuota) {
+      const usage = await this.getCurrentUsage();
+      throw new Error(`USAGE_LIMIT_EXCEEDED: No remaining image analyses for this month. Current plan: ${usage.usage.current_plan}, Used: ${usage.usage.used_this_month.image}/${usage.usage.plan_limits.image}`);
+    }
+
+    // Check if we have enough quota for all files
+    try {
+      const usage = await this.getCurrentUsage();
+      const remainingImages = usage.usage.remaining_this_month.image;
+      if (files.length > remainingImages) {
+        throw new Error(`USAGE_LIMIT_EXCEEDED: Requested ${files.length} analyses but only ${remainingImages} remaining. Current plan: ${usage.usage.current_plan}, Used: ${usage.usage.used_this_month.image}/${usage.usage.plan_limits.image}`);
+      }
+    } catch (error) {
+      // If usage check fails, proceed and let backend handle it
+      console.warn('Could not verify exact usage quota, proceeding with request:', error);
+    }
+
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
     formData.append('model', model);
@@ -663,32 +808,6 @@ class ApiService {
       return result;
     } catch (error) {
       console.error('Error starting batch job:', error);
-      throw error;
-    }
-  }
-
-  // Add method to get current usage
-  async getCurrentUsage(): Promise<BatchUsage> {
-    const token = localStorage.getItem('token');
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/usage/current`, {
-        method: 'GET',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to get usage: ${response.status} - ${errorText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching usage:', error);
       throw error;
     }
   }
@@ -750,13 +869,9 @@ class ApiService {
     }
   }
 
-  //async getModels(): Promise<{ models: ModelInfo[] }> {
-   // return this.request('/api/v1/models');
-  //}
-
   static async getModels(): Promise<{ models: ModelInfo[] }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/models`, { // Adjust the endpoint as needed
+      const response = await fetch(`${API_BASE_URL}/api/v1/models`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -806,3 +921,4 @@ export const generatePDFReport = async (results: any[], reportType: string = 'in
 export const authService = new ApiService();
 export const classificationService = new ApiService();
 export const getModels = ApiService.getModels;
+export { usageService };

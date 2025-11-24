@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { classificationService } from '../services/api';
-import { VideoClassificationResponse, VideoSummary } from '../types';
+import { usageService } from '../services/api'; // Import from api or directly from usageService
+import { VideoClassificationResponse, VideoSummary, CurrentUsageResponse } from '../types';
 
 type EmailResultProps = VideoSummary;
 
@@ -14,6 +15,22 @@ const VideoClassification: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<any>(null);
+  const [currentUsage, setCurrentUsage] = useState<CurrentUsageResponse | null>(null);
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
+
+  // Fetch current usage on component mount
+  useEffect(() => {
+    fetchCurrentUsage();
+  }, []);
+
+  const fetchCurrentUsage = async () => {
+    try {
+      const usage = await usageService.getCurrentUsage();
+      setCurrentUsage(usage);
+    } catch (error) {
+      console.error('Failed to fetch current usage:', error);
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -72,15 +89,21 @@ const VideoClassification: React.FC = () => {
       console.log('Video API result:', response);
       setResult(response);
       
+      // Refresh current usage after successful analysis
+      await fetchCurrentUsage();
+      
     } catch (error: any) {
       console.error('Video classification failed:', error);
       
-      if (error.message.includes('402')) {
-        setError('You have exhausted your free analyses. Please subscribe to continue using the service.');
+      if (error.status === 402 || error.message?.includes('USAGE_LIMIT_EXCEEDED')) {
+        setError('You have exhausted your free video analyses. Please subscribe to continue using the service.');
         setErrorDetails({
           type: 'subscription_required',
-          message: 'Upgrade your account to unlock more analyses'
+          message: 'Upgrade your account to unlock more video analyses',
+          usageData: error.usageData
         });
+        // Refresh usage data to get current state
+        await fetchCurrentUsage();
       } else if (error.name === 'FileSizeError' && error.details) {
         setError(error.message);
         setErrorDetails(error.details);
@@ -112,12 +135,45 @@ const VideoClassification: React.FC = () => {
     return 'human-detected';
   };
 
+  // NEW: Check if user has exceeded video usage limits using CURRENT usage data
+  const hasExceededVideoUsage = (): boolean => {
+    if (!currentUsage) return false;
+    
+    const { remaining_this_month, current_plan } = currentUsage.usage;
+    
+    // For free plan, show upgrade when video analyses are depleted
+    if (current_plan === 'free') {
+      return remaining_this_month.video <= 0;
+    }
+    
+    // For paid plans, you might have different logic
+    return false;
+  };
+
+  // NEW: Get usage display values from CURRENT usage
+  const getUsageDisplayData = () => {
+    if (!currentUsage) return null;
+    
+    const { current_plan, plan_limits, used_this_month, remaining_this_month } = currentUsage.usage;
+    
+    return {
+      currentPlan: current_plan,
+      imageUsed: used_this_month.image,
+      imageLimit: plan_limits.image,
+      imageRemaining: remaining_this_month.image,
+      videoUsed: used_this_month.video,
+      videoLimit: plan_limits.video,
+      videoRemaining: remaining_this_month.video,
+      hasSubscription: current_plan !== 'free'
+    };
+  };
+
+  const usageData = getUsageDisplayData();
+
   const handleEmailResults = (result: EmailResultProps): void => {
     console.log('Email video results:', result);
   };
 
-  // Update the handleDownloadPDF function in your VideoClassification component
-  // In your VideoClassification component, replace handleDownloadPDF with:
   const handleDownloadPDF = async (): Promise<void> => {
     if (!result) return;
 
@@ -168,11 +224,87 @@ const VideoClassification: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Upgrade prompt component - ONLY shown when hasExceededVideoUsage is true
+  const UpgradePrompt = () => (
+    <div className="subscription-prompt">
+      <div className="upgrade-options">
+        <h4>✨ Upgrade Your Account</h4>
+        <p>You've used all your free video analyses this month. Choose a plan to continue:</p>
+        
+        <div className="plan-actions">
+          <button 
+            className="plan-btn explorer"
+            onClick={() => window.location.href = '/pricing?plan=explorer'}>
+            <span className="plan-name">Explorer Plan</span>
+            <span className="plan-price">$19/month</span>
+            <span className="plan-features">5 videos/month</span>
+          </button>
+          <button 
+            className="plan-btn pro primary"
+            onClick={() => window.location.href = '/pricing?plan=pro'}>
+            <span className="plan-name">Pro Plan</span>
+            <span className="plan-price">$79/month</span>
+            <span className="plan-features">20 videos/month</span>
+          </button>
+        </div>
+
+        <div className="contact-support">
+          <p>Need help choosing? <a href="/about">Contact our support team</a></p>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="video-classification">
       <div className="page-header">
         <h1>Video Analysis</h1>
         <p>Upload a video to detect if it's AI-generated or human-created</p>
+        
+        {/* Usage Information Banner - Always show when we have current usage data */}
+        {usageData && (
+          <div className="usage-banner">
+            <div className="usage-stats">
+              <span className="usage-item">
+                <strong>Plan:</strong> {usageData.currentPlan.toUpperCase()}
+              </span>
+              <span className="usage-item">
+                <strong>Videos Used:</strong> {usageData.videoUsed}/{usageData.videoLimit}
+              </span>
+              <span className="usage-item">
+                <strong>Videos Remaining:</strong> {usageData.videoRemaining}
+              </span>
+              {usageData.imageLimit > 0 && (
+                <span className="usage-item">
+                  <strong>Images Used:</strong> {usageData.imageUsed}/{usageData.imageLimit}
+                </span>
+              )}
+            </div>
+            
+            {/* Only show upgrade CTA in banner when video limits are exceeded */}
+            {hasExceededVideoUsage() && showUpgradeBanner && (
+              <div className="upgrade-cta-banner">
+                <div className="urgent-upgrade">
+                  <span className="warning-icon">⚠️</span>
+                  <span>You've used all free video analyses. </span>
+                  <button 
+                    className="upgrade-link-btn"
+                    onClick={() => window.location.href = '/pricing'}
+                  >
+                    Upgrade for more videos
+                  </button>
+                  <button 
+                    className="banner-close"
+                    onClick={() => setShowUpgradeBanner(false)}
+                    aria-label="Close banner"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="classification-container">
@@ -379,25 +511,26 @@ const VideoClassification: React.FC = () => {
                   )}
                 </div>
 
-                {/* Usage info from the top level */}
-                {result?.usage && (
+                {/* Show current usage information */}
+                {usageData && (
                   <div className="usage-info">
                     <div className="detail-item">
-                      <span className="detail-label">Free Analyses Remaining:</span>
-                      <span className="detail-value">{result.usage.free_analyses_remaining}</span>
+                      <span className="detail-label">Current Plan:</span>
+                      <span className="detail-value">{usageData.currentPlan.toUpperCase()}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Videos Remaining:</span>
+                      <span className="detail-value">{usageData.videoRemaining}</span>
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Used This Month:</span>
-                      <span className="detail-value">{result.usage.free_analyses_used_this_month}</span>
+                      <span className="detail-value">{usageData.videoUsed}/{usageData.videoLimit}</span>
                     </div>
-                    {result.usage.subscription_used && (
-                      <div className="detail-item">
-                        <span className="detail-label">Subscription:</span>
-                        <span className="detail-value">Active</span>
-                      </div>
-                    )}
                   </div>
                 )}
+
+                {/* ONLY show upgrade prompt when current video usage is exceeded */}
+                {hasExceededVideoUsage() && <UpgradePrompt />}
 
                 {/* Action buttons */}
                 <div className="action-buttons">
@@ -437,35 +570,8 @@ const VideoClassification: React.FC = () => {
                 <div className="error-message">
                   <p>{error}</p>
                   
-                  {errorDetails?.type === 'subscription_required' && (
-                  <div className="subscription-prompt">
-                    <div className="upgrade-options">
-                      <h4>✨ Upgrade Your Account</h4>
-                      <p>You've used all your free analyses this month. Choose a plan to continue:</p>
-                      
-                      <div className="plan-actions">
-                        <button 
-                          className="plan-btn explorer"
-                          onClick={() => window.location.href = '/pricing?plan=explorer'}
-                        >
-                          <span className="plan-name">Explorer Plan</span>
-                          <span className="plan-price">$19/month</span>
-                        </button>
-                        <button 
-                          className="plan-btn pro primary"
-                          onClick={() => window.location.href = '/pricing?plan=pro'}
-                        >
-                          <span className="plan-name">Pro Plan</span>
-                          <span className="plan-price">$79/month</span>
-                        </button>
-                      </div>
-
-                      <div className="contact-support">
-                        <p>Need help choosing? <a href="/about">Contact our support team</a></p>
-                      </div>
-                    </div>
-                  </div>
-                  )}
+                  {/* ONLY show upgrade prompt for subscription required errors */}
+                  {errorDetails?.type === 'subscription_required' && <UpgradePrompt />}
                   
                   {errorDetails && errorDetails.type !== 'subscription_required' && (
                     <div className="error-details">
@@ -474,7 +580,7 @@ const VideoClassification: React.FC = () => {
                   )}
                 </div>
                 
-                {errorDetails?.type !== 'subscriptition_required' && (
+                {errorDetails?.type !== 'subscription_required' && (
                   <div className="action-buttons">
                     <button 
                       className="retry-btn futuristic-btn"

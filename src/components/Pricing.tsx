@@ -14,7 +14,7 @@ const Pricing: React.FC = () => {
           <p className="price">$19/month</p>
           <ul>
             <li><strong>100 image analyses</strong> per month</li>
-            <li><strong>3 video analyses</strong> (up to 5 min)</li>
+            <li><strong>10 video analyses</strong> (up to 5 min)</li>
             <li>Single file processing</li>
             <li>Basic PDF reports</li>
             <li>Email support (48h response)</li>
@@ -29,7 +29,7 @@ const Pricing: React.FC = () => {
           <p className="price">$79/month</p>
           <ul>
             <li><strong>500 image analyses</strong> per month</li>
-            <li><strong>20 video analyses</strong> (up to 30 min)</li>
+            <li><strong>50 video analyses</strong> (up to 30 min)</li>
             <li>Batch image processing (up to 10 files)</li>
             <li>Smart video frame sampling</li>
             <li>Advanced PDF reports with visual evidence</li>
@@ -46,7 +46,7 @@ const Pricing: React.FC = () => {
           <p className="price">$199/month</p>
           <ul>
             <li><strong>2,000 image analyses</strong> per month</li>
-            <li><strong>50 video analyses</strong> (up to 60 min)</li>
+            <li><strong>200 video analyses</strong> (up to 60 min)</li>
             <li>Unlimited batch processing</li>
             <li>Full video analysis (no sampling)</li>
             <li>Custom report branding</li>
@@ -97,9 +97,9 @@ const Pricing: React.FC = () => {
       {/* Free Trial Notice */}
       <div className="free-trial-notice">
         <h3>Start with a Free Trial</h3>
-        <p>Try all Professional features under free tier with 5 free image and/or video analyses every month</p>
+        <p>Try all Professional features under free tier with 4 free image and one video analyses every month</p>
         <Link to="/register">
-          <button className="trial-cta">Start Free Trial</button>
+          <button className="trial-cta">Start Free Forever</button>
         </Link>
       </div>
     </div>

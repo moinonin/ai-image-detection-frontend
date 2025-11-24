@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { classificationService } from '../services/api';
-import { ClassificationResult, EmailResultsParams, ReportFormat } from '../types';
+import { usageService } from '../services/usageService'; 
+import {EmailResultsParams, ReportFormat, ClassificationResult, CurrentUsageResponse } from '../types';
 
-// Local type that matches what the API returns
+// Use the same type structure as the API returns
 type SingleClassificationResponse = {
   analysis: ClassificationResult;
   cache_info: {
@@ -28,6 +29,21 @@ const SingleClassification: React.FC = () => {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<any>(null);
+  const [currentUsage, setCurrentUsage] = useState<CurrentUsageResponse | null>(null);
+
+  // Fetch current usage on component mount
+  useEffect(() => {
+    fetchCurrentUsage();
+  }, []);
+
+  const fetchCurrentUsage = async () => {
+    try {
+      const usage = await usageService.getCurrentUsage();
+      setCurrentUsage(usage);
+    } catch (error) {
+      console.error('Failed to fetch current usage:', error);
+    }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -68,19 +84,25 @@ const SingleClassification: React.FC = () => {
       console.log('Sending request with:', { 
         file: selectedFile.name, 
         modelType, 
-        reportFormat: 'json' // Always use JSON now
+        reportFormat: 'json'
       });
       
-      const result = await classificationService.classifySingleImage(
+      const response = await classificationService.classifySingleImage(
         selectedFile, 
         modelType,
-        'json' // Always use JSON for initial analysis
+        'json'
       );
       
-      console.log('API result:', result);
+      console.log('API response:', response);
       
-      if (result.analysis && Object.keys(result.analysis).length > 0) {
-        setResult(result);
+      // Type assertion to ensure the response matches our expected type
+      const typedResponse = response as SingleClassificationResponse;
+      
+      if (typedResponse.analysis && Object.keys(typedResponse.analysis).length > 0) {
+        setResult(typedResponse);
+        
+        // Refresh current usage after successful analysis
+        await fetchCurrentUsage();
       } else {
         setError('No analysis data received from server');
       }
@@ -88,17 +110,20 @@ const SingleClassification: React.FC = () => {
       console.error('Classification failed:', error);
       
       // Handle specific error cases
-      if (error.message.includes('402')) {
+      if (error.status === 402 || error.message?.includes('USAGE_LIMIT_EXCEEDED')) {
         setError('You have exhausted your free analyses. Please subscribe to continue using the service.');
         setErrorDetails({
           type: 'subscription_required',
-          message: 'Upgrade your account to unlock more analyses'
+          message: 'Upgrade your account to unlock more analyses',
+          usageData: error.usageData
         });
+        // Refresh usage data to get current state
+        await fetchCurrentUsage();
       } else if (error.name === 'FileSizeError' && error.details) {
         setError(error.message);
         setErrorDetails(error.details);
       } else {
-        setError(error.message);
+        setError(error.message || 'An unexpected error occurred');
       }
     } finally {
       setLoading(false);
@@ -115,7 +140,6 @@ const SingleClassification: React.FC = () => {
     console.log('Email results:', result);
   };
 
-  // In your SingleClassification component
   const handleDownloadPDF = async (): Promise<void> => {
     if (!result?.analysis) return;
 
@@ -154,12 +178,10 @@ const SingleClassification: React.FC = () => {
   const getPredictedClass = (): string => {
     if (!analysisResult) return 'Unknown';
     
-    // Check if we have the actual predicted_class from analysis
     if (analysisResult.predicted_class && analysisResult.predicted_class !== 'Analysis Complete') {
       return analysisResult.predicted_class;
     }
     
-    // Fallback to checking is_ai flag if predicted_class is not available
     if (analysisResult.is_ai !== undefined) {
       return analysisResult.is_ai ? 'AI Generated' : 'Human Created';
     }
@@ -177,11 +199,116 @@ const SingleClassification: React.FC = () => {
     return 'human-detected';
   };
 
+  // NEW: Check if user has exceeded image usage limits using CURRENT usage data
+  const hasExceededImageUsage = (): boolean => {
+    if (!currentUsage) return false;
+    
+    const { remaining_this_month, current_plan } = currentUsage.usage;
+    
+    // For free plan, show upgrade when image analyses are depleted
+    if (current_plan === 'free') {
+      return remaining_this_month.image <= 0;
+    }
+    
+    // For paid plans, you might have different logic
+    // For now, we only show upgrade prompts for free plan users
+    return false;
+  };
+
+  // NEW: Get usage display values from CURRENT usage
+  const getUsageDisplayData = () => {
+    if (!currentUsage) return null;
+    
+    const { current_plan, plan_limits, used_this_month, remaining_this_month } = currentUsage.usage;
+    
+    return {
+      currentPlan: current_plan,
+      imageUsed: used_this_month.image,
+      imageLimit: plan_limits.image,
+      imageRemaining: remaining_this_month.image,
+      videoUsed: used_this_month.video,
+      videoLimit: plan_limits.video,
+      videoRemaining: remaining_this_month.video,
+      hasSubscription: current_plan !== 'free'
+    };
+  };
+
+  const usageData = getUsageDisplayData();
+
+  // Upgrade prompt component - ONLY shown when hasExceededImageUsage is true
+  const UpgradePrompt = () => (
+    <div className="subscription-prompt">
+      <div className="upgrade-options">
+        <h4>✨ Upgrade Your Account</h4>
+        <p>You've used all your free image analyses this month. Choose a plan to continue:</p>
+        
+        <div className="plan-actions">
+          <button 
+            className="plan-btn explorer"
+            onClick={() => window.location.href = '/pricing?plan=explorer'}>
+            <span className="plan-name">Explorer Plan</span>
+            <span className="plan-price">$19/month</span>
+            <span className="plan-features">50 images/month</span>
+          </button>
+          <button 
+            className="plan-btn pro primary"
+            onClick={() => window.location.href = '/pricing?plan=pro'}>
+            <span className="plan-name">Pro Plan</span>
+            <span className="plan-price">$79/month</span>
+            <span className="plan-features">Unlimited images</span>
+          </button>
+        </div>
+
+        <div className="contact-support">
+          <p>Need help choosing? <a href="/about">Contact our support team</a></p>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="single-classification">
       <div className="page-header">
         <h1>Single Image Analysis</h1>
         <p>Upload an image to detect if it's AI-generated or human-created</p>
+        
+        {/* Usage Information Banner - Always show when we have current usage data */}
+        {usageData && (
+          <div className="usage-banner">
+            <div className="usage-stats">
+              <span className="usage-item">
+                <strong>Plan:</strong> {usageData.currentPlan.toUpperCase()}
+              </span>
+              <span className="usage-item">
+                <strong>Images Used:</strong> {usageData.imageUsed}/{usageData.imageLimit}
+              </span>
+              <span className="usage-item">
+                <strong>Images Remaining:</strong> {usageData.imageRemaining}
+              </span>
+              {usageData.videoLimit > 0 && (
+                <span className="usage-item">
+                  <strong>Videos Used:</strong> {usageData.videoUsed}/{usageData.videoLimit}
+                </span>
+              )}
+            </div>
+            
+            {/* Only show upgrade CTA in banner when image limits are exceeded */}
+            {hasExceededImageUsage() && (
+              <div className="upgrade-cta-banner">
+                <div className="urgent-upgrade">
+                  <span className="warning-icon">⚠️</span>
+                  <span>You've used all free image analyses. </span>
+                  <button 
+                    className="upgrade-link-btn"
+                    onClick={() => window.location.href = '/pricing'}
+                  >
+                    Upgrade for unlimited access
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="classification-container">
@@ -249,6 +376,7 @@ const SingleClassification: React.FC = () => {
           </form>
         </div>
 
+        {/* Only show results section when we have analysis results OR an error */}
         {(analysisResult || error) && (
           <div className="results-section">
             <h2>Analysis Results</h2>
@@ -317,24 +445,26 @@ const SingleClassification: React.FC = () => {
                   </div>
                 </div>
 
-                {result?.usage && (
+                {/* Show current usage information */}
+                {usageData && (
                   <div className="usage-info">
                     <div className="detail-item">
-                      <span className="detail-label">Free Analyses Remaining:</span>
-                      <span className="detail-value">{result.usage.free_analyses_remaining}</span>
+                      <span className="detail-label">Current Plan:</span>
+                      <span className="detail-value">{usageData.currentPlan.toUpperCase()}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Images Remaining:</span>
+                      <span className="detail-value">{usageData.imageRemaining}</span>
                     </div>
                     <div className="detail-item">
                       <span className="detail-label">Used This Month:</span>
-                      <span className="detail-value">{result.usage.free_analyses_used_this_month}</span>
+                      <span className="detail-value">{usageData.imageUsed}/{usageData.imageLimit}</span>
                     </div>
-                    {result.usage.subscription_used && (
-                      <div className="detail-item">
-                        <span className="detail-label">Subscription:</span>
-                        <span className="detail-value">Active</span>
-                      </div>
-                    )}
                   </div>
                 )}
+
+                {/* ONLY show upgrade prompt when current image usage is exceeded */}
+                {hasExceededImageUsage() && <UpgradePrompt />}
 
                 <div className="action-buttons">
                   <button
@@ -353,7 +483,6 @@ const SingleClassification: React.FC = () => {
                     Email Results
                   </button>
 
-                  {/* Always show PDF button when we have results */}
                   {analysisResult && (
                     <button
                       className="pdf-btn futuristic-btn"
@@ -365,7 +494,6 @@ const SingleClassification: React.FC = () => {
                     </button>
                   )}
 
-                  {/* Always show JSON button when we have results */}
                   {analysisResult && (
                     <button
                       className="json-btn futuristic-btn"
@@ -387,7 +515,7 @@ const SingleClassification: React.FC = () => {
                 </div>
               </div>
             ) : (
-              // ERROR DISPLAY SECTION - REPLACED WITH PROPER ERROR HANDLING
+              // ERROR DISPLAY SECTION
               <div className="result-card error-detected">
                 <div className="error-header">
                   <h3>❌ Analysis Failed</h3>
@@ -396,36 +524,10 @@ const SingleClassification: React.FC = () => {
                 <div className="error-message">
                   <p>{error}</p>
                   
-                  {/* Special handling for subscription required error */}
-                  {errorDetails?.type === 'subscription_required' && (
-                  <div className="subscription-prompt">
-                    <div className="upgrade-options">
-                      <h4>✨ Upgrade Your Account</h4>
-                      <p>You've used all your free analyses this month. Choose a plan to continue:</p>
-                      
-                      <div className="plan-actions">
-                        <button 
-                          className="plan-btn explorer"
-                          onClick={() => window.location.href = '/pricing?plan=explorer'}>
-                          <span className="plan-name">Explorer Plan</span>
-                          <span className="plan-price">$19/month</span>
-                        </button>
-                        <button 
-                          className="plan-btn pro primary"
-                          onClick={() => window.location.href = '/pricing?plan=pro'}>
-                          <span className="plan-name">Pro Plan</span>
-                          <span className="plan-price">$79/month</span>
-                        </button>
-                      </div>
-
-                      <div className="contact-support">
-                        <p>Need help choosing? <a href="/about">Contact our support team</a></p>
-                      </div>
-                    </div>
-                  </div>
-                  )}
+                  {/* ONLY show upgrade prompt for subscription required errors */}
+                  {errorDetails?.type === 'subscription_required' && <UpgradePrompt />}
                   
-                  {/* Show error details for file size errors */}
+                  {/* Show error details for other errors */}
                   {errorDetails && errorDetails.type !== 'subscription_required' && (
                     <div className="error-details">
                       <pre>{JSON.stringify(errorDetails, null, 2)}</pre>

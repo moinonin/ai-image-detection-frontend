@@ -53,10 +53,34 @@ export interface ClassificationResult {
 }
 
 export interface UsageInfo {
-  free_analyses_used_this_month: number;
-  free_analyses_remaining: number;
-  subscription_used: boolean;
-  account_id: string | null;
+  free_analyses_used_this_month?: number;
+  free_analyses_remaining?: number;
+  subscription_used?: boolean;
+  account_id?: string | null;
+  
+  // New fields from polar payment system
+  current_plan?: string;
+  plan_limits?: {
+    image: number;
+    video: number;
+  };
+  used_this_month?: {
+    image: number;
+    video: number;
+    total: number;
+  };
+  remaining_this_month?: {
+    image: number;
+    video: number;
+  };
+  total_analyses?: number;
+  today_analyses?: number;
+  breakdown_by_type?: Record<string, any>;
+  batch_jobs?: {
+    total: number;
+    completed: number;
+    pending: number;
+  };
 }
 
 export interface CacheInfo {
@@ -67,6 +91,19 @@ export interface CacheInfo {
 export interface SingleClassificationResponse {
   analysis: ClassificationResult;
   cache_info: CacheInfo;
+  usage: UsageInfo;
+  pdfBlob?: Blob;
+}
+
+// Extended interfaces to include pdfBlob
+export interface BatchClassificationResponse {
+  analyses: Array<{
+    filename: string;
+    analysis_results: any;
+    from_cache: boolean;
+    cache_used: boolean;
+    timestamp: string;
+  }>;
   usage: UsageInfo;
   pdfBlob?: Blob;
 }
@@ -101,13 +138,6 @@ export interface BatchUsage {
   free_analyses_remaining: number;
   subscription_used: boolean;
   account_id: string | null;
-}
-
-export interface BatchClassificationResponse {
-  //analyses: BatchAnalysisItem[];
-  analyses: BatchAnalysisItem[];
-  usage: BatchUsage;
-  pdfBlob?: Blob;
 }
 
 export interface BatchJobDebug {
@@ -518,6 +548,48 @@ export interface BatchAnalysisResult {
 export interface VerifyResetTokenResponse {
   valid: boolean;
   email?: string;
+}
+
+// New interface for the updated usage response
+export interface CurrentUsageResponse {
+// Add other relevant fields as needed
+  usage: {
+    current_plan: string;
+    plan_limits: {
+      image: number;
+      video: number;
+    };
+    used_this_month: {
+      image: number;
+      video: number;
+      total: number;
+    };
+    remaining_this_month: {
+      image: number;
+      video: number;
+    };
+    total_analyses: number;
+    today_analyses: number;
+    breakdown_by_type: Record<string, any>;
+    batch_jobs: {
+      total: number;
+      completed: number;
+      pending: number;
+    };
+  };
+  subscription: {
+    active: boolean;
+    plan_name: string;
+    account_id: string;
+    status: string;
+  };
+  timestamp: string;
+}
+
+export interface PlanLimitsResponse {
+  images: number;
+  videos: number;
+  analysis_type: string;
 }
 // Update the IndividualClassificationResult interface if needed
 // (This should probably match what's in your ../types file)
