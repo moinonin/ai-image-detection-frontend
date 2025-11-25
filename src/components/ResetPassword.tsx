@@ -5,8 +5,13 @@ import { useAuth } from '../contexts/AuthContext';
 const ResetPassword: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { resetPassword, resetLoading, resetMessage } = useAuth();
-  const { verifyResetToken } = useAuth();
+  const { 
+    resetPassword, 
+    resetLoading, 
+    resetMessage, 
+    verifyResetToken, 
+    clearResetMessage 
+  } = useAuth();
   
   const tokenFromUrl = searchParams.get('token');
   
@@ -14,8 +19,9 @@ const ResetPassword: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
-  const [tokenValid, setTokenValid] = useState(!!tokenFromUrl);
+  const [tokenValid, setTokenValid] = useState<boolean | null>(null);
   const [verifying, setVerifying] = useState(true);
+  const [localError, setLocalError] = useState('');
 
   // Auto-verify token on component mount
   useEffect(() => {
@@ -30,6 +36,7 @@ const ResetPassword: React.FC = () => {
         const isValid = await verifyResetToken(tokenFromUrl);
         setTokenValid(isValid);
       } catch (error) {
+        console.error('Token verification error:', error);
         setTokenValid(false);
       } finally {
         setVerifying(false);
@@ -37,36 +44,60 @@ const ResetPassword: React.FC = () => {
     };
 
     checkToken();
-  }, [tokenFromUrl, verifyResetToken]);
+
+    // Cleanup function - clears message when component unmounts
+    return () => {
+      clearResetMessage();
+    };
+  }, [tokenFromUrl, verifyResetToken, clearResetMessage]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLocalError('');
     
     if (!tokenFromUrl) {
+      setLocalError('No reset token found');
       return;
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
+      setLocalError("Passwords don't match");
       return;
     }
 
     if (formData.newPassword.length < 6) {
+      setLocalError('Password must be at least 6 characters long');
       return;
     }
 
     try {
-      await resetPassword(tokenFromUrl, formData.newPassword);
-      // Success message is handled by AuthContext
-      setFormData({ newPassword: '', confirmPassword: '' });
+      // Now resetPassword returns a boolean that we can check
+      const success = await resetPassword(tokenFromUrl, formData.newPassword);
       
-      // Redirect to login after success
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+      if (success) {
+        setFormData({ newPassword: '', confirmPassword: '' });
+        
+        // Redirect to login after success
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      }
+      // If success is false, the error message is already set in the context
     } catch (error) {
-      // Error handling is done in AuthContext
+      // This catch block might not be needed anymore since resetPassword handles errors internally
+      console.error('Reset password error:', error);
     }
   };
+
+  const handleInputChange = (field: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [field]: e.target.value }));
+    // Clear local error when user starts typing
+    if (localError) setLocalError('');
+  };
+
+  // Helper to check if form is valid
+  const isFormValid = formData.newPassword === formData.confirmPassword && 
+                     formData.newPassword.length >= 6;
 
   if (verifying) {
     return (
@@ -109,7 +140,7 @@ const ResetPassword: React.FC = () => {
     );
   }
 
-  if (!tokenValid) {
+  if (tokenValid === false) {
     return (
       <div className="auth-container">
         <div className="auth-card">
@@ -152,7 +183,7 @@ const ResetPassword: React.FC = () => {
               type="password"
               id="newPassword"
               value={formData.newPassword}
-              onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
+              onChange={handleInputChange('newPassword')}
               className="form-input"
               required
               minLength={6}
@@ -167,7 +198,7 @@ const ResetPassword: React.FC = () => {
               type="password"
               id="confirmPassword"
               value={formData.confirmPassword}
-              onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+              onChange={handleInputChange('confirmPassword')}
               className="form-input"
               required
               minLength={6}
@@ -176,6 +207,14 @@ const ResetPassword: React.FC = () => {
             />
           </div>
 
+          {/* Show local validation errors */}
+          {localError && (
+            <div className="message error">
+              {localError}
+            </div>
+          )}
+
+          {/* Show API response messages */}
           {resetMessage && (
             <div className={`message ${resetMessage.includes('successfully') ? 'success' : 'error'}`}>
               {resetMessage}
@@ -184,7 +223,7 @@ const ResetPassword: React.FC = () => {
 
           <button 
             type="submit" 
-            disabled={resetLoading || formData.newPassword !== formData.confirmPassword || formData.newPassword.length < 6}
+            disabled={resetLoading || !isFormValid}
             className="auth-btn"
           >
             {resetLoading ? 'Resetting Password...' : 'Reset Password'}

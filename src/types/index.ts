@@ -13,6 +13,24 @@ export interface AuthResponse {
   expires_in: number;
 }
 
+export interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  login: (username: string, password: string) => Promise<void>;
+  register: (userData: any) => Promise<void>;
+  logout: () => void;
+  loading: boolean;
+  // Password reset methods
+  forgotPassword: (email: string) => Promise<void>;
+  //resetPassword: (token: string, newPassword: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<boolean>;
+  verifyResetToken: (token: string) => Promise<boolean>;
+  resetLoading: boolean;
+  clearResetMessage: () => void;
+  resetMessage: string | null;
+}
+
 /* Handle large files */
 export interface LargeFileSummary {
   accepted: number;

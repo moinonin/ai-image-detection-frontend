@@ -1,22 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/api';
-import { User, AuthResponse } from '../types';
+import { User, AuthResponse, AuthContextType } from '../types';
 
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (userData: any) => Promise<void>;
-  logout: () => void;
-  loading: boolean;
-  // Password reset methods
-  forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (token: string, newPassword: string) => Promise<void>;
-  verifyResetToken: (token: string) => Promise<boolean>;
-  resetLoading: boolean;
-  resetMessage: string | null;
-}
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -26,6 +12,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [resetLoading, setResetLoading] = useState(false);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
+  
 
   useEffect(() => {
     const initAuth = async () => {
@@ -50,7 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     initAuth();
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password: string): Promise<void> => {
     try {
       console.log('🔐 Starting login for user:', username);
       
@@ -82,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const register = async (userData: any) => {
+  const register = async (userData: any): Promise<void> => {
     try {
       console.log('📝 Starting registration...');
       await authService.register(userData);
@@ -93,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const logout = () => {
+  const logout = (): void => {
     console.log('🚪 Logging out...');
     setUser(null);
     setToken(null);
@@ -102,14 +89,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Password reset functionality
-  const forgotPassword = async (email: string) => {
+  const forgotPassword = async (email: string): Promise<void> => {
     setResetLoading(true);
     setResetMessage(null);
     
     try {
       console.log('📧 Sending password reset for email:', email);
       await authService.forgotPassword(email);
-      setResetMessage('Password reset instructions have been sent to your email.');
+      setResetMessage('If the email exists, a reset link has been sent.');
       console.log('✅ Password reset email sent');
     } catch (error: any) {
       const message = error.response?.data?.detail || 'Failed to send reset email. Please try again.';
@@ -121,6 +108,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // In your auth context - make sure resetPassword returns Promise<boolean>
+  const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
+    setResetLoading(true);
+    setResetMessage('');
+    
+    try {
+      console.log('🔄 Resetting password with token:', token);
+      await authService.resetPassword(token, newPassword);
+      setResetMessage('Password reset successfully! Redirecting to login...');
+      return true; // Return true on success
+    } catch (error: any) {
+      console.error('❌ Password reset failed:', error);
+      const message = error.response?.data?.detail || 'Failed to reset password. The token may be invalid or expired.';
+      setResetMessage(message);
+      return false; // Return false on failure
+    } finally {
+      setResetLoading(false);
+    }
+  };
+  /*
   const resetPassword = async (token: string, newPassword: string) => {
     setResetLoading(true);
     setResetMessage(null);
@@ -150,6 +157,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.error('❌ Token verification failed:', error);
       return false;
     }
+  }; */
+  const verifyResetToken = async (token: string): Promise<boolean> => {
+    try {
+      console.log('🔍 Verifying reset token:', token);
+      const response = await authService.verifyResetToken(token);
+      console.log('✅ Token verification response:', response);
+      return response.valid;
+    } catch (error) {
+      console.error('❌ Token verification failed:', error);
+      return false;
+    }
+  };
+
+  // Add the missing function
+  const clearResetMessage = (): void => {
+    setResetMessage(null);
   };
 
   const value = {
@@ -165,8 +188,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     resetPassword,
     verifyResetToken,
     resetLoading,
-    resetMessage
+    resetMessage,
+    clearResetMessage,
+    setResetMessage
   };
+/*
+const clearResetMessage = (): void => {
+  setResetMessage(null);
+}; */
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
