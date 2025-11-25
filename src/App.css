@@ -5573,3 +5573,62 @@ body {
 .banner-close:hover {
   opacity: 1;
 }
+/* Oversized file warning banner */
+.compact-warning-banner {
+  position: relative;
+  width: 100%;
+  padding: 12px 0;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid #ff4444;
+  border-left: 4px solid #ff4444;
+  color: #ff6b6b;
+  font-weight: 600;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.warning-stripes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 68, 68, 0.05) 10px,
+    rgba(255, 68, 68, 0.05) 20px
+  );
+}
+
+.warning-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.warning-pulse {
+  width: 8px;
+  height: 8px;
+  background: #ff4444;
+  border-radius: 50%;
+  animation: warning-pulse 1.5s infinite;
+}
+
+.warning-message {
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+}
+
+@keyframes warning-pulse {
+  0%, 100% { 
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7);
+  }
+  70% { 
+    opacity: 0.7;
+    box-shadow: 0 0 0 6px rgba(255, 68, 68, 0);
+  }
+}

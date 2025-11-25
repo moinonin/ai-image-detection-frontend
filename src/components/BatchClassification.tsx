@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { classificationService } from '../services/api';
-import { usageService } from '../services/usageService';
+//import { usageService } from '../services/usageService';
 import { 
   BatchJob, 
   IndividualClassificationResult,
@@ -66,11 +66,12 @@ const BatchClassification: React.FC = () => {
   const [usageLimitMessage, setUsageLimitMessage] = useState('');
   const [apiError, setApiError] = useState('');
 
-  const [usageData, setUsageData] = useState<CurrentUsageResponse | null>(null);
+  //const [usageData, setUsageData] = useState<CurrentUsageResponse | null>(null);
   const [currentUsageData, setCurrentUsageData] = useState<CurrentUsageResponse | null>(null);
   const [showUpgradeBadge, setShowUpgradeBadge] = useState(false);
 
   // Check usage on component mount
+  /*
   useEffect(() => {
     checkUsage();
   }, []);
@@ -85,7 +86,7 @@ const BatchClassification: React.FC = () => {
     } catch (error) {
       console.error('Failed to check usage:', error);
     }
-  };
+  }; */
   // Client-side file size validation constants
   const MAX_FILE_SIZE_MB = 0.5;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -496,28 +497,7 @@ const BatchClassification: React.FC = () => {
       }
     }
   };
-  const checkUsageBeforeSubmit = async (): Promise<boolean> => {
-    try {
-      const usage = await classificationService.getCurrentUsage();
-      console.log('Current usage:', usage);
-      
-      // If the user doesn't have enough analyses for the selected files
-      if (usage.usage.remaining_this_month.image < selectedFiles.length) {
-        setCurrentUsageData(usage);
-        setUsageLimitMessage(
-          `You have ${usage.usage.remaining_this_month.image} analysis${usage.usage.remaining_this_month.image === 1 ? '' : 'es'} remaining this month, but you're trying to process ${selectedFiles.length} image${selectedFiles.length === 1 ? '' : 's'}. Current plan: ${usage.usage.current_plan}, Used: ${usage.usage.used_this_month.image}/${usage.usage.plan_limits.image}. Please upgrade your plan or reduce the number of images.`
-        );
-        setShowUsageLimitModal(true);
-        setShowUpgradeBadge(true);
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Failed to check usage:', error);
-      return true; // Continue anyway if we can't check usage
-    }
-  };
+
   // Update handleSubmit to use pre-validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

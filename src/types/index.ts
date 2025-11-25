@@ -75,6 +75,7 @@ export interface UsageInfo {
   free_analyses_remaining?: number;
   subscription_used?: boolean;
   account_id?: string | null;
+  oversized_files?: boolean;
   
   // New fields from polar payment system
   current_plan?: string;

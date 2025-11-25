@@ -127,37 +127,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setResetLoading(false);
     }
   };
-  /*
-  const resetPassword = async (token: string, newPassword: string) => {
-    setResetLoading(true);
-    setResetMessage(null);
-    
-    try {
-      console.log('🔄 Resetting password with token');
-      await authService.resetPassword(token, newPassword);
-      setResetMessage('Password reset successfully! You can now login with your new password.');
-      console.log('✅ Password reset successful');
-    } catch (error: any) {
-      const message = error.response?.data?.detail || 'Failed to reset password. The token may be invalid or expired.';
-      setResetMessage(message);
-      console.error('❌ Reset password failed:', error);
-      throw error;
-    } finally {
-      setResetLoading(false);
-    }
-  };
 
-  const verifyResetToken = async (token: string): Promise<boolean> => {
-    try {
-      console.log('🔍 Verifying reset token');
-      const response = await authService.verifyResetToken(token);
-      console.log('✅ Token verification result:', response);
-      return response.valid; // Extract the boolean from the response object
-    } catch (error) {
-      console.error('❌ Token verification failed:', error);
-      return false;
-    }
-  }; */
   const verifyResetToken = async (token: string): Promise<boolean> => {
     try {
       console.log('🔍 Verifying reset token:', token);
@@ -192,10 +162,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     clearResetMessage,
     setResetMessage
   };
-/*
-const clearResetMessage = (): void => {
-  setResetMessage(null);
-}; */
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

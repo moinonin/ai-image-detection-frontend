@@ -104,7 +104,7 @@ const VideoClassification: React.FC = () => {
         });
         // Refresh usage data to get current state
         await fetchCurrentUsage();
-      } else if (error.name === 'FileSizeError' && error.details) {
+      } else if (result?.usage?.oversized_files === true) {
         setError(error.message);
         setErrorDetails(error.details);
       } else {
@@ -594,6 +594,17 @@ const VideoClassification: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+        )}
+        {result?.usage.oversized_files && (
+          <div className="compact-warning-banner">
+            <div className="warning-stripes"></div>
+            <div className="warning-content">
+              <span className="warning-pulse"></span>
+              <span className="warning-message">
+                ⚠ One or more files exceeded the 30 MB upload limit
+              </span>
+            </div>
           </div>
         )}
       </div>
