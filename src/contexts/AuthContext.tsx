@@ -2,8 +2,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { authService } from '../services/api';
 import { User, AuthResponse, AuthContextType } from '../types';
 
-
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -12,7 +10,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [resetLoading, setResetLoading] = useState(false);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
-  
+
+  // NEW: Add refreshUser function
+  const refreshUser = async (): Promise<void> => {
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) {
+      console.log('❌ No token found for refresh');
+      return;
+    }
+
+    try {
+      console.log('🔄 Refreshing user data...');
+      const userData = await authService.getCurrentUser();
+      console.log('✅ User data refreshed:', userData);
+      setUser(userData);
+    } catch (error) {
+      console.error('❌ Failed to refresh user:', error);
+      // If refresh fails, the token might be invalid
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     const initAuth = async () => {
@@ -108,7 +128,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // In your auth context - make sure resetPassword returns Promise<boolean>
   const resetPassword = async (token: string, newPassword: string): Promise<boolean> => {
     setResetLoading(true);
     setResetMessage('');
@@ -140,7 +159,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Add the missing function
   const clearResetMessage = (): void => {
     setResetMessage(null);
   };
@@ -153,6 +171,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     register,
     logout,
     loading,
+    // NEW: Add refreshUser to the context value
+    refreshUser,
     // Password reset
     forgotPassword,
     resetPassword,
@@ -173,14 +193,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
-/*
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}; */

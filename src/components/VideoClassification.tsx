@@ -533,7 +533,8 @@ const VideoClassification: React.FC = () => {
                 {hasExceededVideoUsage() && <UpgradePrompt />}
 
                 {/* Action buttons */}
-                <div className="action-buttons">
+                
+                {/*<div className="action-buttons">
                   <button
                     className="email-btn futuristic-btn"
                     onClick={() => handleEmailResults(analysisResult)}
@@ -558,7 +559,7 @@ const VideoClassification: React.FC = () => {
                     <span className="btn-icon">📊</span>
                     Download JSON
                   </button>
-                </div>
+                </div>*/}
               </div>
             ) : (
               // Error display

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { classificationService } from '../services/api';
-//import { usageService } from '../services/usageService';
+import { useAuth } from '../contexts/AuthContext';
+
 import { 
   BatchJob, 
   IndividualClassificationResult,
@@ -49,6 +50,7 @@ interface BatchJobWithDebug extends BatchJob {
 }
 
 const BatchClassification: React.FC = () => {
+  const { user } = useAuth();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [model, setModel] = useState('scalpel');
@@ -69,24 +71,28 @@ const BatchClassification: React.FC = () => {
   //const [usageData, setUsageData] = useState<CurrentUsageResponse | null>(null);
   const [currentUsageData, setCurrentUsageData] = useState<CurrentUsageResponse | null>(null);
   const [showUpgradeBadge, setShowUpgradeBadge] = useState(false);
-
+  // Add this state to track plan features
+  const [planFeatures, setPlanFeatures] = useState<{
+    allowsBatch: boolean;
+    maxBatchSize?: number;
+    currentPlan: string;
+  } | null>(null);
   // Check usage on component mount
-  /*
-  useEffect(() => {
-    checkUsage();
-  }, []);
-  
-  const checkUsage = async () => {
-    try {
-      const upgradeCheck = await usageService.shouldShowUpgrade('image');
-      setShowUpgradeBadge(upgradeCheck.showUpgrade);
-      if (upgradeCheck.usage) {
-        setUsageData(upgradeCheck.usage);
+   useEffect(() => {
+    const checkPlanAfterAuth = async () => {
+      if (user) {
+        try {
+          const features = await classificationService.checkPlanFeatures();
+          setPlanFeatures(features);
+          console.log('🔄 Plan features re-checked after auth:', features);
+        } catch (error) {
+          console.error('Failed to check plan features after auth:', error);
+        }
       }
-    } catch (error) {
-      console.error('Failed to check usage:', error);
-    }
-  }; */
+    };
+
+    checkPlanAfterAuth();
+  }, [user]); // This will run whenever the user object changes
   // Client-side file size validation constants
   const MAX_FILE_SIZE_MB = 0.5;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -109,9 +115,266 @@ const BatchClassification: React.FC = () => {
       loading: loading,
       displayResults: getDisplayResults().length
     });
-  }, [analyses, analysisResults, jobStatus, loading]);
+    checkPlanFeatures();
+  }, [analyses, analysisResults, jobStatus, loading,]);
 
+  const checkPlanFeatures = async () => {
+    try {
+      const features = await classificationService.checkPlanFeatures();
+      setPlanFeatures(features);
+      
+      // If batch is not allowed, show appropriate UI
+      if (!features.allowsBatch) {
+        setShowUpgradeBadge(true);
+      }
+    } catch (error) {
+      console.error('Failed to check plan features:', error);
+    }
+  };
   const handleBatchClassification = async (files: File[], model: string, accountId?: string) => {
+    setApiError('');
+    setAnalysisResults(null);
+    setShowUsageLimitModal(false);
+    setUsageLimitMessage('');
+    setAnalyses([]);
+    setJobStatus(null);
+    setResultsError(null);
+    setShowUpgradeBadge(false);
+
+    try {
+      // Check if user's plan allows batch classification
+      let planFeatures;
+      try {
+        planFeatures = await classificationService.checkPlanFeatures();
+        setPlanFeatures(planFeatures);
+        console.log('📊 Plan features loaded:', planFeatures);
+      } catch (error) {
+        console.error('Failed to check plan features:', error);
+        // Default to no batch access if we can't check
+        planFeatures = {
+          allowsBatch: false,
+          currentPlan: 'Unknown'
+        };
+      }
+
+      // If batch is not allowed, use single classification for each file
+      if (!planFeatures.allowsBatch) {
+        console.log(`🔄 Using single classification for ${planFeatures.currentPlan} plan`);
+        
+        const singleResults: BatchAnalysisResult[] = [];
+        
+        // Process files sequentially to avoid overwhelming the API
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          try {
+            console.log(`📤 Processing file ${i + 1}/${files.length}: ${file.name}`);
+            
+            const singleResult = await classificationService.classifySingleImage(
+              file, 
+              model, 
+              'json', 
+              true, 
+              accountId
+            );
+            
+            const processedAnalysis: BatchAnalysisResult = {
+              id: `single-${Date.now()}-${i}`,
+              filename: file.name,
+              predicted_class: singleResult.analysis.predicted_class || 'Unknown',
+              is_ai: singleResult.analysis.is_ai !== undefined ? singleResult.analysis.is_ai : false,
+              confidence: singleResult.analysis.confidence ?? 0,
+              probability: singleResult.analysis.probability ?? 0,
+              model: singleResult.analysis.model || model,
+              features: singleResult.analysis.features || {},
+              analysis_type: 'single',
+              total_images: 1,
+              analyzed_images: 1,
+              user: 'user',
+              from_cache: singleResult.cache_info?.from_cache || false,
+              cache_timestamp: singleResult.cache_info?.cache_timestamp || null,
+              processing_time: new Date().toISOString()
+            };
+            
+            singleResults.push(processedAnalysis);
+            
+            // Update progress incrementally
+            setAnalyses([...singleResults]);
+            
+          } catch (error) {
+            console.error(`❌ Failed to process ${file.name}:`, error);
+            
+            // Create an error result for this file
+            const errorAnalysis: BatchAnalysisResult = {
+              id: `error-${Date.now()}-${i}`,
+              filename: file.name,
+              predicted_class: 'Processing Failed',
+              is_ai: false,
+              confidence: 0,
+              probability: 0,
+              model: model,
+              features: {},
+              analysis_type: 'single',
+              total_images: 1,
+              analyzed_images: 0,
+              user: 'user',
+              from_cache: false,
+              cache_timestamp: null,
+              processing_time: new Date().toISOString(),
+              error: error instanceof Error ? error.message : 'Unknown error'
+            };
+            
+            singleResults.push(errorAnalysis);
+            setAnalyses([...singleResults]);
+          }
+        }
+        
+        console.log('✅ Single classification results:', singleResults);
+        
+        // Set final results
+        setAnalyses(singleResults);
+        
+        // Create a proper BatchClassificationResponse
+        const batchResponse: BatchClassificationResponse = {
+          analyses: singleResults.map(result => ({
+            filename: result.filename,
+            analysis_results: {
+              filename: result.filename,
+              predicted_class: result.predicted_class,
+              is_ai: result.is_ai,
+              confidence: result.confidence,
+              probability: result.probability,
+              model: result.model,
+              features: result.features,
+              analysis_type: result.analysis_type,
+              total_images: result.total_images,
+              analyzed_images: result.analyzed_images,
+              user: result.user,
+              from_cache: result.from_cache,
+              cache_timestamp: result.cache_timestamp,
+              processing_time: result.processing_time
+            },
+            from_cache: result.from_cache,
+            cache_used: result.from_cache,
+            timestamp: result.processing_time
+          })),
+          usage: { 
+            free_analyses_used_this_month: 0, 
+            free_analyses_remaining: 0, 
+            subscription_used: false, 
+            account_id: null 
+          }
+        };
+        
+        setAnalysisResults(batchResponse);
+        
+        // Show upgrade suggestion for free/explorer plan users
+        if (['free', 'explorer'].includes(planFeatures.currentPlan.toLowerCase())) {
+          setShowUpgradeBadge(true);
+          setUsageLimitMessage(`Your ${planFeatures.currentPlan} plan processes files individually. Upgrade to enable faster batch processing.`);
+        }
+        
+      } else {
+        // Use regular batch processing for plans that allow it
+        console.log(`⚡ Using batch processing for ${planFeatures.currentPlan} plan`);
+        
+        const result = await classificationService.startBatchJobSync(
+          files, 
+          model, 
+          'json', 
+          true, 
+          accountId
+        );
+        
+        console.log('Batch classification result:', result);
+        
+        // Process analyses from response
+        if (result.analyses && result.analyses.length > 0) {
+          const processedAnalyses: BatchAnalysisResult[] = result.analyses.map((item: any, index: number) => {
+            const analysis = item.analysis_results || item;
+            
+            return {
+              id: `batch-${Date.now()}-${index}`,
+              filename: analysis.filename || item.filename || `file_${index}`,
+              predicted_class: analysis.predicted_class || 'Unknown',
+              is_ai: analysis.is_ai !== undefined ? analysis.is_ai : false,
+              confidence: analysis.confidence ?? 0,
+              probability: analysis.probability ?? 0,
+              model: analysis.model || model,
+              features: analysis.features || {},
+              analysis_type: 'batch',
+              total_images: 1,
+              analyzed_images: 1,
+              user: 'batch_user',
+              from_cache: analysis.from_cache || false,
+              cache_timestamp: analysis.cache_timestamp || null,
+              processing_time: analysis.processing_time || new Date().toISOString()
+            };
+          });
+          
+          setAnalyses(processedAnalyses);
+          console.log('Processed analyses:', processedAnalyses);
+        } else {
+          console.warn('No analyses found in response');
+        }
+        
+        setAnalysisResults(result);
+      }
+      
+    } catch (error: unknown) {
+      console.error('❌ Classification error:', error);
+      
+      // Type guard to check if it's an Error object
+      if (error instanceof Error) {
+        // Enhanced usage limit error handling
+        if (error.message.includes('USAGE_LIMIT_EXCEEDED')) {
+          const rawMessage = error.message.replace('USAGE_LIMIT_EXCEEDED: ', '');
+          
+          // Try to parse the JSON message for better formatting
+          try {
+            const parsedMessage = JSON.parse(rawMessage);
+            if (parsedMessage.detail) {
+              setUsageLimitMessage(parsedMessage.detail);
+            } else {
+              setUsageLimitMessage(rawMessage);
+            }
+          } catch (parseError) {
+            // If it's not JSON, use the raw message
+            setUsageLimitMessage(rawMessage);
+          }
+          
+          // Store usage data for the upgrade badge/modal
+          if ((error as any).usageData) {
+            setCurrentUsageData((error as any).usageData);
+          }
+          
+          // Show both the modal and the upgrade badge
+          setShowUsageLimitModal(true);
+          setShowUpgradeBadge(true);
+          
+        } else if (error.message.includes('PLAN_FEATURE_RESTRICTED')) {
+          // Handle plan feature restrictions
+          setUsageLimitMessage(error.message.replace('PLAN_FEATURE_RESTRICTED: ', ''));
+          setShowUsageLimitModal(true);
+          setShowUpgradeBadge(true);
+          
+          // Store plan features for upgrade modal
+          if ((error as any).planFeatures) {
+            setPlanFeatures((error as any).planFeatures);
+          }
+        } else {
+          setApiError(error.message || 'An error occurred during classification');
+        }
+      } else if (typeof error === 'object' && error !== null && 'error' in error && 'summary' in error) {
+        // This is a file validation error from the backend
+        setValidationError(error as FileValidationError);
+      } else {
+        setApiError('An unknown error occurred during classification');
+      }
+      throw error;
+    }
+  };
+
+  {/*const handleBatchClassification = async (files: File[], model: string, accountId?: string) => {
     setApiError('');
     setAnalysisResults(null);
     setShowUsageLimitModal(false);
@@ -202,11 +465,12 @@ const BatchClassification: React.FC = () => {
       }
       throw error; // Re-throw to handle in submit
     }
-  };
+  }; */}
 
   // You can also add a function to check usage before submitting (proactive check)
   const checkBatchUsageBeforeSubmit = async (fileCount: number): Promise<boolean> => {
     try {
+      const safeCurrentPlan = currentUsageData?.usage?.current_plan || 'Unknown Plan';
       const usage = await classificationService.getCurrentUsage();
       const remainingImages = usage.usage.remaining_this_month.image;
       const currentPlan = usage.usage.current_plan;
@@ -439,7 +703,7 @@ const BatchClassification: React.FC = () => {
       accepted_files: files.filter(file => file.size <= MAX_FILE_SIZE_BYTES)
     };
   };
-
+  /*
   const renderDownloadButton = () => {
     if (reportFormat === 'pdf') {
       return (
@@ -455,10 +719,19 @@ const BatchClassification: React.FC = () => {
     }
     return null;
   };
+  */
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      const files = Array.from(event.target.files);
+      let files = Array.from(event.target.files);
+      
+      // If batch is not allowed, only take the first file
+      if (planFeatures && !planFeatures.allowsBatch && files.length > 1) {
+        files = [files[0]];
+        // Show a message that only single files are allowed
+        setApiError(`Your ${planFeatures.currentPlan} plan supports single file analysis only. The first file has been selected.`);
+      }
+      
       const validationResult = validateFiles(files);
       if (validationResult) {
         setValidationError(validationResult);
@@ -486,7 +759,14 @@ const BatchClassification: React.FC = () => {
     setDragActive(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files);
+      let files = Array.from(e.dataTransfer.files);
+      
+      // If batch is not allowed, only take the first file
+      if (planFeatures && !planFeatures.allowsBatch && files.length > 1) {
+        files = [files[0]];
+        setApiError(`Your ${planFeatures.currentPlan} plan supports single file analysis only. The first file has been selected.`);
+      }
+      
       const validationResult = validateFiles(files);
       if (validationResult) {
         setValidationError(validationResult);
@@ -726,6 +1006,21 @@ const BatchClassification: React.FC = () => {
         )}
 
         <div className="batch-container">
+          {planFeatures && !planFeatures.allowsBatch && (
+            <div className="plan-restriction-notice" style={{
+              padding: '1rem',
+              backgroundColor: 'rgba(255, 193, 7, 0.1)',
+              border: '1px solid #ffc107',
+              borderRadius: '8px',
+              marginBottom: '1rem',
+              color: '#856404'
+            }}>
+              <h4 style={{ margin: '0 0 0.5rem 0' }}>⚡ Explorer Plan</h4>
+              <p style={{ margin: 0 }}>
+                Your current plan supports single file analysis. {selectedFiles.length > 1 && 'Only the first file will be processed.'}
+              </p>
+            </div>
+          )}
           <div className="upload-section">
             <form onSubmit={handleSubmit} className="upload-form">
               <div 
@@ -744,7 +1039,7 @@ const BatchClassification: React.FC = () => {
                   className="file-input"
                   style={{ display: 'none' }}
                 />
-                <div className="upload-content">
+                {/*<div className="upload-content">
                   <div className="upload-icon">📂</div>
                   <p>
                     {selectedFiles.length > 0 
@@ -755,6 +1050,24 @@ const BatchClassification: React.FC = () => {
                   <p className="file-size-note">Max file size: {MAX_FILE_SIZE_MB} MB</p>
                   <label className="browse-btn" onClick={() => fileInputRef.current?.click()}>
                     Browse Files
+                  </label>
+                </div> */}
+                <div className="upload-content">
+                  <div className="upload-icon">📂</div>
+                  <p>
+                    {selectedFiles.length > 0 
+                      ? `${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'} selected`
+                      : planFeatures && !planFeatures.allowsBatch 
+                        ? 'Drag & drop an image or use the button below to browse'
+                        : 'Drag & drop images or use the button below to browse'
+                    }
+                  </p>
+                  <p className="file-size-note">
+                    Max file size: {MAX_FILE_SIZE_MB} MB
+                    {planFeatures && !planFeatures.allowsBatch ? ' (Single file only)' : ''}
+                  </p>
+                  <label className="browse-btn" onClick={() => fileInputRef.current?.click()}>
+                    Browse File{planFeatures && !planFeatures.allowsBatch ? '' : 's'}
                   </label>
                 </div>
               </div>
@@ -895,7 +1208,7 @@ const BatchClassification: React.FC = () => {
                   Current Plan:
                 </span>
                 <span className="detail-value" style={{ fontWeight: '600' }}>
-                  {currentUsageData.usage.current_plan}
+                  {currentUsageData?.usage?.current_plan || 'Unknown'}
                 </span>
               </div>
               <div className="detail-item" style={{ 
@@ -907,7 +1220,7 @@ const BatchClassification: React.FC = () => {
                   Images Remaining:
                 </span>
                 <span className="detail-value" style={{ fontWeight: '600' }}>
-                  {currentUsageData.usage.remaining_this_month.image} / {currentUsageData.usage.plan_limits.image}
+                  {currentUsageData?.usage?.remaining_this_month?.image ?? 0} / {currentUsageData?.usage?.plan_limits?.image ?? 0}
                 </span>
               </div>
               <div className="detail-item" style={{ 
@@ -919,7 +1232,7 @@ const BatchClassification: React.FC = () => {
                   Videos Remaining:
                 </span>
                 <span className="detail-value" style={{ fontWeight: '600' }}>
-                  {currentUsageData.usage.remaining_this_month.video} / {currentUsageData.usage.plan_limits.video}
+                  {currentUsageData?.usage?.remaining_this_month?.video ?? 0} / {currentUsageData?.usage?.plan_limits?.video ?? 0}
                 </span>
               </div>
               <div className="detail-item" style={{ 
@@ -932,9 +1245,9 @@ const BatchClassification: React.FC = () => {
                 </span>
                 <span className="detail-value" style={{ 
                   fontWeight: '600', 
-                  color: currentUsageData.subscription.active ? '#28a745' : '#dc3545'
+                  color: currentUsageData?.subscription?.active ? '#28a745' : '#dc3545'
                 }}>
-                  {currentUsageData.subscription.active ? 'Active' : 'Inactive'}
+                  {currentUsageData?.subscription?.active ? 'Active' : 'Inactive'}
                 </span>
               </div>
             </div>
@@ -1255,7 +1568,7 @@ const BatchClassification: React.FC = () => {
                               </div>
 
                               <div className="result-actions">
-                                <button 
+                                {/*<button 
                                   className="download-pdf-btn futuristic-btn"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1264,7 +1577,7 @@ const BatchClassification: React.FC = () => {
                                 >
                                   <span className="btn-icon">📄</span>
                                   Download PDF
-                                </button>
+                                </button>*/}
                               </div>
                             </div>
                           </div>
@@ -1356,7 +1669,7 @@ const BatchClassification: React.FC = () => {
                   </div>
                 )}
 
-                <div className="action-buttons">
+                {/*<div className="action-buttons">
                   <button 
                     className="email-btn futuristic-btn"
                     onClick={() => handleEmailBatchResults(jobStatus)}
@@ -1366,7 +1679,7 @@ const BatchClassification: React.FC = () => {
                   </button>
                   
                   {renderDownloadButton()}
-                </div>
+                </div>*/}
 
                 {jobStatus.error && (
                   <div className="error-message">

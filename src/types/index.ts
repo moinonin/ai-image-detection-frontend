@@ -22,6 +22,7 @@ export interface AuthContextType {
   register: (userData: any) => Promise<void>;
   logout: () => void;
   loading: boolean;
+  refreshUser: () => Promise<void>;
   // Password reset methods
   forgotPassword: (email: string) => Promise<void>;
   //resetPassword: (token: string, newPassword: string) => Promise<void>;
@@ -611,6 +612,61 @@ export interface PlanLimitsResponse {
   videos: number;
   analysis_type: string;
 }
+
+export interface SubscriptionStatus {
+  account_id: string;
+  current_plan: string;
+  status: string;
+  polar_subscription_id: string | null;
+  polar_product_id: string | null;
+  limits: {
+    image_analysis_limit: number;
+    video_analysis_limit: number;
+    analysis_types_allowed: string[];
+    plan_type: string;
+  };
+  is_active: boolean;
+  is_free_tier: boolean;
+}
+
+export interface CancelResponse {
+  status: string;
+  message: string;
+  new_plan: string;
+  limits: {
+    images: number;
+    videos: number;
+  };
+}
+
+export interface UpgradeResponse {
+  success: boolean;
+  checkout_url: string;
+  session_id: string;
+  message: string;
+  subscription_plan_type: string;
+}
+
+export interface PlanInfo {
+  subscription_plan_type: string;
+  name: string;
+  description: string;
+  price_amount: number | null;
+  price_currency: string | null;
+  recurring_interval: string;
+  limits: {
+    images: number;
+    videos: number;
+    analysis_types: string[];
+  };
+}
+
+export interface AvailablePlansResponse {
+  available_plans: PlanInfo[];
+  current_plan: string;
+  can_upgrade: boolean;
+}
+
 // Update the IndividualClassificationResult interface if needed
 // (This should probably match what's in your ../types file)
 

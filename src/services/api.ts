@@ -180,7 +180,93 @@ class ApiService {
     }
   }
 
+  // Subscription methods
+  async getAvailablePlans(accountId: string): Promise<{
+    available_plans: Array<{
+      subscription_plan_type: string;
+      name: string;
+      description: string;
+      price_amount: number | null;
+      price_currency: string | null;
+      recurring_interval: string;
+      limits: {
+        images: number;
+        videos: number;
+        analysis_types: string[];
+      };
+    }>;
+    current_plan: string;
+    can_upgrade: boolean;
+  }> {
+    return this.request(`/api/v1/subscriptions/plans?account_id=${accountId}`);
+  }
 
+  async upgradeAccount(accountId: string, subscriptionPlanType: string): Promise<{
+    success: boolean;
+    checkout_url: string;
+    session_id: string;
+    message: string;
+    subscription_plan_type: string;
+  }> {
+    return this.request('/api/v1/subscriptions/upgrade', {
+      method: 'POST',
+      body: JSON.stringify({
+        account_id: accountId,
+        subscription_plan_type: subscriptionPlanType
+      }),
+    });
+  }
+
+  async getCurrentPlan(accountId: string): Promise<{
+    account_id: string;
+    current_plan: string;
+    status: string;
+    is_active: boolean;
+    limits: {
+      images: number;
+      videos: number;
+      analysis_types: string[];
+    };
+  }> {
+    return this.request(`/api/v1/subscriptions/${accountId}/current-plan`);
+  }
+
+  async completeUpgrade(
+    accountId: string, 
+    polarSubscriptionId: string, 
+    polarProductId: string
+  ): Promise<{ success: boolean; message: string }> {
+    return this.request(`/api/v1/subscriptions/${accountId}/complete-upgrade`, {
+      method: 'POST',
+      body: JSON.stringify({
+        polar_subscription_id: polarSubscriptionId,
+        polar_product_id: polarProductId
+      }),
+    });
+  }
+
+  // Product methods (for backward compatibility - remove these if not needed)
+  async getProducts(): Promise<{ products: any[] }> {
+    return this.request('/api/v1/products');
+  }
+
+  async getFreeTier(): Promise<any> {
+    return this.request('/api/v1/products/free-tier');
+  }
+
+  async getProductCheckout(productId: string, customerEmail?: string): Promise<{
+    checkout_url: string;
+    session_id: string;
+    product_id: string;
+    expires_at?: string;
+  }> {
+    const params = new URLSearchParams();
+    if (customerEmail) {
+      params.append('customer_email', customerEmail);
+    }
+    
+    return this.request(`/api/v1/products/${productId}/checkout?${params.toString()}`);
+  }
   // IMPROVED: Check if user has remaining quota for a specific analysis type
   async checkUsageQuota(analysisType: 'image' | 'video'): Promise<{
     hasQuota: boolean;
@@ -219,7 +305,51 @@ class ApiService {
       };
     }
   }
+  // In api.ts - add this method to check plan features
+  async checkPlanFeatures(): Promise<{
+    allowsBatch: boolean;
+    maxBatchSize?: number;
+    currentPlan: string;
+  }> {
+    try {
+      const usage = await this.getCurrentUsage();
+      const currentPlan = usage.usage.current_plan.toLowerCase();
+      
+      console.log('🔍 Plan features check:', {
+        currentPlan: usage.usage.current_plan,
+        normalizedPlan: currentPlan
+      });
 
+      // Define which plans allow batch classification
+      const batchAllowedPlans = ['free', 'explorer', 'professional', 'team', 'custom'];
+      const allowsBatch = batchAllowedPlans.includes(currentPlan);
+      
+      // Set batch size limits per plan
+      const batchSizeLimits: { [key: string]: number } = {
+        'free': 0,
+        'explorer': 0,
+        'professional': 50,
+        'team': 100,
+        'custom': 500
+      };
+      
+      const features = {
+        allowsBatch,
+        maxBatchSize: batchSizeLimits[currentPlan],
+        currentPlan: usage.usage.current_plan
+      };
+
+      console.log('📋 Plan features determined:', features);
+      return features;
+    } catch (error) {
+      console.error('Error checking plan features:', error);
+      // Default to no batch access if we can't check
+      return {
+        allowsBatch: false,
+        currentPlan: 'unknown'
+      };
+    }
+  }
   // SIMPLIFIED: Single image classification with usage check
   async classifySingleImage(
     file: File, 
@@ -389,6 +519,14 @@ class ApiService {
     useCache: boolean = true,
     accountId?: string
   ): Promise<BatchClassificationResponse> {
+    const planFeatures = await this.checkPlanFeatures();
+    if (!planFeatures.allowsBatch) {
+      const error = new Error(`PLAN_FEATURE_RESTRICTED: Batch classification is not available for your ${planFeatures.currentPlan} plan. Please upgrade to access batch processing.`);
+      (error as any).status = 402;
+      (error as any).planFeatures = planFeatures;
+      (error as any).showUpgrade = true;
+      throw error;
+    }
     const MAX_FILE_SIZE_MB = 0.5;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
     

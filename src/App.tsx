@@ -16,12 +16,15 @@ import About from './components/About';
 import './App.css';
 import Resources from './components/Resources';
 import Footer from './components/Footer';
+import SubscriptionSuccessHandler from './components/SubscriptionSuccessHandler';
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <Router>
         <div className="app">
+          {/* Add SubscriptionSuccessHandler here - it will work on all routes */}
+          <SubscriptionSuccessHandler />
           <Routes>
             {/* Public routes - accessible without authentication */}
             <Route path="/" element={<PublicLayout />}>

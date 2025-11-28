@@ -466,7 +466,7 @@ const SingleClassification: React.FC = () => {
                 {/* ONLY show upgrade prompt when current image usage is exceeded */}
                 {hasExceededImageUsage() && <UpgradePrompt />}
 
-                <div className="action-buttons">
+                {/*<div className="action-buttons">
                   <button
                     className="email-btn futuristic-btn"
                     onClick={() =>
@@ -512,7 +512,7 @@ const SingleClassification: React.FC = () => {
                       Download JSON
                     </button>
                   )}
-                </div>
+                </div>*/}
               </div>
             ) : (
               // ERROR DISPLAY SECTION

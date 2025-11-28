@@ -33,8 +33,18 @@ const Pricing: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Fetch products from backend - THIS WAS WORKING
+  // Fetch products from backend
   useEffect(() => {
+    const debugConfig = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/debug/polar-config`);
+        const config = await response.json();
+        console.log('Polar Config:', config);
+      } catch (error) {
+        console.error('Failed to fetch Polar config:', error);
+      }
+    };
+    debugConfig();
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
@@ -69,7 +79,8 @@ const Pricing: React.FC = () => {
     fetchProducts();
   }, []);
 
-  // THIS CHECKOUT LOGIC WAS WORKING - it successfully redirected to Polar
+
+  // Create checkout session using backend endpoint
   const handleSubscribe = async (product: PolarProduct) => {
     setRedirectingProduct(product.id);
     setError(null);
@@ -78,7 +89,7 @@ const Pricing: React.FC = () => {
       console.log(`🛒 Starting checkout for product: ${product.id}`);
       console.log(`📧 User email: ${user?.email}`);
       
-      // Build URL with parameters - THIS WAS WORKING
+      // Build URL with parameters
       const params = new URLSearchParams({
         product_id: product.id
       });
@@ -134,6 +145,25 @@ const Pricing: React.FC = () => {
         setTimeout(() => setRedirectingProduct(null), 3000);
       }
     }
+  };
+
+  // Alternative: Get checkout URL via GET endpoint
+  const getProductCheckoutUrl = async (productId: string): Promise<string> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/v1/products/${productId}/checkout${user?.email ? `?customer_email=${encodeURIComponent(user.email)}` : ''}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.checkout_url;
+      }
+    } catch (error) {
+      console.error('Error getting checkout URL:', error);
+    }
+    
+    // Ultimate fallback: generate direct Polar URL
+    return generateDirectPolarUrl(productId);
   };
 
   // Generate direct Polar URL as last resort
@@ -417,6 +447,40 @@ const Pricing: React.FC = () => {
           </p>
         </div>
       )}
+
+      {/*!user && (
+        <div style={{ 
+          background: '#f8f9fa', 
+          padding: '15px', 
+          borderRadius: '8px', 
+          margin: '20px 0',
+          textAlign: 'center'
+        }}>
+          <p>💡 <strong>Sign in</strong> to have your email pre-filled at checkout</p>
+        </div>
+      )*/}
+
+      {/* Debug info - remove in production */}
+      {/*import.meta.env.DEV && (
+        <div style={{ marginTop: '20px', padding: '15px', background: '#f5f5f5', borderRadius: '8px' }}>
+          <h4>Debug Info:</h4>
+          <p>Products loaded: {products.length}</p>
+          <p>Free tier: {freeProduct ? `Yes (${freeProduct.id})` : 'No'}</p>
+          <p>User: {user ? user.email : 'Not signed in'}</p>
+          <p>Organization: {import.meta.env.VITE_POLAR_ORG || 'Not set'}</p>
+          <p>Environment: {import.meta.env.VITE_POLAR_ENV || 'Not set'}</p>
+          <button 
+            onClick={() => {
+              console.log('All products:', products);
+              console.log('Free tier:', freeProduct);
+              console.log('User:', user);
+              console.log('Environment:', import.meta.env);
+            }}
+            style={{ marginTop: '10px', padding: '5px 10px' }}
+          >
+          </button>
+        </div>
+      )*/}
     </div>
   );
 };

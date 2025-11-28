@@ -1,38 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../services/api';
+import { authService, classificationService } from '../services/api';
+import { CurrentUsageResponse, SubscriptionStatus, CancelResponse } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
-
-interface SubscriptionStatus {
-  account_id: string;
-  current_plan: string;
-  status: string;
-  polar_subscription_id: string | null;
-  polar_product_id: string | null;
-  limits: {
-    image_analysis_limit: number;
-    video_analysis_limit: number;
-    analysis_types_allowed: string[];
-    plan_type: string;
-  };
-  is_active: boolean;
-  is_free_tier: boolean;
-}
-
-interface CancelResponse {
-  status: string;
-  message: string;
-  new_plan: string;
-  limits: {
-    images: number;
-    videos: number;
-  };
-}
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
+  const [refreshing, setRefreshing] = useState(false);
   
   const [changePassword, setChangePassword] = useState({
     currentPassword: '',
@@ -42,10 +18,32 @@ const UserProfile: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
+  // Current usage state (same as batch classification)
+  const [currentUsageData, setCurrentUsageData] = useState<CurrentUsageResponse | null>(null);
+  const [usageLoading, setUsageLoading] = useState(false);
+
   // Subscription state
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
+
+  // Fetch current usage data (same as batch classification)
+  useEffect(() => {
+    const fetchCurrentUsage = async () => {
+      try {
+        setUsageLoading(true);
+        const usage = await classificationService.getCurrentUsage();
+        setCurrentUsageData(usage);
+        console.log('📊 Current usage data loaded:', usage);
+      } catch (error) {
+        console.error('Error fetching current usage:', error);
+      } finally {
+        setUsageLoading(false);
+      }
+    };
+
+    fetchCurrentUsage();
+  }, []);
 
   // Fetch subscription status
   useEffect(() => {
@@ -73,6 +71,48 @@ const UserProfile: React.FC = () => {
 
     fetchSubscriptionStatus();
   }, [user?.id]);
+  const refreshSubscriptionData = async () => {
+    setRefreshing(true);
+    try {
+      // Refresh usage data
+      const usage = await classificationService.getCurrentUsage();
+      setCurrentUsageData(usage);
+      
+      // Refresh subscription status
+      if (user?.id) {
+        const response = await fetch(
+          `${API_BASE_URL}/api/v1/accounts/${user.id}/subscription-status`
+        );
+        if (response.ok) {
+          const subscriptionData = await response.json();
+          setSubscription(subscriptionData);
+        }
+      }
+      
+      console.log('✅ Subscription data refreshed');
+    } catch (error) {
+      console.error('❌ Failed to refresh subscription data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+  // Get current plan from usage data (primary source)
+  const getCurrentPlan = () => {
+    return currentUsageData?.usage?.current_plan || subscription?.current_plan || 'Free';
+  };
+
+  // Check if user is on free plan
+  const isFreePlan = () => {
+    const plan = getCurrentPlan().toLowerCase();
+    return plan === 'free' || plan === 'explorer';
+  };
+
+  // Check if batch processing is allowed
+  const allowsBatchProcessing = () => {
+    const plan = getCurrentPlan().toLowerCase();
+    const batchAllowedPlans = ['free', 'explorer', 'professional', 'team', 'custom'];
+    return batchAllowedPlans.includes(plan);
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,7 +219,7 @@ const UserProfile: React.FC = () => {
       const result: CancelResponse = await response.json();
       setMessage(result.message);
       
-      // Refresh subscription status
+      // Refresh subscription status and usage data
       const statusResponse = await fetch(
         `${API_BASE_URL}/api/v1/accounts/${user.id}/subscription-status`
       );
@@ -187,6 +227,10 @@ const UserProfile: React.FC = () => {
         const newStatus = await statusResponse.json();
         setSubscription(newStatus);
       }
+      
+      // Refresh current usage data
+      const usage = await classificationService.getCurrentUsage();
+      setCurrentUsageData(usage);
       
     } catch (error) {
       console.error('Error canceling subscription:', error);
@@ -219,7 +263,7 @@ const UserProfile: React.FC = () => {
             className={`tab-button ${activeTab === 'subscription' ? 'active' : ''}`}
             onClick={() => setActiveTab('subscription')}
           >
-            Subscription
+            Subscription & Usage
           </button>
           <button 
             className={`tab-button ${activeTab === 'password' ? 'active' : ''}`}
@@ -260,16 +304,22 @@ const UserProfile: React.FC = () => {
                 <h3>Usage Statistics</h3>
                 <div className="stats-grid">
                   <div className="stat">
-                    <div className="stat-value">0</div>
+                    <div className="stat-value">
+                      {currentUsageData?.usage?.used_this_month?.image || 0}
+                    </div>
                     <div className="stat-label">Images Analyzed</div>
                   </div>
                   <div className="stat">
-                    <div className="stat-value">0</div>
-                    <div className="stat-label">Batch Jobs</div>
+                    <div className="stat-value">
+                      {currentUsageData?.usage?.remaining_this_month?.image || 0}
+                    </div>
+                    <div className="stat-label">Images Remaining</div>
                   </div>
                   <div className="stat">
-                    <div className="stat-value">100%</div>
-                    <div className="stat-label">Accuracy Rate</div>
+                    <div className="stat-value">
+                      {allowsBatchProcessing() ? '✅' : '❌'}
+                    </div>
+                    <div className="stat-label">Batch Processing</div>
                   </div>
                 </div>
               </div>
@@ -278,100 +328,143 @@ const UserProfile: React.FC = () => {
 
           {activeTab === 'subscription' && (
             <div className="subscription-info">
-              {subscriptionLoading ? (
-                <div className="info-card">
-                  <h3>Subscription Details</h3>
-                  <p>Loading subscription information...</p>
-                </div>
-              ) : subscription ? (
-                <>
-                  <div className="info-card">
-                    <h3>Subscription Details</h3>
-                    <div className="info-grid">
-                      <div className="info-item">
-                        <label>Current Plan:</label>
-                        <span className={`status ${subscription.is_active ? 'active' : 'inactive'}`}>
-                          {formatPlanName(subscription.current_plan)}
-                        </span>
-                      </div>
-                      <div className="info-item">
-                        <label>Status:</label>
-                        <span className={`status ${subscription.is_active ? 'active' : 'inactive'}`}>
-                          {subscription.status}
-                        </span>
-                      </div>
-                      <div className="info-item">
-                        <label>Image Analysis Limit:</label>
-                        <span>{subscription.limits.image_analysis_limit} per month</span>
-                      </div>
-                      <div className="info-item">
-                        <label>Video Analysis Limit:</label>
-                        <span>{subscription.limits.video_analysis_limit} per month</span>
-                      </div>
-                      <div className="info-item">
-                        <label>Analysis Types:</label>
-                        <span>{subscription.limits.analysis_types_allowed.join(', ')}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {!subscription.is_free_tier && subscription.is_active && (
-                    <div className="info-card">
-                      <h3>Subscription Management</h3>
-                      <div className="info-grid">
-                        <div className="info-item">
-                          <label>Subscription ID:</label>
-                          <span style={{ fontSize: '0.8em', wordBreak: 'break-all' }}>
-                            {subscription.polar_subscription_id}
-                          </span>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e0e0e0' }}>
-                        <button 
-                          onClick={handleCancelSubscription}
-                          disabled={isCanceling}
-                          className="auth-btn"
-                          style={{ 
-                            backgroundColor: '#ff4757',
-                            borderColor: '#ff4757'
-                          }}
-                        >
-                          {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
-                        </button>
-                        <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.5rem' }}>
-                          Canceling will immediately downgrade you to the free tier with basic limits.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {subscription.is_free_tier && (
-                    <div className="info-card">
-                      <h3>Upgrade Your Plan</h3>
-                      <p>You're currently on the free tier. Upgrade to get more features and higher limits.</p>
-                      <button 
-                        onClick={() => window.location.href = '/pricing'}
-                        className="auth-btn"
-                        style={{ marginTop: '1rem' }}
-                      >
-                        View Pricing Plans
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="info-card">
-                  <h3>Subscription Details</h3>
-                  <p>No subscription information found. You're likely on the free tier.</p>
+              <div className="info-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3>Current Plan & Usage</h3>
                   <button 
-                    onClick={() => window.location.href = '/pricing'}
+                    onClick={refreshSubscriptionData}
+                    disabled={refreshing}
                     className="auth-btn"
-                    style={{ marginTop: '1rem' }}
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
                   >
-                    View Pricing Plans
+                    {refreshing ? 'Refreshing...' : '🔄 Refresh'}
                   </button>
                 </div>
+                {usageLoading || subscriptionLoading ? (
+                  <p>Loading subscription information...</p>
+                ) : (
+                  <div className="info-grid">
+                    <div className="info-item">
+                      <label>Current Plan:</label>
+                      <span className={`status ${!isFreePlan() ? 'active' : 'inactive'}`}>
+                        {formatPlanName(getCurrentPlan())}
+                        {isFreePlan() && ' (Free Tier)'}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <label>Batch Processing:</label>
+                      <span className={`status ${allowsBatchProcessing() ? 'active' : 'inactive'}`}>
+                        {allowsBatchProcessing() ? 'Available' : 'Not Available'}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <label>Image Analysis Used:</label>
+                      <span>
+                        {currentUsageData?.usage?.used_this_month?.image || 0} / {currentUsageData?.usage?.plan_limits?.image || 0}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <label>Image Analysis Remaining:</label>
+                      <span>
+                        {currentUsageData?.usage?.remaining_this_month?.image || 0}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <label>Video Analysis Used:</label>
+                      <span>
+                        {currentUsageData?.usage?.used_this_month?.video || 0} / {currentUsageData?.usage?.plan_limits?.video || 0}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <label>Video Analysis Remaining:</label>
+                      <span>
+                        {currentUsageData?.usage?.remaining_this_month?.video || 0}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Subscription Management */}
+              {subscription && !isFreePlan() && subscription.is_active && (
+                <div className="info-card">
+                  <h3>Subscription Management</h3>
+                  <div className="info-grid">
+                    <div className="info-item">
+                      <label>Subscription Status:</label>
+                      <span className={`status ${subscription.is_active ? 'active' : 'inactive'}`}>
+                        {subscription.status}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <label>Subscription ID:</label>
+                      <span style={{ fontSize: '0.8em', wordBreak: 'break-all' }}>
+                        {subscription.polar_subscription_id || 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e0e0e0' }}>
+                    <button 
+                      onClick={handleCancelSubscription}
+                      disabled={isCanceling}
+                      className="auth-btn"
+                      style={{ 
+                        backgroundColor: '#ff4757',
+                        borderColor: '#ff4757'
+                      }}
+                    >
+                      {isCanceling ? 'Canceling...' : 'Cancel Subscription'}
+                    </button>
+                    <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.5rem' }}>
+                      Canceling will immediately downgrade you to the free tier with basic limits.
+                    </p>
+                  </div>
+                </div>
               )}
+
+              {/* Upgrade Options */}
+              {isFreePlan() && (
+                <div className="info-card">
+                  <h3>Upgrade Your Plan</h3>
+                  <p>
+                    You're currently on the {getCurrentPlan()} plan. 
+                    {!allowsBatchProcessing() && ' Upgrade to get access to batch processing and higher limits.'}
+                  </p>
+                  <div style={{ marginTop: '1rem' }}>
+                    <button 
+                      onClick={() => window.location.href = '/pricing'}
+                      className="auth-btn"
+                    >
+                      View Pricing Plans
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Plan Features Comparison */}
+              <div className="info-card">
+                <h3>Plan Features</h3>
+                <div className="features-grid">
+                  <div className="feature">
+                    <span className="feature-name">Batch Processing</span>
+                    <span className={`feature-status ${allowsBatchProcessing() ? 'available' : 'unavailable'}`}>
+                      {allowsBatchProcessing() ? '✅' : '❌'}
+                    </span>
+                  </div>
+                  <div className="feature">
+                    <span className="feature-name">Monthly Image Analyses</span>
+                    <span className="feature-value">
+                      {currentUsageData?.usage?.plan_limits?.image || 0}
+                    </span>
+                  </div>
+                  <div className="feature">
+                    <span className="feature-name">Monthly Video Analyses</span>
+                    <span className="feature-value">
+                      {currentUsageData?.usage?.plan_limits?.video || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
               {message && (
                 <div className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>
