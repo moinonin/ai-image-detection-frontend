@@ -110,7 +110,7 @@ const UserProfile: React.FC = () => {
   // Check if batch processing is allowed
   const allowsBatchProcessing = () => {
     const plan = getCurrentPlan().toLowerCase();
-    const batchAllowedPlans = ['free', 'explorer', 'professional', 'team', 'custom'];
+    const batchAllowedPlans = ['professional', 'team'];
     return batchAllowedPlans.includes(plan);
   };
 
