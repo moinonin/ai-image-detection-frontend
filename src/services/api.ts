@@ -3,7 +3,7 @@ import { usageService } from '../services/usageService';
 
 type ReportFormat = 'json' | 'pdf';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
