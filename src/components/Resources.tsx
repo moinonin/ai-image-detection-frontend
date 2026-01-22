@@ -122,11 +122,19 @@ const Resources: React.FC = () => {
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
+                Real-time results
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
                 Progress tracking
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Export PDF reports
+                Multiple image formats (JPG, PNG, WEBP)
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Detailed confidence scores
               </div>
             </div>
             <Link to="/batch" className="tool-cta">
