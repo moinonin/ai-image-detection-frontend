@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { classificationService } from '../services/api';
 
 const SubscriptionSuccessHandler: React.FC = () => {
   const { user, refreshUser } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [hasProcessed, setHasProcessed] = useState(false);
   const [previousPlan, setPreviousPlan] = useState<string | null>(null);
 
@@ -35,17 +34,11 @@ const SubscriptionSuccessHandler: React.FC = () => {
       // Only process if we have clear success indicators AND haven't processed this already
       const hasSuccessParams = paymentSuccess === 'true' || sessionId;
       
-      if (hasSuccessParams && !hasProcessed) {
+      if (hasSuccessParams && user && !hasProcessed) {
         console.log('🎉 Payment success detected, updating user data...');
         setHasProcessed(true);
         
         try {
-          // If user is not logged in, redirect to login first
-          if (!user) {
-            navigate('/login?redirect=/profile');
-            return;
-          }
-          
           // Store the old plan before refreshing
           let oldPlan = previousPlan;
           if (!oldPlan) {
@@ -81,6 +74,7 @@ const SubscriptionSuccessHandler: React.FC = () => {
                 alert('🎉 Your subscription has been activated! You now have access to batch processing and higher limits.');
               } else {
                 console.log('Plan has not updated yet - webhook might be pending');
+                // You could show a different message here if needed
               }
             } catch (error) {
               console.error('Could not verify subscription status:', error);
@@ -98,7 +92,7 @@ const SubscriptionSuccessHandler: React.FC = () => {
     };
 
     handleSubscriptionSuccess();
-  }, [user, refreshUser, location, hasProcessed, previousPlan, navigate]);
+  }, [user, refreshUser, location, hasProcessed, previousPlan]);
 
   return null;
 };
