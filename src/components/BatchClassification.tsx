@@ -15,13 +15,6 @@ import {
 
 //type ClassificationResponse = SingleClassificationResponse | BatchClassificationResponse;
 
-function getCookie(name: string): string | null {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()!.split(';').shift()!;
-  return null;
-}
-
 interface FileValidationError {
   error: string;
   summary: {
@@ -922,29 +915,7 @@ const BatchClassification: React.FC = () => {
     }
   };
 
-  const handleDownloadPDF = async (result: BatchAnalysisResult): Promise<void> => {
-    try {
-      console.log('📤 Generating PDF for individual result:', {
-        filename: result.filename,
-      });
-
-      const individualResult = adaptToIndividualClassificationResult(result);
-      const pdfBlob = await generatePDFReport([individualResult], 'individual');
-      const url = window.URL.createObjectURL(pdfBlob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `analysis_${result.filename}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-
-      console.log('Individual PDF downloaded successfully');
-    } catch (error: any) {
-      console.error('Individual PDF download failed:', error);
-      alert(error.message || 'PDF download failed. Please try again.');
-    }
-  };
+  // Individual PDF generation intentionally removed; use the single batch PDF instead.
 
   const handleEmailBatchReport = async (): Promise<void> => {
     if (!emailRecipient) {
@@ -992,41 +963,7 @@ const BatchClassification: React.FC = () => {
     }
   };
 
-  const generatePDFReport = async (results: IndividualClassificationResult[], reportType: string = 'individual') => {
-    const token = localStorage.getItem('auth_token') || 
-                  sessionStorage.getItem('auth_token') ||
-                  getCookie('auth_token');
-    
-    console.log('📤 Calling PDF endpoint with authentication');
-    
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8008';
-    const response = await fetch(`${apiBaseUrl}/api/v1/generate-pdf`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ results, reportType }),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ PDF generation failed:', response.status, errorText);
-      
-      if (response.status === 401) {
-        throw new Error('Authentication required. Please log in again.');
-      }
-      
-      throw new Error(`Failed to generate PDF: ${response.status}`);
-    }
-    
-    return response.blob();
-  };
+  // Individual PDF report endpoint removed to avoid per-image PDFs and auth issues.
 
   const displayResults = getDisplayResults();
   const debugInfo = getDebugInfo();
@@ -1615,18 +1552,7 @@ const BatchClassification: React.FC = () => {
                                 )}
                               </div>
 
-                              <div className="result-actions">
-                                <button 
-                                  className="download-pdf-btn futuristic-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDownloadPDF(result);
-                                  }}
-                                >
-                                  <span className="btn-icon">📄</span>
-                                  Download PDF
-                                </button>
-                              </div>
+                              {/* Individual PDF removed: use batch report instead */}
                             </div>
                           </div>
                         )}
