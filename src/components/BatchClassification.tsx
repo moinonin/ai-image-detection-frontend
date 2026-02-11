@@ -1717,9 +1717,20 @@ const BatchClassification: React.FC = () => {
                   </div>
                 )}
 
+                {displayResults.length > 0 && (
+                  <div className="pdf-banner">
+                    <div className="pdf-banner-text">
+                      <h3>Download Batch Report</h3>
+                      <p>
+                        Summary: {displayResults.length} files • AI: {displayResults.filter(r => r.is_ai).length} • Human: {displayResults.filter(r => !r.is_ai).length}
+                      </p>
+                    </div>
+                    {renderDownloadButton()}
+                  </div>
+                )}
+
                 <div className="action-buttons">
                   <EmailHealthBadge />
-                  {renderDownloadButton()}
                   <div className="email-report">
                     <div className="email-display">
                       <span className="email-label">Email report to:</span>

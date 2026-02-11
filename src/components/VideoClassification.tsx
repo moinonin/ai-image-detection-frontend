@@ -577,17 +577,27 @@ const VideoClassification: React.FC = () => {
 
                 {/* Action buttons */}
                 
+                {analysisResult && (
+                  <div className="pdf-banner">
+                    <div className="pdf-banner-text">
+                      <h3>Download Video Report</h3>
+                      <p>
+                        Summary: {analysisResult.dominant_class || 'N/A'} • Frames {analysisResult.total_frames_analyzed || 0} • AI {analysisResult.ai_frames || 0}
+                      </p>
+                    </div>
+                    <button
+                      className="pdf-btn futuristic-btn"
+                      onClick={handleDownloadPDF}
+                      disabled={loading}
+                    >
+                      <span className="btn-icon">📄</span>
+                      {loading ? 'Generating PDF...' : 'Download PDF'}
+                    </button>
+                  </div>
+                )}
+
                 <div className="action-buttons">
                   <EmailHealthBadge />
-                  <button
-                    className="pdf-btn futuristic-btn"
-                    onClick={handleDownloadPDF}
-                    disabled={loading}
-                  >
-                    <span className="btn-icon">📄</span>
-                    {loading ? 'Generating PDF...' : 'Download PDF Report'}
-                  </button>
-
                   <button
                     className="json-btn futuristic-btn"
                     onClick={handleDownloadJSON}

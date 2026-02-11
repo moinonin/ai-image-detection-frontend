@@ -511,19 +511,28 @@ const SingleClassification: React.FC = () => {
                 {/* ONLY show upgrade prompt when current image usage is exceeded */}
                 {hasExceededImageUsage() && <UpgradePrompt />}
 
-                <div className="action-buttons">
-                  <EmailHealthBadge />
-                  {analysisResult && (
+                {analysisResult && (
+                  <div className="pdf-banner">
+                    <div className="pdf-banner-text">
+                      <h3>Download Professional Report</h3>
+                      <p>
+                        Summary: {getPredictedClass()} • Confidence {analysisResult.confidence?.toFixed(2) ?? 'N/A'}
+                        {analysisResult.model ? ` • Model ${analysisResult.model}` : ''}
+                      </p>
+                    </div>
                     <button
                       className="pdf-btn futuristic-btn"
                       onClick={handleDownloadPDF}
                       disabled={loading}
                     >
                       <span className="btn-icon">📄</span>
-                      {loading ? 'Generating PDF...' : 'Download PDF Report'}
+                      {loading ? 'Generating PDF...' : 'Download PDF'}
                     </button>
-                  )}
+                  </div>
+                )}
 
+                <div className="action-buttons">
+                  <EmailHealthBadge />
                   {analysisResult && (
                     <button
                       className="json-btn futuristic-btn"
