@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { classificationService } from '../services/api';
 import { usageService } from '../services/usageService'; 
-import {EmailResultsParams, ReportFormat, ClassificationResult, CurrentUsageResponse } from '../types';
+import { ReportFormat, ClassificationResult, CurrentUsageResponse } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import EmailHealthBadge from './EmailHealthBadge';
+import { useToast } from '../contexts/ToastContext';
 
 // Use the same type structure as the API returns
 type SingleClassificationResponse = {
@@ -20,6 +23,8 @@ type SingleClassificationResponse = {
 };
 
 const SingleClassification: React.FC = () => {
+  const { user } = useAuth();
+  const toast = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [modelType, setModelType] = useState('ml');
@@ -30,6 +35,11 @@ const SingleClassification: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<any>(null);
   const [currentUsage, setCurrentUsage] = useState<CurrentUsageResponse | null>(null);
+  const [emailRecipient, setEmailRecipient] = useState('');
+  const [emailStatus, setEmailStatus] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [showEmailConfirm, setShowEmailConfirm] = useState(false);
+  const [emailFailed, setEmailFailed] = useState(false);
 
   // Fetch current usage on component mount
   useEffect(() => {
@@ -136,10 +146,6 @@ const SingleClassification: React.FC = () => {
     return '#ff4444';
   };
 
-  const handleEmailResults = (result: EmailResultsParams): void => {
-    console.log('Email results:', result);
-  };
-
   const handleDownloadPDF = async (): Promise<void> => {
     if (!result?.analysis) return;
 
@@ -173,7 +179,46 @@ const SingleClassification: React.FC = () => {
     }
   };
 
+  const handleEmailReport = async (): Promise<void> => {
+    if (!analysisResult) return;
+    if (!emailRecipient) {
+      setEmailError('Email is required.');
+      return;
+    }
+    setEmailError(null);
+    setShowEmailConfirm(true);
+  };
+
+  const confirmEmailReport = async (): Promise<void> => {
+    if (!analysisResult || !emailRecipient) return;
+    setEmailStatus(null);
+    try {
+      const result = await classificationService.emailReport(emailRecipient, analysisResult, 'individual');
+      setEmailStatus('Report sent.');
+      setEmailFailed(false);
+      if (result.rate_limit) {
+        toast.push(
+          `Emails remaining: ${result.rate_limit.remaining} (resets in ${result.rate_limit.reset_after_seconds}s)`,
+          'info'
+        );
+      }
+      toast.push('Report emailed successfully.', 'success');
+    } catch (error: any) {
+      setEmailStatus(error.message || 'Failed to send report.');
+      setEmailFailed(true);
+      toast.push(error.message || 'Failed to send report.', 'error');
+    } finally {
+      setShowEmailConfirm(false);
+    }
+  };
+
   const analysisResult = result?.analysis;
+
+  useEffect(() => {
+    if (user?.email && emailRecipient.trim() === '') {
+      setEmailRecipient(user.email);
+    }
+  }, [user, emailRecipient]);
 
   const getPredictedClass = (): string => {
     if (!analysisResult) return 'Unknown';
@@ -466,23 +511,8 @@ const SingleClassification: React.FC = () => {
                 {/* ONLY show upgrade prompt when current image usage is exceeded */}
                 {hasExceededImageUsage() && <UpgradePrompt />}
 
-                {/*<div className="action-buttons">
-                  <button
-                    className="email-btn futuristic-btn"
-                    onClick={() =>
-                      handleEmailResults({
-                        confidence: analysisResult.confidence,
-                        predicted_class: getPredictedClass(),
-                        filename: analysisResult.filename || 'Unknown',
-                        model: analysisResult.model || 'Unknown',
-                        probability: analysisResult.probability,
-                      })
-                    }
-                  >
-                    <span className="btn-icon">✉️</span>
-                    Email Results
-                  </button>
-
+                <div className="action-buttons">
+                  <EmailHealthBadge />
                   {analysisResult && (
                     <button
                       className="pdf-btn futuristic-btn"
@@ -512,7 +542,62 @@ const SingleClassification: React.FC = () => {
                       Download JSON
                     </button>
                   )}
-                </div>*/}
+
+                  {analysisResult && (
+                    <div className="email-report">
+                      <div className="email-display">
+                        <span className="email-label">Email report to:</span>
+                        <span className="email-value">{emailRecipient || 'No email on account'}</span>
+                      </div>
+                      <div className="email-note">
+                        Reports can only be emailed to your account address.
+                      </div>
+                      {emailError && (
+                        <div className="email-error">
+                          {emailError}
+                        </div>
+                      )}
+                      <button
+                        className="email-btn futuristic-btn"
+                        onClick={handleEmailReport}
+                        disabled={loading || !emailRecipient}
+                      >
+                        <span className="btn-icon">✉️</span>
+                        Send Report
+                      </button>
+                      {emailFailed && (
+                        <button
+                          className="retry-btn futuristic-btn"
+                          onClick={handleEmailReport}
+                          disabled={loading || !emailRecipient}
+                        >
+                          Resend
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {showEmailConfirm && (
+                    <div className="modal-backdrop">
+                      <div className="modal-card">
+                        <h3>Send Report?</h3>
+                        <p>We will email the report to <strong>{emailRecipient}</strong>.</p>
+                        <div className="modal-actions">
+                          <button className="futuristic-btn" onClick={confirmEmailReport} disabled={loading}>
+                            Confirm
+                          </button>
+                          <button className="retry-btn futuristic-btn" onClick={() => setShowEmailConfirm(false)} disabled={loading}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {emailStatus && (
+                    <div className="email-status">
+                      {emailStatus}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               // ERROR DISPLAY SECTION

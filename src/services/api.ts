@@ -894,6 +894,178 @@ class ApiService {
     return await response.blob();
   }
 
+  async emailReport(
+    email: string,
+    results: any,
+    reportType: 'individual' | 'batch' | 'video' = 'individual'
+  ): Promise<{ message: string; rate_limit?: { limit: number; remaining: number; reset_after_seconds: number } }> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/email-report`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({ email, results, reportType }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Email report failed: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    const limit = response.headers.get('X-RateLimit-Limit');
+    const remaining = response.headers.get('X-RateLimit-Remaining');
+    const reset = response.headers.get('X-RateLimit-Reset');
+    if (limit && remaining && reset) {
+      data.rate_limit = {
+        limit: parseInt(limit, 10),
+        remaining: parseInt(remaining, 10),
+        reset_after_seconds: parseInt(reset, 10)
+      };
+    }
+    return data;
+  }
+
+  async getEmailHealth(): Promise<{ configured: boolean; message: string; details?: any }> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/email/health`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Email health check failed: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+  }
+
+  async getEmailStats(): Promise<{ window_seconds: number; failed_count: number; sent_count: number }> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/email/stats`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Email stats failed: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+  }
+
+  async getEmailFailures(params: {
+    limit?: number;
+    offset?: number;
+    start?: string;
+    end?: string;
+    user_email?: string;
+    recipient_email?: string;
+    sort_by?: 'created_at' | 'user_email' | 'recipient_email';
+    sort_dir?: 'asc' | 'desc';
+  } = {}): Promise<{ failures: any[]; total_count: number; limit: number; offset: number }> {
+    const query = new URLSearchParams();
+    if (params.limit !== undefined) query.set('limit', String(params.limit));
+    if (params.offset !== undefined) query.set('offset', String(params.offset));
+    if (params.start) query.set('start', params.start);
+    if (params.end) query.set('end', params.end);
+    if (params.user_email) query.set('user_email', params.user_email);
+    if (params.recipient_email) query.set('recipient_email', params.recipient_email);
+    if (params.sort_by) query.set('sort_by', params.sort_by);
+    if (params.sort_dir) query.set('sort_dir', params.sort_dir);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/email/failures?${query.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Email failures failed: ${response.status} ${errorText}`);
+    }
+
+    return response.json();
+  }
+
+  async downloadEmailFailuresCsv(params: {
+    start?: string;
+    end?: string;
+    user_email?: string;
+    recipient_email?: string;
+    sort_by?: 'created_at' | 'user_email' | 'recipient_email';
+    sort_dir?: 'asc' | 'desc';
+  } = {}): Promise<Blob> {
+    const query = new URLSearchParams();
+    query.set('format', 'csv');
+    if (params.start) query.set('start', params.start);
+    if (params.end) query.set('end', params.end);
+    if (params.user_email) query.set('user_email', params.user_email);
+    if (params.recipient_email) query.set('recipient_email', params.recipient_email);
+    if (params.sort_by) query.set('sort_by', params.sort_by);
+    if (params.sort_dir) query.set('sort_dir', params.sort_dir);
+
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/email/failures?${query.toString()}`, {
+      method: 'GET',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Email failures CSV failed: ${response.status} ${errorText}`);
+    }
+
+    return response.blob();
+  }
+
+  async sendTestEmail(
+    email: string
+  ): Promise<{ message: string; rate_limit?: { limit: number; remaining: number; reset_after_seconds: number } }> {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/api/v1/email/test`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Test email failed: ${response.status} ${errorText}`);
+    }
+
+    const data = await response.json();
+    const limit = response.headers.get('X-RateLimit-Limit');
+    const remaining = response.headers.get('X-RateLimit-Remaining');
+    const reset = response.headers.get('X-RateLimit-Reset');
+    if (limit && remaining && reset) {
+      data.rate_limit = {
+        limit: parseInt(limit, 10),
+        remaining: parseInt(remaining, 10),
+        reset_after_seconds: parseInt(reset, 10)
+      };
+    }
+    return data;
+  }
+
   // UPDATED: Async batch job with usage check
   async startBatchJob(files: File[], model: string = 'ml'): Promise<{ job_id: string; status: string; message: string }> {
     const token = localStorage.getItem('token');

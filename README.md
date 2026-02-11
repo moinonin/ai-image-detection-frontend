@@ -37,6 +37,10 @@ Create a .env file and add the following line:
 ```
 VITE_API_URL=http://localhost:8008
 ```
+Optional admin-only UI:
+```
+VITE_ADMIN_EMAILS=admin@example.com,ops@example.com
+```
 
 # Project Structure
 ```
@@ -52,4 +56,3 @@ The FastAPI backend for this project is available at: [Backend Repository Link]
 
 ## License
 MIT
-

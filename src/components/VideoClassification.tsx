@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { classificationService } from '../services/api';
 import { usageService } from '../services/api'; // Import from api or directly from usageService
-import { VideoClassificationResponse, VideoSummary, CurrentUsageResponse } from '../types';
-
-type EmailResultProps = VideoSummary;
+import { VideoClassificationResponse, CurrentUsageResponse } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import EmailHealthBadge from './EmailHealthBadge';
+import { useToast } from '../contexts/ToastContext';
 
 const VideoClassification: React.FC = () => {
+  const { user } = useAuth();
+  const toast = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
   const [modelType, setModelType] = useState('ml');
@@ -17,6 +20,11 @@ const VideoClassification: React.FC = () => {
   const [errorDetails, setErrorDetails] = useState<any>(null);
   const [currentUsage, setCurrentUsage] = useState<CurrentUsageResponse | null>(null);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
+  const [emailRecipient, setEmailRecipient] = useState('');
+  const [emailStatus, setEmailStatus] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailFailed, setEmailFailed] = useState(false);
+  const [showEmailConfirm, setShowEmailConfirm] = useState(false);
 
   // Fetch current usage on component mount
   useEffect(() => {
@@ -170,10 +178,6 @@ const VideoClassification: React.FC = () => {
 
   const usageData = getUsageDisplayData();
 
-  const handleEmailResults = (result: EmailResultProps): void => {
-    console.log('Email video results:', result);
-  };
-
   const handleDownloadPDF = async (): Promise<void> => {
     if (!result) return;
 
@@ -208,6 +212,45 @@ const VideoClassification: React.FC = () => {
       setError(`PDF download failed: ${error.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.email && emailRecipient.trim() === '') {
+      setEmailRecipient(user.email);
+    }
+  }, [user, emailRecipient]);
+
+  const handleEmailReport = async (): Promise<void> => {
+    if (!result) return;
+    if (!emailRecipient) {
+      setEmailError('Email is required.');
+      return;
+    }
+    setEmailError(null);
+    setShowEmailConfirm(true);
+  };
+
+  const confirmEmailReport = async (): Promise<void> => {
+    if (!result || !emailRecipient) return;
+    setEmailStatus(null);
+    try {
+      const response = await classificationService.emailReport(emailRecipient, result, 'video');
+      setEmailStatus('Report sent.');
+      setEmailFailed(false);
+      if (response.rate_limit) {
+        toast.push(
+          `Emails remaining: ${response.rate_limit.remaining} (resets in ${response.rate_limit.reset_after_seconds}s)`,
+          'info'
+        );
+      }
+      toast.push('Video report emailed successfully.', 'success');
+    } catch (error: any) {
+      setEmailStatus(error.message || 'Failed to send report.');
+      setEmailFailed(true);
+      toast.push(error.message || 'Failed to send report.', 'error');
+    } finally {
+      setShowEmailConfirm(false);
     }
   };
 
@@ -534,15 +577,8 @@ const VideoClassification: React.FC = () => {
 
                 {/* Action buttons */}
                 
-                {/*<div className="action-buttons">
-                  <button
-                    className="email-btn futuristic-btn"
-                    onClick={() => handleEmailResults(analysisResult)}
-                  >
-                    <span className="btn-icon">✉️</span>
-                    Email Results
-                  </button>
-
+                <div className="action-buttons">
+                  <EmailHealthBadge />
                   <button
                     className="pdf-btn futuristic-btn"
                     onClick={handleDownloadPDF}
@@ -559,7 +595,60 @@ const VideoClassification: React.FC = () => {
                     <span className="btn-icon">📊</span>
                     Download JSON
                   </button>
-                </div>*/}
+
+                  <div className="email-report">
+                    <div className="email-display">
+                      <span className="email-label">Email report to:</span>
+                      <span className="email-value">{emailRecipient || 'No email on account'}</span>
+                    </div>
+                    <div className="email-note">
+                      Reports can only be emailed to your account address.
+                    </div>
+                    {emailError && (
+                      <div className="email-error">
+                        {emailError}
+                      </div>
+                    )}
+                    <button
+                      className="email-btn futuristic-btn"
+                      onClick={handleEmailReport}
+                      disabled={loading || !emailRecipient}
+                    >
+                      <span className="btn-icon">✉️</span>
+                      Send Report
+                    </button>
+                    {emailFailed && (
+                      <button
+                        className="retry-btn futuristic-btn"
+                        onClick={handleEmailReport}
+                        disabled={loading || !emailRecipient}
+                      >
+                        Resend
+                      </button>
+                    )}
+                  </div>
+                  {showEmailConfirm && (
+                    <div className="modal-backdrop">
+                      <div className="modal-card">
+                        <h3>Send Report?</h3>
+                        <p>We will email the report to <strong>{emailRecipient}</strong>.</p>
+                        <div className="modal-actions">
+                          <button className="futuristic-btn" onClick={confirmEmailReport} disabled={loading}>
+                            Confirm
+                          </button>
+                          <button className="retry-btn futuristic-btn" onClick={() => setShowEmailConfirm(false)} disabled={loading}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {emailStatus && (
+                    <div className="email-status">
+                      {emailStatus}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               // Error display

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import SingleClassification from './components/SingleClassification';
@@ -13,19 +14,23 @@ import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Pricing from './components/Pricing';
 import About from './components/About';
+import AdminEmailHealth from './components/AdminEmailHealth';
 import './App.css';
 import Resources from './components/Resources';
 import Footer from './components/Footer';
 import SubscriptionSuccessHandler from './components/SubscriptionSuccessHandler';
+import ToastContainer from './components/ToastContainer';
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <Router>
-        <div className="app">
-          {/* Add SubscriptionSuccessHandler here - it will work on all routes */}
-          <SubscriptionSuccessHandler />
-          <Routes>
+      <ToastProvider>
+        <Router>
+          <div className="app">
+            {/* Add SubscriptionSuccessHandler here - it will work on all routes */}
+            <SubscriptionSuccessHandler />
+            <ToastContainer />
+            <Routes>
             {/* Public routes - accessible without authentication */}
             <Route path="/" element={<PublicLayout />}>
               <Route index element={<Home />} />
@@ -40,9 +45,10 @@ const App: React.FC = () => {
             
             {/* Protected routes - require authentication */}
             <Route path="/*" element={<ProtectedLayout />} />
-          </Routes>
-        </div>
-      </Router>
+            </Routes>
+          </div>
+        </Router>
+      </ToastProvider>
     </AuthProvider>
   );
 };
@@ -84,6 +90,7 @@ const ProtectedLayout: React.FC = () => {
           <Route path="/batch" element={<BatchClassification />} />
           <Route path="/videos" element={<VideoClassification />} />
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/admin/email" element={<AdminEmailHealth />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
