@@ -45,3 +45,7 @@ coverage/
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Logo assets (keep cover.png only)
+public/VeriForensice Ai-logo/*
+!public/VeriForensice Ai-logo/cover.png
