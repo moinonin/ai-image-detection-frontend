@@ -1,0 +1,5 @@
+X-Provenance-Verified: true
+X-Provenance-Reason: ok
+X-Provenance-Sender-Domain: veriforensic.com
+X-Provenance-Model-Hash: mhash_937552
+X-Provenance-Timestamp: 2026-02-15T22:12:29.301776+00:00

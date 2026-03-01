@@ -1,0 +1,10 @@
+flowchart LR
+  A["Outbound Client"] --> B["SMTP Relay<br/>Header Injector"]
+  B --> C["SMTP Provider / Exchange Online"]
+  C --> D["Inbound Verifier<br/>Header Stamp"]
+  D --> E["Recipient Mailbox"]
+
+  B --> F["Nicrypt-Stego API<br/>Azure Container Apps"]
+  D --> F
+  F --> G["Azure Key Vault"]
+  F --> H["Log Analytics / Storage"]

@@ -1,0 +1,75 @@
+Delivered-To: user@gmail.com
+Received: by 2002:a05:6402:454f:b0:659:b245:53d3 with SMTP id 15csp1588179edt;
+        Sun, 15 Feb 2026 11:12:40 -0800 (PST)
+X-Received: by 2002:a05:6000:310d:b0:430:feb3:f5ae with SMTP id ffacd0b85a97d-4379793ef97mr14152146f8f.55.1771182760728;
+        Sun, 15 Feb 2026 11:12:40 -0800 (PST)
+ARC-Seal: i=1; a=rsa-sha256; t=1771182760; cv=none;
+        d=google.com; s=arc-20240605;
+        b=jef217+oT8ReT5siDjv9pup8qXnG8aUZHjYtHKpl/oGDonIhJ2fluY18XonxQkY8sx
+         JpaZ6RVjBxf4lMDn1xEoInbX4D8PuKIjDK8frE4HxPSp2+n9OwazMh8wvSZHE88QQl4v
+         29iQ91aN4GjM8ddu+K+wOdZbDHeBkFBASKsIIf3vF7brigbxK87UkIrQzqmlm7TBX/8S
+         4P4KjiHZ6/wdIq+33KLvyjdA6v6b2zCxTrPdDdgMd/xcjCdDX38HNfLxrf+J87sIko6b
+         4uedAoXcsPiQtIbe20m7YdxNirncyS22EMZYLHEaBehOlC5om2kkw+EcZPYXnhAlVwag
+         bdOg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20240605;
+        h=mime-version:content-transfer-encoding:to:list-unsubscribe
+         :list-unsubscribe-post:origin-messageid:from:feedback-id:message-id
+         :subject:date:dkim-signature;
+        bh=UaMxUspdkC9PDzu1iU4JjEGdxAY+bI0oqK9sfXDmPpw=;
+        fh=4lFnB9QIVX7qeSH7WyWHDDV72fwcXmb1QlvIPn5oO5w=;
+        b=ZJ/nrAdbtdvLQJCjq8hOA4Bh7RfPVHOg0oI+N6RpGi8Ux72klo/6X/KCFa/b4n+bm0
+         WauEj+0+zYRpaeLFWvwE+nlMW3mppC1A1wNK6+kqVX9Yv3f0ZDkUbHcAZDmoJdb68UEu
+         C5kIL8GK2u/AiZ+Ipi1h8B6BFJHhvBt9rKrjufpRNFbg6pqT9qh2INeCAivB5LzxOqPY
+         4/F1p0LQjp75stDHDjwgQYdvMgk1uHTJNsPmabZKiJfghzGKI/ECzIHYoTE5SmqW33/9
+         bTH3UzynPP3BeINTM6YdYdcWi1uhSNKZ2TdtZF9zWCy6KWI7mjPBKPIawuXvxw3ZzxS6
+         hFtg==;
+        dara=google.com
+ARC-Authentication-Results: i=1; mx.google.com;
+       dkim=pass header.i=@veriforensic.com header.s=brevo1 header.b=T8lDtKV2;
+       spf=pass (google.com: domain of bounces-436881670-3552022468@gy.d.example.com designates 77.32.148.25 as permitted sender) smtp.mailfrom=bounces-436881670-3552022468@gy.d.example.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=veriforensic.com
+Return-Path: <bounces-436881670-3552022468@gy.d.example.com>
+Received: from gy.d.example.com (gy.d.example.com. [77.32.148.25])
+        by mx.google.com with ESMTPS id ffacd0b85a97d-43796b0c14csi16372416f8f.493.2026.02.15.11.12.40
+        for <user@gmail.com>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 15 Feb 2026 11:12:40 -0800 (PST)
+Received-SPF: pass (google.com: domain of bounces-436881670-3552022468@gy.d.example.com designates 77.32.148.25 as permitted sender) client-ip=77.32.148.25;
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@veriforensic.com header.s=brevo1 header.b=T8lDtKV2;
+       spf=pass (google.com: domain of bounces-436881670-3552022468@gy.d.example.com designates 77.32.148.25 as permitted sender) smtp.mailfrom=bounces-436881670-3552022468@gy.d.example.com;
+       dmarc=pass (p=QUARANTINE sp=QUARANTINE dis=NONE) header.from=veriforensic.com
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=veriforensic.com;
+ q=dns/txt; s=brevo1; bh=UaMxUspdkC9PDzu1iU4JjEGdxAY+bI0oqK9sfXDmPpw=;
+ h=from:subject:date:to:mime-version:content-type:content-transfer-encoding:list-unsubscribe:x-csa-complaints:list-unsubscribe-post:message-id:x-sib-id:feedback-id;
+        b=T8lDtKV2293xAlC9H3diCgRcrkoYq7L1IHjQ1z5MZqfywp6pwsk28ArMT6wx3OGItHmzqCgodMhi
+        J6I7DkoUVeYzC2dF2N9nETtmTJRU6b+KZ7n7695SmCu3nIPlFHBcLeHgdJWfnSBNYylJxxouZn9r
+        LcX7aIQ+Dc6iG6qOqdBi4gG2b4ckxwc4yRwrfvgpEt/yBexRnIbiZWV8KgBdFR2npMv9S+j4jo6t
+        GYSF/ii+COwy+t1RBHdoHCfzGZUClRO+KEyKzasBfw6DdKV5VFcsxib6wNtX8w31CSmqFfu+NU9R
+        HRPa+VPX6VqPIledHTe99jhURTVG6PcdmrTf+g==
+Date: Sun, 15 Feb 2026 19:12:39 GMT
+Subject: Provenance QA
+Message-Id: <202602151912.19324726149@smtp.example.com>
+Feedback-ID: 77.32.148.25:10238905_-1:10238905:example
+From: <support@veriforensic.com>
+X-sib-id: -iRQTkKwSb3Cl7nSXBRaz-MBtcqFkAkZEOdDUjnyR2k_RF-lGQ6Vep897DcGisdeRYGcH1iuDWKDC_A3F7TJpisE_oqCoL2CNvSfDm_3MsEABPLTVPVwli5OerAXpQW98wM31vhRiobvsfP59Wk80bILPAkZGkC_4OqULw4F07XtpK7ZDVpvMQ
+Origin-messageId: <202602151912.19324726149@smtp.example.com>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+List-Unsubscribe: <https://bacdijaf.r.bh.d.sendibt3.com/tr/un/li/rnXWBe-ONka2FyO_WgcGSyjNqIb3tjQ5cz_5vBSepAZKoMga4nBhRXYGHG10wpW9XHk-PQOu4UA58mhOciyIGqNmtXiBCqKhvYxryuUosztP3ZGOqZXbdDXCShdaI8AEIdfzN70YBb9C0MQ-VnW1D3ZtrnYbj5TjHOT_PHfNvWPID5K91e-f7q8tUm6XA-Z1pDhnA3Ca2ggLvP277rJYRR26QzOdDNXismuz45pucBom97CwcMCK8N5Km2R8Lg>
+X-CSA-Complaints: csa-complaints@eco.de
+X-Mailin-EID: NDM2ODgxNjcwfm5pY2hvbGFzLnJvdGljaEBnbWFpbC5jb21%2BPDIwMjYwMjE1MTkxMi4xOTMyNDcyNjE0OUBzbXRwLXJlbGF5LnNlbmRpbmJsdWUuY29tPn5neS5kLnNlbmRlci1zaWIuY29t
+To: <user@gmail.com>
+Content-Transfer-Encoding: quoted-printable
+X-Provenance-Ciphertext: gAAAAABpkhqmdW1-nCelbhzM77za7M2Q4wDE2w3C5y-TkU-mcMqshWQdkMc7bfpHEdn3lB02rb4mTAA056_fT36KZwN74Lca9QlQFJYOf9UyY5eQXKXbG7CBBq3Q6PkwOJhfL8jQmyoY
+X-Provenance-Timestamp: 2026-02-15T19:12:38.146755+00:00
+Content-Type: text/html; charset="utf-8"
+Mime-Version: 1.0
+X-Provenance-Bpt: 4
+X-Provenance-Model: sshleifer/tiny-gpt2
+
+<html><head></head><body><img width=3D"1" height=3D"1" src=3D"https://bacdi=
+jaf.r.bh.d.sendibt3.com/tr/op/PAByPO4M_3Iv793QWMfHNwKkIvh9dGoMY8cE1hDkWamOK=
+OqLsH8QmNzUbwiyniumEwue7Jtqe2ThUe63mIk6TtPC7JAis7I_-Pwf_lypaE0g0Hg9JXCx8TAd=
+sP4L_y-3lra36Za5AROQemd7UFwMHIHpIrSUIBoyvGgQPA9s8zsVO-nkpGZoy1bZlYWm8qJf0sY=
+1zonk1lS-DY7fEawXVRZq3sAO9v1ofw4i" style=3D"mso-hide:all"/>This is a QA ema=
+il with provenance headers.<br/><br/></body></html>
