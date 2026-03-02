@@ -2,6 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <footer className="footer">
       <div className="footer-content">
@@ -73,9 +77,9 @@ const Footer: React.FC = () => {
           <div className="footer-legal">
             <span>&copy; {new Date().getFullYear()} VeriForensic. Provenance-First Media Trust.</span>
             <div className="legal-links">
-              <Link to="/privacy">Evidence Privacy</Link>
-              <Link to="/terms">Terms of Service</Link>
-              <Link to="/compliance">Compliance</Link>
+              <Link to="/privacy" onClick={scrollToTop}>Evidence Privacy</Link>
+              <Link to="/terms" onClick={scrollToTop}>Terms of Service</Link>
+              <Link to="/compliance" onClick={scrollToTop}>Compliance</Link>
             </div>
           </div>
           
