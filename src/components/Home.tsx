@@ -2,6 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Home: React.FC = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="home">
       {/* Hero Section */}
@@ -226,10 +230,10 @@ const Home: React.FC = () => {
           <h2>Start Your Media Analysis Journey</h2>
           <p>Join professionals who use our tools as part of their comprehensive media verification workflow</p>
           <div className="cta-buttons">
-            <Link to="/resources" className="cta-button primary">
+            <Link to="/resources" className="cta-button primary" onClick={scrollToTop}>
               Try Analysis Tools
             </Link>
-            <Link to="/pricing" className="cta-button secondary">
+            <Link to="/pricing" className="cta-button secondary" onClick={scrollToTop}>
               View Plans
             </Link>
           </div>
