@@ -1,0 +1,2 @@
+/ns-stego/api/*  https://imageclassifi.fly.dev/:splat  200
+/ns-stego/*      /ns-stego/index.html                 200
