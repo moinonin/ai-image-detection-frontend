@@ -144,9 +144,10 @@ const Pricing: React.FC = () => {
     return `${polarBaseUrl}/${organizationName}/subscribe/${productId}`;
   };
 
-  const handleContactSales = () => {
-    window.open('mailto:support@veriforensic.com', '_blank');
-  };
+  // const handleContactSales = () => {
+  //   window.open('mailto:support@veriforensic.com', '_blank');
+  // };
+
 
   // Format price for display
   const formatPrice = (product: PolarProduct) => {
