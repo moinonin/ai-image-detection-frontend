@@ -203,7 +203,8 @@ const Pricing: React.FC = () => {
       )}
       
       <div className="pricing-cards">
-        {/* Free Tier */}
+        {/*
+        // Free Tier (hidden for now)
         {freeProduct && (
           <div className="pricing-card">
             <h3>Free Tier</h3>
@@ -228,6 +229,7 @@ const Pricing: React.FC = () => {
             </p>
           </div>
         )}
+        */}
 
         {/* Explorer Plan */}
         <div className="pricing-card">
@@ -335,7 +337,8 @@ const Pricing: React.FC = () => {
           )}
         </div>
 
-        {/* Enterprise - Custom */}
+        {/*
+        // Enterprise - Custom (hidden for now)
         <div className="pricing-card enterprise">
           <h3>Enterprise</h3>
           <p className="price">Custom</p>
@@ -353,6 +356,7 @@ const Pricing: React.FC = () => {
             Contact Sales
           </button>
         </div>
+        */}
       </div>
 
       {/* Pay-as-you-go option */}
@@ -376,7 +380,7 @@ const Pricing: React.FC = () => {
 
       {/* Free Trial Notice */}
       <div className="free-trial-notice">
-        <h3>Start with a Free Trial</h3>
+        <h3>Start Free Tier</h3>
         <p>
           Try all Professional features under free tier with{' '}
           {freeProduct ? freeProduct.limits.images : 4} free image and{' '}
