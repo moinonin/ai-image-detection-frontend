@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/GATEWAY_ONLY_MANUAL/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Gateway-Only Manual - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Gateway-Only Manual";
+        var mkdocs_page_input_path = "GATEWAY_ONLY_MANUAL.md";
+        var mkdocs_page_url = "/ns-stego/GATEWAY_ONLY_MANUAL/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Gateway-Only Manual</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Email Provenance</li>
+      <li class="breadcrumb-item active">Gateway-Only Manual</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="gateway-only-deployment-manual">Gateway-Only Deployment Manual<a class="headerlink" href="#gateway-only-deployment-manual" title="Permanent link">&para;</a></h1>
+<p>Purpose
+Run Nicrypt-Stego entirely at mail gateways (no endpoint agents). This is the recommended production architecture for institutions with 1000+ users.</p>
+<p>Audience
+- Email admins (Exchange/Postfix/SES/Brevo)
+- Security/IT ops
+- Compliance and audit teams</p>
+<p>Design Goals
+- Centralized control and auditability
+- No endpoint installs
+- Consistent policy enforcement
+- Easy rollback and monitoring</p>
+<p>System Components
+1) Outbound Gateway (SMTP relay)
+   - Stamps provenance headers and optional visible NS-SIGNATURE tokens.
+   - Component: <code>poc/smtp_relay.py</code></p>
+<p>2) Inbound Gateway (SMTP verifier)
+   - Verifies inbound headers and stamps verdict headers.
+   - Component: <code>poc/smtp_inbound_daemon.py</code></p>
+<p>3) Verification API
+   - REST API used by both gateways
+   - Endpoint: <code>/v1/provenance/verify_headers</code></p>
+<p>4) Client UX (optional but recommended)
+   - Gmail extension / Outlook add-in
+   - Reads stamped headers and displays badges</p>
+<p>High-Level Flow
+Outbound (sign + attachments):
+Sender -&gt; Gateway Relay (stamp headers) -&gt; Inbound Verifier (stamp HTML) -&gt; SMTP Provider -&gt; Recipient</p>
+<p>ASCII Diagram</p>
+<pre><code>[Sender] -&gt; [smtp_relay.py:2525] -&gt; [smtp_inbound_daemon.py:2527] -&gt; [SMTP Provider] -&gt; [Mailbox]
+</code></pre>
+<p>Headers Used
+Outbound (added):
+- X-Provenance-Ciphertext
+- X-Provenance-Model
+- X-Provenance-BPT
+- X-Provenance-Timestamp
+- X-Provenance-KeyId</p>
+<p>Inbound (added):
+- X-Provenance-Verified
+- X-Provenance-Reason
+- X-Provenance-Model-Hash
+- X-Provenance-Timestamp
+- X-Provenance-Sender-Domain</p>
+<p>Modes
+1) Header-only (recommended default)
+   - Uses X-Provenance-* headers only.
+   - Cleanest for deliverability and lowest risk.</p>
+<p>2) Header + Visible Signature
+   - Adds <code>NS-SIGNATURE: v1c...</code> into the email body.
+   - Helpful for clients without header support.
+   - Controlled by <code>SIGNATURE_MODE=visible</code>.</p>
+<p>Security Model
+- Provenance ciphertext is encrypted using Nicrypt keys.
+- Verification checks decryptability + org policy (sender domain).
+- Tokens (NS-SIGNATURE) are HMAC signed with <code>SIGNATURE_SECRET</code>.</p>
+<p>Operational Options (Exhaustive)</p>
+<p>A) SMTP Provider Gateway (Brevo/SES/Sendgrid)
+Use SMTP credentials from the provider and point all outbound traffic to the relay.
+- Outbound relay: <code>poc/smtp_relay.py</code>
+- Inbound verifier: <code>poc/smtp_inbound_daemon.py</code></p>
+<p>B) Microsoft 365 (Exchange Online) - Recommended
+Outbound (via M365 Connector)
+1) Create an Exchange Online outbound connector to your gateway relay host:2525.
+2) Route all mail (or pilot domain) through the connector.
+3) Ensure the relay forwards to your SMTP provider (or directly to MX).</p>
+<p>Inbound (via M365 Connector)
+1) Create an inbound connector that routes inbound mail to the inbound verifier host:2527.
+2) Configure the connector to accept mail only from your provider IP ranges.</p>
+<p>Client UX
+- Outlook add-in (optional) for badges.
+- Header-based verification works in security tooling without add-ins.</p>
+<p>Reference: docs/EXCHANGE_AGENT_RUNBOOK.md</p>
+<p>C) Postfix
+1) Outbound: use relayhost or milter stub.
+2) Inbound: use content_filter to inbound verifier.
+Reference: docs/GATEWAY_INTEGRATION.md</p>
+<p>D) Hybrid (Split Domain)
+Route only a subset of domains / org units through the gateway for phased rollout.</p>
+<p>E) API-Only Mode
+If you already have a gateway, call <code>/v1/provenance/verify_headers</code> directly.</p>
+<p>Deployment Steps (Gateway Only)</p>
+<p>Step 1: Start API</p>
+<pre><code>. .venv/bin/activate
+PYTHONPATH=apps/api JWT_SECRET=dev-secret uvicorn server.app:app --host 0.0.0.0 --port 8125
+</code></pre>
+<p>Step 2: Outbound Relay</p>
+<pre><code>export API_TOKEN=&quot;$(JWT_SECRET=dev-secret python scripts/gen_token.py)&quot;
+export SMTP_HOST=smtp-relay.brevo.com
+export SMTP_PORT=587
+export SMTP_USER=your-user
+export SMTP_PASS=your-pass
+python poc/smtp_relay.py --listen-port 2525
+</code></pre>
+<p>Step 3: Inbound Verifier</p>
+<pre><code>export API_TOKEN=&quot;$(JWT_SECRET=dev-secret python scripts/gen_token.py)&quot;
+export INBOUND_SMTP_HOST=smtp-relay.brevo.com
+export INBOUND_SMTP_PORT=587
+export INBOUND_SMTP_USER=your-user
+export INBOUND_SMTP_PASS=your-pass
+python poc/smtp_inbound_daemon.py --listen-port 2527
+</code></pre>
+<p>Step 4: Point Mail Flow
+- Outbound: clients -&gt; localhost:2525
+- Inbound: provider -&gt; localhost:2527</p>
+<p>Gateway status check</p>
+<pre><code>make gateway-status
+</code></pre>
+<p>Example output</p>
+<pre><code>Gateway status (relay + inbound, IMAP optional)
+Checking ports 2525 (relay) and 2527 (inbound)...
+COMMAND   PID       USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  51259 nickrotich    6u  IPv4 0xf185e29ab53bcf6c      0t0  TCP 127.0.0.1:2525 (LISTEN)
+COMMAND   PID       USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  51255 nickrotich    6u  IPv4 0xe51ef64e524ecbc1      0t0  TCP 127.0.0.1:2527 (LISTEN)
+Checking health endpoints (inbound 8099, imap 8100)...
+curl: (56) Recv failure: Connection reset by peer
+{&quot;status&quot;: &quot;ok&quot;, &quot;queued&quot;: 0, &quot;sent&quot;: 2, &quot;failed&quot;: 0, &quot;last_error&quot;: &quot;&quot;}
+IMAP health skipped (ENABLE_IMAP=0)
+</code></pre>
+<p>Email vs Certificate Provenance (Quick Comparison)
+See <code>docs/EMAIL_VS_CERTIFICATE_COMPARISON.md</code>.</p>
+<p>M365 Quick Checklist
+- Outbound connector points to relay host:2525
+- Inbound connector points to verifier host:2527
+- TLS enabled between M365 and gateway (recommended)
+- Provider IP ranges whitelisted on inbound connector</p>
+<p>M365 Admin Portal Steps (Screen-Style)
+Outbound Connector
+1) Microsoft 365 Defender or Exchange Admin Center -&gt; Mail Flow -&gt; Connectors.
+2) New connector: From "Microsoft 365" to "Partner organization".
+3) Use "Only when I have a transport rule set up".
+4) Smart host: gateway-relay.example.com:2525
+5) Enable TLS and validate certificate (recommended).</p>
+<p>Inbound Connector
+1) Mail Flow -&gt; Connectors -&gt; New.
+2) From "Partner organization" to "Microsoft 365".
+3) Accept from these IP ranges (your SMTP provider).
+4) Route mail through gateway-verifier.example.com:2527.
+5) Require TLS where possible.</p>
+<p>M365 Transport Rule Example
+Goal: Ensure outbound mail always routes through the gateway.
+1) Mail Flow -&gt; Rules -&gt; New rule.
+2) Apply this rule if: The sender is inside the organization.
+3) Do the following: Redirect the message to gateway-relay@example.com (connector target).
+4) Stop processing more rules.</p>
+<p>M365 Pilot Rollout Plan
+1) Week 1: Enable connector for a pilot domain or a test OU.
+2) Week 2: Expand to 25% of outbound traffic.
+3) Week 3: Expand to 50%.
+4) Week 4: Expand to 100%, enable strict policy (<code>allow_missing_provenance=false</code>).
+5) Ongoing: Monitor false positives, delivery delays, and audit logs.</p>
+<p>Reliability &amp; Hardening
+- Queues + retries are enabled by default.
+- Config knobs:
+  - SMTP_MAX_ATTEMPTS
+  - SMTP_RETRY_BACKOFF
+  - SMTP_API_TIMEOUT
+  - SMTP_INBOUND_QUEUE
+  - SMTP_RELAY_QUEUE
+- IMAP watcher reliability:
+  - IMAP_MAX_ATTEMPTS
+  - IMAP_RETRY_BACKOFF
+  - IMAP_API_TIMEOUT
+  - IMAP_QUEUE_PATH</p>
+<p>Policy Enforcement
+Configure sender domain policy in <code>apps/api/server/config/policy.yaml</code>:</p>
+<pre><code>required_sender_domains:
+  - veriforensic.com
+allow_missing_provenance: false
+orgs:
+  bank_org:
+    required_sender_domains:
+      - bank.com
+</code></pre>
+<p>Auditing &amp; Retention
+- Enable: <code>AUDIT_LOG_ENABLED=1</code>
+- Path: <code>AUDIT_LOG_PATH=/var/log/nicrypt/audit.jsonl</code>
+- Partition by org: <code>AUDIT_LOG_PARTITION=1</code>
+- Export: <code>make audit-export</code>
+- Prune: <code>make audit-prune</code></p>
+<p>Key Management
+- Default: env variables ENC_PASSWORD/ENC_SALT
+- Keyring: <code>USE_KEYRING=1</code>
+- File adapter: <code>KEY_SOURCE=file</code> + <code>KEY_MATERIAL_PATH=/etc/nicrypt/key.json</code>
+Reference: docs/KEY_MANAGEMENT.md</p>
+<p>Rollout Plan (Recommended)
+1) Pilot group (single domain or OU).
+2) Observe verification rates and false negatives.
+3) Gradually expand to 25%, 50%, 100%.
+4) Enable strict policy (<code>allow_missing_provenance=false</code>).</p>
+<p>Monitoring Checklist
+- Health endpoints respond 200.
+- Queue files are not growing unbounded.
+- Audit log size within retention policy.
+- Header stamps present on outbound mail.
+- Verified stamps on inbound mail.</p>
+<p>Rollback
+- Bypass relay in mail flow.
+- Stop gateway daemons.
+- Disable strict policy.</p>
+<p>Sizing Guidance (Rule of Thumb)
+- 1 gateway instance per 50k-100k emails/day
+- Scale horizontally by adding more relay/verifier instances
+- Keep API close to gateways for low latency</p>
+<p>Client UX (Optional)
+- Gmail: <code>poc/gmail-extension</code>
+- Outlook: <code>poc/outlook-addin</code>
+- Header-based badges only (no client-side crypto)</p>
+<p>Attachment Provenance (Documents)
+Sender side (institution)
+- Outbound gateway inspects attachments.
+- For each file, call <code>/v1/provenance/embed_file</code> and store ciphertext.
+- Stamp headers with attachment provenance (example below).</p>
+<p>Recipient side
+- Client add-in reads headers and shows “Verified attachment” badge.
+- Optional “Verify attachment” button can call <code>/v1/provenance/verify_headers</code> or <code>/v1/provenance/verify_file</code> before opening.</p>
+<p>Attachment header pattern (example)
+- X-Provenance-Attachment: filename=invoice.pdf; ciphertext=...; model=sshleifer/tiny-gpt2; bpt=4; ts=2026-02-16T10:00:00Z
+Endpoint
+- <code>/v1/provenance/verify_attachment_headers</code> accepts headers and returns per-attachment verification.</p>
+<p>Troubleshooting
+- Missing provenance headers: check outbound relay flow.
+- Verified=false: check policy domain settings and keys.
+- Decrypt failures: verify ENC_PASSWORD/ENC_SALT.
+- High latency: scale gateways, increase timeouts.
+M365-specific
+- Connector test fails: confirm smart host DNS + port reachability.
+- TLS handshake errors: validate certificate chain and hostname match.
+- Inbound connector rejecting mail: verify provider IP allow-list.
+- Transport rule not firing: confirm rule scope and priority order.
+Common error codes
+- 421 4.7.0: Temporary TLS or routing issue (retry or check smart host).
+- 451 4.4.0: Transient failure to connect to gateway (check firewall).
+- 550 5.7.1: Policy rejection (connector or transport rule mismatch).
+- 535 5.7.3: Authentication failure to upstream relay (bad SMTP creds).</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../EMAIL_GATEWAY_FLOW/" class="btn btn-neutral float-left" title="Email Gateway Flow"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../PRODUCTION_WORKFLOW/" class="btn btn-neutral float-right" title="Production Workflow">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../EMAIL_GATEWAY_FLOW/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../PRODUCTION_WORKFLOW/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

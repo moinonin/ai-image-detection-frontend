@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/SPRINTS/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Sprints - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Sprints";
+        var mkdocs_page_input_path = "SPRINTS.md";
+        var mkdocs_page_url = "/ns-stego/SPRINTS/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Sprints</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">System Reference</li>
+      <li class="breadcrumb-item active">Sprints</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="nicrypt-stego-delivery-sprints-aligned-to-specmd">Nicrypt-Stego Delivery Sprints (Aligned to SPEC.md)<a class="headerlink" href="#nicrypt-stego-delivery-sprints-aligned-to-specmd" title="Permanent link">&para;</a></h1>
+<p>Sprint 0 - Project Setup (0.5-1 week)
+Goal
+- Confirm scope, success criteria, and delivery milestones.</p>
+<p>Scope (SPEC.md references)
+- Section 3 (Objectives)
+- Section 4 (System Architecture)</p>
+<p>Exit criteria
+- Agreed scope and versioned roadmap.
+- Repo scaffolding and CI baseline in place.</p>
+<p>Sprint 1 - API and Facades (1-2 weeks)
+Goal
+- Deliver API surface and facades that match the spec, with stable inputs/outputs.</p>
+<p>Scope (SPEC.md references)
+- Section 5.4 (High-Level API)
+- Section 6 (Data Flow Example)
+- Section 11 (Testing Strategy)</p>
+<p>Deliverables
+- [x] REST API, SDK/CLI stubs, and request/response schemas.
+- [x] Auth and key management stubs for enterprise workflow.
+- [x] Model ops endpoints and status tracking.
+- [x] Logging, request IDs, and basic ops readiness.</p>
+<p>Exit criteria
+- [x] OpenAPI spec and stubs are consistent and validated.
+- [x] End-to-end mock flow works (protect/verify with placeholders).
+- [x] Model ops endpoints working (pull/status).
+- [x] Request IDs emitted and visible in responses/logs.</p>
+<p>Sprint 2 - Stego Engine MVP (2-3 weeks)
+Goal
+- Implement real token-level embedding/extraction with deterministic settings.</p>
+<p>Scope (SPEC.md references)
+- Section 5.2 (Steganographic Embedder)
+- Section 5.3 (Steganographic Extractor)
+- Section 8.4 (Model Dependency)</p>
+<p>Deliverables
+- [x] Embedding/extraction working with a small local model (e.g., gpt2).
+- [x] Deterministic model hash pinned to config.
+- [x] Redundancy (ECC-style) bit repetition with majority vote.
+- [x] Benchmarks and QA scripts for MVP and LLM backends.</p>
+<p>Exit criteria
+- [x] Extracted ciphertext matches embedded ciphertext for test cases.
+- [x] Capacity benchmarks for 1-3 bits/token.
+- [x] LLM tiny model end-to-end flow validated.
+- [x] QA scripts documented and runnable.</p>
+<p>Sprint 3 - Nicrypt Integration + Provenance Proof (1-2 weeks)
+Goal
+- Full protect/verify flow with encryption and decryption.</p>
+<p>Scope (SPEC.md references)
+- Section 5.1 (Nicrypt Integration)
+- Section 6 (Data Flow Example)</p>
+<p>Deliverables
+- [x] End-to-end pipeline: encrypt -&gt; embed -&gt; extract -&gt; decrypt.
+- [x] Key management and environment variable handling.</p>
+<p>Exit criteria
+- [x] Integration tests pass for protect/verify cycles. (Guarded by RUN_NICRYPT_TESTS=1)
+- [x] Documentation for key usage and configuration.</p>
+<p>Sprint 4 - Robustness and Quality (2-3 weeks)
+Goal
+- Improve resilience and output quality.</p>
+<p>Scope (SPEC.md references)
+- Section 7 (Capacity and Performance)
+- Section 8.2 (Robustness to Text Modification)
+- Section 12 (Limitations and Future Work)</p>
+<p>Deliverables
+- [x] Add error-correcting codes (e.g., Reed-Solomon or BCH) beyond bit repetition.
+- [x] Robustness tests against perturbations (whitespace, punctuation, truncation, light shuffling).
+- [x] Fluency/perplexity evaluation and quality gates.
+- [x] Benchmarks extended with robustness metrics and ECC comparisons.
+- [x] Developer UX guardrails (capacity checks, <code>dry_run</code>/recommendations).
+- [x] Docs updates for robustness and ECC tradeoffs.</p>
+<p>Exit criteria
+- [x] Demonstrated robustness on minor perturbations.
+- [x] Quality degradation &lt;10% target where possible.
+Status notes
+- Robustness verified with tail_guard_tokens=24 and shuffle_window=2 (MVP).
+- Quality target met with expanded wordlist + template punctuation.</p>
+<p>Sprint 5 - Packaging and Release (1-2 weeks)
+Goal
+- Ship a production-ready package and ops-ready service.</p>
+<p>Scope (SPEC.md references)
+- Section 9 (Dependencies)
+- Section 10 (Installation &amp; Setup)
+- Section 11 (Testing Strategy)</p>
+<p>Deliverables
+- [x] Packaging polish (versioning, metadata, README validation).
+- [x] Deployment guides (local, server, enterprise).
+- [x] CI-ready test matrix and release checks.
+- [x] Benchmarks and example workflows finalized.</p>
+<p>Exit criteria
+- [x] Release candidate build with docs and CI.
+- [x] Enterprise deployment checklist.</p>
+<p>Sprint 6 - Gateway Integration (Exchange/Postfix) (1-2 weeks)
+Goal
+- Provide production-grade gateway integration guidance and automation hooks.</p>
+<p>Scope (SPEC.md references)
+- Section 4 (System Architecture)
+- Section 10 (Installation &amp; Setup)
+- Section 11 (Testing Strategy)</p>
+<p>Deliverables
+- [x] Exchange integration recipe (Transport Rule / Agent flow).
+- [x] Postfix integration recipe (milter/header checks).
+- [x] Header verification endpoint usage (<code>/v1/provenance/verify_headers</code>).
+- [x] Gateway stamp example and SIEM/audit log guidance.
+- [x] Operator runbook for rollout and rollback.</p>
+<p>Exit criteria
+- [x] End-to-end header verification documented for Exchange and Postfix.
+- [x] Operational steps validated with SMTP PoC.</p>
+<p>Sprint 7 - Client UX (Gmail/Outlook) (1-2 weeks)
+Goal
+- Deliver user-facing verification badges and automation for mail clients.</p>
+<p>Scope
+- Gmail extension (header-based badge).
+- Outlook add-in UX (concept + skeleton).
+- Automation for header verification.</p>
+<p>Deliverables
+- [x] Gmail extension reads header-derived verification and shows badge.
+- [x] Outlook add-in scaffold with verification badge and status panel.
+- [x] Header verification automation hooks documented.
+- [x] Gmail extension supports attachment verification summary and partial badge state.</p>
+<p>Exit criteria
+- [x] Gmail badge flow validated with header stamps.
+- [x] Outlook add-in scaffold reviewed (settings UI + attachment verify support).
+Status notes
+- Gmail extension now supports visible NS-SIGNATURE (compact token) and toggled verification panel.
+- Gateway relay + inbound stamping now validated end-to-end with Gmail attachment verification.</p>
+<p>Sprint 8 - Production Readiness (2-3 weeks)
+Goal
+- Make the system deployable and operable in institutional environments with security, reliability, and observability standards.</p>
+<p>Deliverables (prioritized)
+- [x] Key management + rotation policy (env/key vault integration, explicit rotation doc).
+- [x] Multi-tenant scoping (org_id, per-tenant keys, rate limits/quotas).
+- [x] Request auditing + retention (audit log schema, retention policy, export hooks).
+- [x] Reliability hardening (queueing/retries for SMTP/IMAP, backpressure limits).
+- [ ] Observability stack (structured logs + metrics + health endpoints in all daemons).
+- [ ] Deployment automation (Helm/Terraform or Docker compose for production).</p>
+<p>Numbered Tasks (with Owners + Definition of Done)
+1. Task: Key management + rotation integration. Owner: Backend/Platform. DoD: KMS/env adapter implemented, rotation steps documented, rotation test passes.
+2. Task: Tenant isolation + quotas. Owner: Backend. DoD: org_id scoped storage + auth, rate limits enforced, multi-tenant tests added.
+3. Task: Audit logging + retention. Owner: Backend/Security. DoD: append-only audit log schema, retention policy doc, export command added.
+4. Task: SMTP/IMAP reliability hardening. Owner: Infra. DoD: queue + retry implemented, backpressure limits set, failure metrics emitted.
+5. Task: Observability rollout. Owner: Infra. DoD: metrics endpoint + dashboards documented, structured logs include request_id everywhere.
+6. Task: Deployment automation. Owner: DevOps. DoD: Helm/Terraform or prod Docker compose, verified deploy on Linux + Windows.</p>
+<p>Exit criteria
+- [x] Tenant isolation and quota enforcement validated.
+- [x] Audit logs and rotation policies documented and tested.
+- [ ] Production deployment recipe verified on Linux + Windows.
+Status notes
+- Key management: keyring + file-based adapter (KEY_SOURCE/KEY_MATERIAL_PATH) with rotation test.
+- Tenant isolation: org-scoped key access, per-org policy overrides, endpoint limits by org, provenance store partitioning.
+- Audit logging: export/prune scripts support partitioned logs; tests added for retention/export.
+- Reliability: SMTP relay + inbound daemon + IMAP watcher now support queues, retries, and timeouts.</p>
+<p>Sprint 9 - Technical Protection (1 week)
+Goal
+- Lock down SDK usage with enforceable technical controls (license, scopes, server-side protections).</p>
+<p>Deliverables
+- [x] Technical protection checklist documented and linked to runtime controls.
+- [x] Vendor-signed license tokens (Ed25519 / JWKS) for offline SDK usage control.
+- [x] License verification endpoint (<code>/v1/licenses/verify</code>, no auth) + JWKS endpoint.
+- [x] License issuance and revocation endpoints (<code>/v1/licenses/issue</code>, <code>/v1/licenses/revoke</code>).
+- [x] Verifier enforcement toggle (<code>LICENSE_REQUIRED=1</code>) wired into verify endpoints.
+- [x] Licensed offline embed workflow documented: <code>docs/LICENSED_OFFLINE_EMBED.md</code>.
+- [ ] License enforcement at embed/sign boundary (deny embedding/signing without valid license where required).
+- [x] License token binding (enforce token <code>org_id</code> matches request <code>org_id</code>; enforce <code>features</code> gates per operation).
+- [x] Short TTL + renewal workflow (refresh endpoint + documented refresh path).
+- [x] Revocation distribution hardening (optional persistent store + caching strategy; avoid single-file bottlenecks).
+- [x] Audit trail for license lifecycle events (issue/refresh/revoke logged with org_id/lic_id/jti/exp/features).</p>
+<p>Exit criteria
+- [x] Checklist reviewed and referenced in ops docs.
+- [x] Embed/sign endpoints demonstrably blocked without a valid license when enforcement is enabled.
+- [x] License-bound features enforced in at least one production-relevant flow (offline embed + signature issuance).</p>
+<p>Sprint 10 - Certificate Provenance (Institutions) (1-2 weeks)
+Goal
+- Issue and verify tamper‑evident electronic certificates (PDFs) for institutional use.</p>
+<p>Deliverables
+- [x] Certificate issuance script (embed provenance in PDF/DOCX metadata).
+- [x] Certificate verification API + CLI helper (file upload -&gt; status + metadata).
+- [ ] Gateway attachment provenance integration for certificate flows.
+- [ ] Issuer + recipient documentation.</p>
+<p>Exit criteria
+- [ ] End-to-end demo (issue -&gt; send -&gt; verify in mail + file). (Email delivery flow pending)
+Notes
+- Full plan: <code>docs/CERTIFICATE_PROVENANCE_SPRINT.md</code></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../API_SPEC/" class="btn btn-neutral float-left" title="API Spec"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../QA/" class="btn btn-neutral float-right" title="QA">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../API_SPEC/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../QA/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/SPEC/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>SPEC - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "SPEC";
+        var mkdocs_page_input_path = "SPEC.md";
+        var mkdocs_page_url = "/ns-stego/SPEC/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">SPEC</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">System Reference</li>
+      <li class="breadcrumb-item active">SPEC</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="nicrypt-stego-cryptographic-provenance-via-llm-steganography">Nicrypt-Stego: Cryptographic Provenance via LLM Steganography<a class="headerlink" href="#nicrypt-stego-cryptographic-provenance-via-llm-steganography" title="Permanent link">&para;</a></h1>
+<p>Software Specification Document
+Version: 0.1.0 (Draft)
+Date: 2026-02-12
+Authors: Derived from research insights and the Nicrypt encryption package.</p>
+<ol>
+<li>Introduction
+In the current era, every piece of text published online is liable to be scraped, ingested, and memorized by large language models (LLMs). Once data enters a model’s weights, it cannot be reliably removed, and the original author loses all control and attribution. Traditional digital signatures or watermarks are easily stripped during scraping, and post-hoc authorship claims rely on non‑cryptographic stylometry.</li>
+</ol>
+<p>Nicrypt-Stego solves this problem by combining symmetric encryption with LLM‑based steganography. It allows an author to:</p>
+<p>Encrypt a secret provenance message (e.g., author identity, timestamp, copyright notice) using the existing Nicrypt library.</p>
+<p>Embed the resulting ciphertext into an innocuous, human‑readable cover text using token‑level steganography performed by a local LLM.</p>
+<p>Publish the steganographic text anywhere (web, social media, PDFs).</p>
+<p>Later recover the ciphertext from the published text and decrypt it, providing cryptographic proof of authorship.</p>
+<p>This specification describes the architecture, components, and API for the nicrypt-stego Python package, which extends Nicrypt with state‑of‑the‑art steganographic embedding and extraction routines.</p>
+<ol>
+<li>
+<p>Background &amp; Related Work
+Research    Contribution
+ExpShield (NDSS 2026)   Proactive defense via invisible perturbations; demonstrates that data owners can prevent memorization.
+LLMs‑can‑hide‑text (ACL 2025)   First practical method to embed secret bits into LLM‑generated text while preserving fluency and length.
+Infusion (ICLR 2026)    Poisoning via influence‑function guided edits; shows that very few modified samples can control model behaviour.
+TrajPrint (S&amp;P 2026)    Lossless model fingerprinting using decodable watermarks.
+Nicrypt‑Stego draws directly from LLMs‑can‑hide‑text: we use its token‑selection algorithm to encode arbitrary binary data (ciphertext) into natural language. Unlike prior work that focuses on hiding plaintext secrets, we hide encrypted payloads, enabling asymmetric verification – only the key holder can prove origin.</p>
+</li>
+<li>
+<p>Objectives
+Provide a simple, pip‑installable Python library that integrates Nicrypt encryption with LLM‑based steganography.</p>
+</li>
+</ol>
+<p>Achieve cryptographic authorship verification: the ability to prove, beyond reasonable doubt, that a given text was authored by the holder of a secret key.</p>
+<p>Maintain output text quality: steganographic cover texts must be grammatically correct, topically relevant, and indistinguishable from normal human‑written text.</p>
+<p>Minimize computational overhead: use small, locally runnable open‑source LLMs (e.g., Llama‑3‑8B, Mistral‑7B) so that no API calls are required.</p>
+<p>Support arbitrary binary ciphertext produced by Nicrypt (Fernet tokens, base64‑encoded).</p>
+<ol>
+<li>System Architecture
+The system consists of four logical layers:</li>
+</ol>
+<p>text
+┌─────────────────┐
+│   Application   │  (User code)
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│  nicrypt-stego  │  (ProvenanceWriter / ProvenanceReader)
+├─────────────────┤
+│   Steganographic Engine  │  (token‑level encoder/decoder)
+├─────────────────┤
+│    LLM Backend  │  (Hugging Face transformers)
+└────────┬────────┘
+         │
+┌────────▼────────┐
+│    nicrypt      │  (encryption/decryption)
+└─────────────────┘
+4.1 Component Responsibilities
+Nicrypt – provides ficha(text, 'enc') and ficha(ciphertext, 'dec') using a symmetric key and salt stored in environment variables.</p>
+<p>Steganographic Engine – converts ciphertext bits into token selections and back. Implements the algorithm described in [Shen et al. 2025].</p>
+<p>LLM Backend – loads a pretrained causal language model and tokenizer. Used to compute next‑token probabilities.</p>
+<p>ProvenanceWriter/Reader – high‑level facades that orchestrate encryption+embedding and extraction+decryption.</p>
+<ol>
+<li>Detailed Component Design
+5.1 Nicrypt Integration
+Nicrypt is already published on PyPI. nicrypt-stego will declare it as a dependency. The encryption/decryption functions are re‑exported for convenience:</li>
+</ol>
+<p>python
+from nicrypt.encrypt import ficha
+Assumption: The user has set the environment variables ENC_KEY and ENC_SALT. This is documented in Nicrypt’s own README.</p>
+<p>5.2 Steganographic Embedder
+Inputs
+ciphertext: a base64‑encoded string (output of ficha(..., 'enc')).</p>
+<p>cover_prompt (optional): a short phrase describing the desired topic (e.g., "a sentence about climate change").</p>
+<p>model: a Hugging Face causal LM (default: "meta-llama/Llama-3-8B").</p>
+<p>Algorithm (simplified)
+Convert the ciphertext into a bitstring (e.g., '11001010...').</p>
+<p>For each token generation step i:</p>
+<p>Obtain logits from the LLM given the current prefix.</p>
+<p>Compute softmax to get probabilities over the vocabulary.</p>
+<p>Restrict the vocabulary to the top‑k most probable tokens (k ≥ 2^b, where b is the number of bits to embed per token).</p>
+<p>Partition the top‑k tokens into 2^b bins.</p>
+<p>Read the next b bits from the bitstring; select the token from the corresponding bin.</p>
+<p>Append the token and continue.</p>
+<p>Stop when all bits are embedded (or a maximum length is reached).</p>
+<p>Return the generated text.</p>
+<p>Implementation notes:</p>
+<p>Bits per token (b) is configurable (typically 1–3). Higher b increases capacity but may degrade fluency.</p>
+<p>The algorithm must handle the final partial bits with padding.</p>
+<p>The same random seed is used for both embedding and extraction to ensure deterministic bin assignment.</p>
+<p>Output
+A string of natural language text that embeds the ciphertext.</p>
+<p>5.3 Steganographic Extractor
+Inputs
+stego_text: the published text that contains the hidden ciphertext.</p>
+<p>model: same model used for embedding.</p>
+<p>Algorithm
+Run the LLM autoregressively on the stego text.</p>
+<p>At each step, recompute the top‑k token bins using the same procedure as the embedder.</p>
+<p>Observe the actual token that was used in the stego text; determine which bin it falls into.</p>
+<p>Convert the bin index to bits and append to the reconstructed bitstring.</p>
+<p>Continue until the end of the text (or until a stop token).</p>
+<p>Convert the bitstring back to base64‑encoded ciphertext.</p>
+<p>Output
+The original ciphertext string (or None if no valid ciphertext is found).</p>
+<p>5.4 High‑Level API
+nicrypt_stego.ProvenanceWriter
+python
+class ProvenanceWriter:
+    def <strong>init</strong>(self, model_name: str = "meta-llama/Llama-3-8B", device: str = "cpu", bits_per_token: int = 2):
+        self.model = load_model(model_name, device)
+        self.bpt = bits_per_token</p>
+<pre><code>def embed_secret(self, secret: str, cover_prompt: str, max_new_tokens: int = 100) -&gt; str:
+    """Encrypt secret, embed into generated text."""
+    cipher = ficha(secret, 'enc')
+    stego_text = self._embed_cipher(cipher, cover_prompt, max_new_tokens)
+    return stego_text
+
+def embed_cipher(self, cipher: str, cover_prompt: str, max_new_tokens: int = 100) -&gt; str:
+    """Embed already-encrypted ciphertext."""
+    return self._embed_cipher(cipher, cover_prompt, max_new_tokens)
+</code></pre>
+<p>nicrypt_stego.ProvenanceReader
+python
+class ProvenanceReader:
+    def <strong>init</strong>(self, model_name: str = "meta-llama/Llama-3-8B", device: str = "cpu", bits_per_token: int = 2):
+        self.model = load_model(model_name, device)
+        self.bpt = bits_per_token</p>
+<pre><code>def extract_cipher(self, stego_text: str) -&gt; Optional[str]:
+    """Extract ciphertext from stego text."""
+    return self._extract_cipher(stego_text)
+
+def extract_secret(self, stego_text: str) -&gt; Optional[str]:
+    """Extract and decrypt the secret."""
+    cipher = self._extract_cipher(stego_text)
+    if cipher:
+        return ficha(cipher, 'dec')
+    return None
+</code></pre>
+<p>Functional shortcuts
+python
+def protect(secret: str, topic: str, <strong>kwargs) -&gt; str:
+    """One‑shot: encrypt + embed."""
+    writer = ProvenanceWriter(</strong>kwargs)
+    return writer.embed_secret(secret, topic)</p>
+<p>def verify(stego_text: str, <strong>kwargs) -&gt; Optional[str]:
+    """One‑shot: extract + decrypt."""
+    reader = ProvenanceReader(</strong>kwargs)
+    return reader.extract_secret(stego_text)
+6. Data Flow Example
+python
+from nicrypt_stego import protect, verify</p>
+<h1 id="author-side">Author side<a class="headerlink" href="#author-side" title="Permanent link">&para;</a></h1>
+<p>secret_message = "Alice Johnson, 2026-02-12, CC-BY-NC"
+cover_topic = "a review of a science fiction novel"
+published = protect(secret_message, cover_topic)</p>
+<h1 id="published-is-now-something-like">published is now something like:<a class="headerlink" href="#published-is-now-something-like" title="Permanent link">&para;</a></h1>
+<h1 id="dune-part-two-expands-the-universe-with-breathtaking-visuals-and-a-nuanced">"Dune: Part Two expands the universe with breathtaking visuals and a nuanced ..."<a class="headerlink" href="#dune-part-two-expands-the-universe-with-breathtaking-visuals-and-a-nuanced" title="Permanent link">&para;</a></h1>
+<h1 id="time-passes-text-is-scraped-and-possibly-regenerated">... time passes, text is scraped and possibly regenerated ...<a class="headerlink" href="#time-passes-text-is-scraped-and-possibly-regenerated" title="Permanent link">&para;</a></h1>
+<h1 id="later-alice-wants-to-prove-authorship">Later, Alice wants to prove authorship<a class="headerlink" href="#later-alice-wants-to-prove-authorship" title="Permanent link">&para;</a></h1>
+<p>recovered_secret = verify(published)
+assert recovered_secret == secret_message  # True
+7. Capacity and Performance
+Bits/token  Capacity (bytes per 100 tokens) Typical Quality
+1   ~12.5   Excellent
+2   25  Good
+3   37.5    Acceptable
+4   50  Degraded
+Nicrypt‑produced ciphertexts are base64‑encoded. A typical Fernet token for a short secret is ~100–200 characters. With 2 bits/token, a 200‑character (≈133‑byte) ciphertext requires ~530 tokens, which is acceptable for many use cases (short paragraphs).</p>
+<ol>
+<li>Security &amp; Robustness Considerations
+8.1 Key Management
+The same symmetric key (ENC_KEY, ENC_SALT) used for encryption is required for decryption.</li>
+</ol>
+<p>Recommendation: authors should store keys in environment variables or secret managers, never hard‑coded.</p>
+<p>Loss of key makes provenance unrecoverable.</p>
+<p>8.2 Robustness to Text Modification
+The current scheme is fragile: any alteration to the stego text (paraphrasing, translation, deletion) will destroy the embedded ciphertext. This is a known limitation of token‑level steganography. Future versions may incorporate error‑correcting codes or more robust watermarking techniques (e.g., TrajPrint).</p>
+<p>8.3 Adversarial Scenarios
+Stripping attack: an adversary who suspects steganography could paraphrase the text. This will break extraction. However, the adversary must do this to all text, which is costly.</p>
+<p>Key compromise: if the symmetric key is leaked, anyone can decrypt recovered ciphertexts. This is identical to any symmetric encryption system.</p>
+<p>8.4 Model Dependency
+Extraction requires the exact same LLM (and same version, device, sampling settings) used during embedding. Small variations in logits can cause bin misassignment. Solution: we store a hash of the model configuration in the embedding metadata (e.g., in the final token). The reader verifies compatibility.</p>
+<ol>
+<li>Dependencies
+nicrypt – core encryption</li>
+</ol>
+<p>transformers – Hugging Face LLM interface</p>
+<p>torch – deep learning backend</p>
+<p>bitstring (optional) – convenient bit manipulation</p>
+<p>All dependencies are open‑source and permissively licensed.</p>
+<ol>
+<li>
+<p>Installation &amp; Setup
+bash</p>
+</li>
+<li>
+<p>Integration With Veriforensic (SaaS)</p>
+</li>
+</ol>
+<p>This section describes how to integrate <strong>Nicrypt-Stego (ns-stego)</strong> into an existing Veriforensic-style SaaS that already has authentication (<code>/api/v1/auth/*</code>), subscription gating, and “resources” endpoints (e.g., classify single/batch/video).</p>
+<p>Goal:
+- Make <strong>verification free</strong> (public endpoints, rate-limited).
+- Charge for <strong>issuance and governance</strong> (embed/issue/sign/keys/licenses) by requiring auth + subscription.
+- Keep source clean: ns-stego endpoints live in their own modules, while <code>app/api.py</code> remains the composition root.</p>
+<p>11.1 Recommended Service Split</p>
+<p>A) Public verify (free)
+- Verify sender signature tokens used by webmail verifiers.
+- Verify provenance markers for messages and attachments/certificates.</p>
+<p>B) Paid issuer/admin operations
+- Embed provenance (stego) / encrypt.
+- Issue (stamp) certificates/PDFs.
+- Issue signature tokens (for gateway stamping).
+- Keys management (create/rotate/list).
+- License issuance and revocation (offline SDK control).</p>
+<p>11.2 Code Organization (Avoid a 3700-Line api.py)</p>
+<p>If all endpoints currently live in <code>./app/api.py</code>, add two FastAPI routers:</p>
+<ul>
+<li><code>app/routers/ns_stego_public.py</code></li>
+<li><code>app/routers/ns_stego_paid.py</code></li>
+</ul>
+<p>and (recommended) a shared proxy helper:</p>
+<ul>
+<li><code>app/services/ns_stego_proxy.py</code></li>
+</ul>
+<p>In <code>app/api.py</code>, only add:</p>
+<pre><code class="language-python">from app.routers.ns_stego_public import router as ns_stego_public_router
+from app.routers.ns_stego_paid import router as ns_stego_paid_router
+
+app.include_router(ns_stego_public_router)
+app.include_router(ns_stego_paid_router)
+</code></pre>
+<p>11.3 Prevent Circular Imports (Dependencies in api.py)</p>
+<p>If <code>get_current_active_user</code> and <code>get_subscription_service_dep</code> are currently defined inside <code>app/api.py</code>,
+move them into a small dependency module:</p>
+<ul>
+<li><code>app/deps.py</code></li>
+</ul>
+<p>Then import them from both <code>app/api.py</code> and the routers. This avoids router ↔ api circular imports.</p>
+<p>11.4 Configuration (Environment Variables)</p>
+<p>SaaS -&gt; ns-stego API configuration:
+- <code>NS_STEGO_API_BASE</code> (required): e.g. <code>https://ns-stego.veriforensic.com/v1</code>
+- <code>NS_STEGO_API_TOKEN</code> (optional but typical for paid routes): service token with least privileges</p>
+<p>Public verify strategy:
+- Prefer ns-stego <strong>public verify</strong> (no token required) for recipient-facing use cases.
+- If ns-stego verify still requires a token, store a low-privilege token server-side and enforce strict rate limits.</p>
+<p>11.5 Endpoint Playbook (SaaS-Facing)</p>
+<p>All routes below are SaaS routes that proxy to the ns-stego API.</p>
+<p>11.5.1 Public Verify (No Auth)</p>
+<p>These endpoints should NOT require <code>Depends(get_current_active_user)</code>, but MUST be rate-limited.</p>
+<p>1) Verify signature token
+- SaaS: <code>POST /api/v1/ns-stego/verify/signature</code>
+- Upstream: <code>POST {NS_STEGO_API_BASE}/signature/verify</code>
+- Request:</p>
+<pre><code class="language-json">{ &quot;token&quot;: &quot;v1c....&quot; }
+</code></pre>
+<ul>
+<li>Response (example):</li>
+</ul>
+<pre><code class="language-json">{ &quot;verified&quot;: true, &quot;payload&quot;: { &quot;sender&quot;: &quot;admin@bank.com&quot;, &quot;timestamp&quot;: &quot;2026-02-22&quot;, &quot;org_id&quot;: &quot;bank&quot; } }
+</code></pre>
+<p>2) Verify email/body markers (verdict)
+- SaaS: <code>POST /api/v1/ns-stego/verify/verdict</code>
+- Upstream: <code>POST {NS_STEGO_API_BASE}/provenance/verdict</code>
+- Request:</p>
+<pre><code class="language-json">{ &quot;headers&quot;: { &quot;From&quot;: &quot;admin@bank.com&quot;, &quot;X-Provenance-Attachment&quot;: &quot;...&quot; }, &quot;body_text&quot;: &quot;...&quot;, &quot;body_html&quot;: &quot;...&quot; }
+</code></pre>
+<p>3) Verify attachment markers
+- SaaS: <code>POST /api/v1/ns-stego/verify/attachments</code>
+- Upstream: <code>POST {NS_STEGO_API_BASE}/provenance/verify_attachment_headers</code>
+- Request:</p>
+<pre><code class="language-json">{ &quot;headers&quot;: { &quot;X-Provenance-Attachment-B64&quot;: &quot;...&quot; } }
+</code></pre>
+<p>Abuse controls (minimum):
+- Payload size limits (hard cap marker size).
+- Per-IP and per-account (if available) rate limits.
+- Timeouts and circuit breakers when calling upstream.</p>
+<p>11.5.2 Paid Issuer/Admin (Auth + Subscription)</p>
+<p>These endpoints MUST require:
+- <code>current_user: UserInDB = Depends(get_current_active_user)</code>
+- <code>subscription_service: SubscriptionService = Depends(get_subscription_service_dep)</code></p>
+<p>and must enforce plan entitlements/credits before calling upstream.</p>
+<p>Recommended paid routes:</p>
+<p>1) Embed provenance (paid)
+- SaaS: <code>POST /api/v1/ns-stego/embed</code>
+- Upstream: <code>POST {NS_STEGO_API_BASE}/provenance/embed_cipher</code></p>
+<p>2) Issue certificate/PDF (paid)
+- SaaS: <code>POST /api/v1/ns-stego/certificates/issue</code>
+- Upstream: <code>POST {NS_STEGO_API_BASE}/certificates/issue</code></p>
+<p>3) Issue signature token (paid)
+- SaaS: <code>POST /api/v1/ns-stego/signature/issue</code>
+- Upstream: <code>POST {NS_STEGO_API_BASE}/signature/issue</code> (or <code>/signature/token</code>)</p>
+<p>4) Keys management (paid/admin)
+- SaaS: <code>POST /api/v1/ns-stego/keys/create</code> -&gt; <code>{NS_STEGO_API_BASE}/keys</code>
+- SaaS: <code>POST /api/v1/ns-stego/keys/rotate</code> -&gt; <code>{NS_STEGO_API_BASE}/keys/{key_id}/rotate</code>
+- SaaS: <code>GET /api/v1/ns-stego/keys/list</code> -&gt; <code>{NS_STEGO_API_BASE}/keys</code></p>
+<p>5) Licensing (paid/admin)
+- SaaS: <code>POST /api/v1/ns-stego/licenses/issue</code> -&gt; <code>{NS_STEGO_API_BASE}/licenses/issue</code>
+- SaaS: <code>POST /api/v1/ns-stego/licenses/revoke</code> -&gt; <code>{NS_STEGO_API_BASE}/licenses/revoke</code></p>
+<p>11.6 Subscription and Billing Strategy (Verify Free)</p>
+<p>Recommended enforcement:
+- Public verify endpoints: free, rate-limited.
+- Issuance/admin endpoints: require subscription plan + enforce per-feature entitlements.</p>
+<p>Typical metering units:
+- per <code>embed</code> call
+- per certificate issued
+- per signature issued
+- per key rotation / key creation
+- per license issued/revoked</p>
+<p>11.7 Security Hygiene</p>
+<p>Secrets:
+- Never accept ns-stego service tokens from browsers; keep them server-side.
+- Prefer file-based secrets in deployments where possible.
+- Ensure logs never include API tokens or license tokens.</p>
+<p>TLS:
+- Only allow <code>NS_STEGO_API_BASE</code> over HTTPS in production environments.</p>
+<p>Auditing:
+- Store <code>request_id</code> returned by ns-stego for traceability across services.</p>
+<p>pip install nicrypt-stego
+Additionally, the user must install PyTorch (instructions vary by platform) and have access to the chosen LLM (downloaded via Hugging Face).</p>
+<p>Environment variables (as required by Nicrypt):</p>
+<p>bash
+export ENC_KEY='your-32-byte-base64-key'
+export ENC_SALT='your-16-byte-base64-salt'
+11. Testing Strategy
+Unit tests: verify that embed_cipher(extract_cipher(text)) == cipher for random ciphertexts.</p>
+<p>Integration tests: use small local models (e.g., "gpt2") to test full protect/verify cycles.</p>
+<p>Fluency evaluation: compute perplexity of stego texts vs. unconstrained generation; aim for &lt;10% degradation.</p>
+<p>Capacity benchmarks: measure maximum embeddable bytes for different bit‑per‑token settings.</p>
+<ol>
+<li>Limitations and Future Work
+Limitation  Planned Enhancement
+Fragile to editing  Integrate error‑correcting codes (Reed–Solomon) and redundant embedding.
+Model‑dependent Develop a calibration technique to make bin assignments model‑agnostic.
+Only text output    Extend to other modalities (code, structured data).
+Manual key management   Integrate with hardware security modules or cloud KMS.</li>
+<li>Conclusion
+Nicrypt‑Stego transforms a simple symmetric encryption utility into a complete cryptographic provenance system. By leveraging recent advances in LLM steganography, it offers the first practical, developer‑friendly tool for proving authorship in the age of ubiquitous AI training. The specification above is immediately actionable; all components are either already implemented (Nicrypt) or have public research implementations (token‑level steganography). The remaining work is integration, packaging, and user‑experience refinement.</li>
+</ol>
+<p>Next steps:</p>
+<p>Fork / reference an existing open‑source implementation of LLM steganography.</p>
+<p>Build the nicrypt_stego package with the API described.</p>
+<p>Write extensive documentation and publish on PyPI.</p>
+<p>Release as open‑source under a permissive license (MIT).</p>
+<p>This specification is derived from a research‑backed analysis of the 2026 AI provenance landscape and the existing Nicrypt encryption library.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/" class="btn btn-neutral float-left" title="Pilot Gateway Local Test Guide"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../API_SPEC/" class="btn btn-neutral float-right" title="API Spec">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../API_SPEC/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/PILOT_GATEWAY_LOCAL_TEST_GUIDE/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Pilot Gateway Local Test Guide - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Pilot Gateway Local Test Guide";
+        var mkdocs_page_input_path = "PILOT_GATEWAY_LOCAL_TEST_GUIDE.md";
+        var mkdocs_page_url = "/ns-stego/PILOT_GATEWAY_LOCAL_TEST_GUIDE/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Pilot Gateway Local Test Guide</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#0-environment-variables-what-where">0) Environment Variables (What + Where)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#where-to-store-env-vars">Where to store env vars</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#variables-used-by-the-gateway">Variables used by the gateway</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#minimal-env-template-pilot">Minimal .env template (pilot)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-ensure-the-api-token-has-required-scopes-or-generate-one">1) Ensure the API token has required scopes (or generate one)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#generate-a-dev-token-local-pilot">Generate a dev token (local pilot)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-save-api-token-into-the-token-file">2) Save API token into the token file</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-ensure-you-have-a-valid-vendor-license-token-or-issue-one">3) Ensure you have a valid vendor license token (or issue one)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#save-license-token-to-file">Save license token to file</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#issue-a-license-token-api-route">Issue a license token (API route)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-install-and-start-the-gateway-services-relay-inbound">4) Install and start the gateway services (relay + inbound)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-confirm-the-gateway-is-healthy">5) Confirm the gateway is healthy</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-stamp-issue-a-certificate-pdf-you-will-attach">6) Stamp (issue) a certificate / PDF you will attach</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7-activate-verifiers-gmail-extension-thunderbird-add-on">7) Activate verifiers (Gmail extension / Thunderbird add-on)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#gmail-extension-chrome">Gmail extension (Chrome)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#thunderbird-add-on">Thunderbird add-on</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8-send-an-email-with-the-stamped-attachment-and-verify-it">8) Send an email with the stamped attachment and verify it</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#troubleshooting-fast">Troubleshooting (Fast)</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Start Here</li>
+      <li class="breadcrumb-item active">Pilot Gateway Local Test Guide</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="pilot-local-gateway-test-guide-customer-premises">Pilot: Local Gateway Test Guide (Customer Premises)<a class="headerlink" href="#pilot-local-gateway-test-guide-customer-premises" title="Permanent link">&para;</a></h1>
+<p>This guide is the step-by-step “runbook” for a pilot deployment on a customer machine/network where you want to validate the <strong>full email + attachment provenance loop</strong>:</p>
+<ul>
+<li>SMTP relay (<code>2525</code>) injects provenance for attachments/certificates.</li>
+<li>SMTP inbound stamper (<code>2527</code>) stamps minimal UX markers for verifiers (Gmail/Thunderbird).</li>
+<li>ns-stego API (<code>8125</code>) provides verification and signature issuance.</li>
+<li>Gmail extension / Thunderbird add-on verify what recipients see.</li>
+</ul>
+<p>Assumptions:
+- You are running from the repo root: <code>ns-stego/</code>
+- You have Python 3.11 and the project venv set up (<code>.venv/</code>)
+- You have working upstream SMTP credentials (Brevo/SES/M365 relay, etc.)
+- You can receive mail in Gmail and/or Thunderbird.</p>
+<h2 id="0-environment-variables-what-where">0) Environment Variables (What + Where)<a class="headerlink" href="#0-environment-variables-what-where" title="Permanent link">&para;</a></h2>
+<h3 id="where-to-store-env-vars">Where to store env vars<a class="headerlink" href="#where-to-store-env-vars" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Repo defaults:</strong> <code>.env.example</code> (placeholders only; treated as defaults)</li>
+<li><strong>Your real values:</strong> <code>.env</code> (overrides <code>.env.example</code>)</li>
+</ul>
+<p>Do not put real secrets into <code>.env.example</code>.</p>
+<h3 id="variables-used-by-the-gateway">Variables used by the gateway<a class="headerlink" href="#variables-used-by-the-gateway" title="Permanent link">&para;</a></h3>
+<p>API connectivity (used by both relay + inbound stamper):
+- <code>API_BASE</code>
+  - Example: <code>http://127.0.0.1:8125/v1</code>
+  - What it does: points the gateway to the ns-stego API.
+- <code>API_TOKEN</code> (or <code>API_TOKEN_PATH</code>)
+  - What it does: JWT used by the gateway to call API endpoints.
+  - Recommended: use <code>API_TOKEN_PATH</code> to avoid fragile long env values.</p>
+<p>Upstream SMTP (used by inbound stamper to forward to the real world):
+- <code>INBOUND_SMTP_HOST</code> / <code>INBOUND_SMTP_PORT</code>
+- <code>INBOUND_SMTP_USER</code> / <code>INBOUND_SMTP_PASS</code>
+  - What it does: credentials to your upstream SMTP provider (Brevo, SES, etc.)</p>
+<p>Relay -&gt; Stamper hop (used by relay to forward locally):
+- <code>SMTP_HOST</code> / <code>SMTP_PORT</code>
+  - Typical: <code>SMTP_HOST=127.0.0.1</code>, <code>SMTP_PORT=2527</code></p>
+<p>Provenance stamping:
+- <code>STAMP_BODY</code> (default <code>1</code>)
+  - If <code>1</code>, inbound stamper adds visible “ns-stego verified” badge and machine markers.
+- <code>PROVENANCE_ATTACHMENTS</code> (default <code>1</code>)
+  - If <code>1</code>, gateway emits attachment provenance markers for each attachment.
+- <code>PROVENANCE_ATTACHMENT_MODE</code>
+  - Typical: <code>metadata</code> (best for certificate verification UX)
+  - Other: <code>hash</code> (smaller marker; “tamper detect” only)</p>
+<p>License enforcement (recommended for pilots that test licensing):
+- <code>PROVENANCE_LICENSE_TOKEN_PATH</code>
+  - File containing a vendor license JWT.
+  - Used when license enforcement is enabled on the API.</p>
+<h3 id="minimal-env-template-pilot">Minimal <code>.env</code> template (pilot)<a class="headerlink" href="#minimal-env-template-pilot" title="Permanent link">&para;</a></h3>
+<p>Create/edit <code>.env</code>:</p>
+<pre><code class="language-bash">API_BASE=http://127.0.0.1:8125/v1
+
+# Gateway calls to the API (prefer path form)
+API_TOKEN_PATH=/tmp/api_token.jwt
+
+# Relay forwards locally to inbound stamper
+SMTP_HOST=127.0.0.1
+SMTP_PORT=2527
+
+# Inbound stamper forwards to upstream SMTP provider
+INBOUND_SMTP_HOST=smtp-relay.brevo.com
+INBOUND_SMTP_PORT=587
+INBOUND_SMTP_USER=your-smtp-login
+INBOUND_SMTP_PASS=your-smtp-key
+
+# Stamping behavior
+STAMP_BODY=1
+PROVENANCE_ATTACHMENTS=1
+PROVENANCE_ATTACHMENT_MODE=metadata
+
+# License token (file)
+PROVENANCE_LICENSE_TOKEN_PATH=/tmp/provenance_license.jwt
+</code></pre>
+<h2 id="1-ensure-the-api-token-has-required-scopes-or-generate-one">1) Ensure the API token has required scopes (or generate one)<a class="headerlink" href="#1-ensure-the-api-token-has-required-scopes-or-generate-one" title="Permanent link">&para;</a></h2>
+<p>The pilot typically needs a token that can:
+- verify provenance (<code>provenance:verify</code>)
+- verify attachment headers (<code>provenance:verify</code>)
+- issue compact signature tokens for Gmail marker strategy (<code>signature:issue</code> and/or <code>signature:verify</code>)
+- issue certificates (if you do step 6) (<code>certificates:issue</code>)
+- (optional) manage keys / licenses</p>
+<h3 id="generate-a-dev-token-local-pilot">Generate a dev token (local pilot)<a class="headerlink" href="#generate-a-dev-token-local-pilot" title="Permanent link">&para;</a></h3>
+<p>If your API uses <code>JWT_SECRET</code> locally:</p>
+<pre><code class="language-bash">. .venv/bin/activate
+
+export JWT_SECRET=dev-secret
+python scripts/gen_token.py &gt; /tmp/api_token.jwt
+</code></pre>
+<p>If you want to eyeball it:</p>
+<pre><code class="language-bash">head -c 32 /tmp/api_token.jwt &amp;&amp; echo
+</code></pre>
+<p>Note:
+- In production, the institution will have their own signing secret / issuer and issuance process. For pilots, a dev token is acceptable.</p>
+<h2 id="2-save-api-token-into-the-token-file">2) Save API token into the token file<a class="headerlink" href="#2-save-api-token-into-the-token-file" title="Permanent link">&para;</a></h2>
+<p>Recommended file (used by gateway installers and scripts):
+- <code>/tmp/api_token.jwt</code></p>
+<p>If you generated it in step 1, you’re already done.</p>
+<h2 id="3-ensure-you-have-a-valid-vendor-license-token-or-issue-one">3) Ensure you have a valid vendor license token (or issue one)<a class="headerlink" href="#3-ensure-you-have-a-valid-vendor-license-token-or-issue-one" title="Permanent link">&para;</a></h2>
+<p>When the API is configured to require licenses for certain verification/issuance flows, you must provide a <strong>license token</strong> to the gateway (path recommended).</p>
+<h3 id="save-license-token-to-file">Save license token to file<a class="headerlink" href="#save-license-token-to-file" title="Permanent link">&para;</a></h3>
+<p>Recommended file:
+- <code>/tmp/provenance_license.jwt</code></p>
+<p>Example:</p>
+<pre><code class="language-bash">printf '%s' &quot;$LICENSE_TOKEN&quot; &gt; /tmp/provenance_license.jwt
+chmod 600 /tmp/provenance_license.jwt
+</code></pre>
+<h3 id="issue-a-license-token-api-route">Issue a license token (API route)<a class="headerlink" href="#issue-a-license-token-api-route" title="Permanent link">&para;</a></h3>
+<p>If your API exposes a license issuance endpoint (admin-scoped), issue via curl:</p>
+<pre><code class="language-bash">API_BASE=http://127.0.0.1:8125/v1
+API_TOKEN=&quot;$(cat /tmp/api_token.jwt)&quot;
+
+curl -sS -X POST &quot;$API_BASE/licenses/issue&quot; \\
+  -H &quot;Authorization: Bearer $API_TOKEN&quot; \\
+  -H &quot;Content-Type: application/json&quot; \\
+  -d '{
+    &quot;org_id&quot;:&quot;public&quot;,
+    &quot;lic_id&quot;:&quot;lic_demo&quot;,
+    &quot;features&quot;:{&quot;offline_embed&quot;:true,&quot;signature_issue&quot;:true},
+    &quot;ttl_seconds&quot;:3600
+  }' | tee /tmp/license_issue.json
+</code></pre>
+<p>Then extract and store the returned <code>license_token</code>:</p>
+<pre><code class="language-bash">python3 - &lt;&lt;'PY'
+import json
+data=json.load(open('/tmp/license_issue.json','r'))
+print(data.get('license_token',''))
+PY
+</code></pre>
+<p>Save it:</p>
+<pre><code class="language-bash">python3 - &lt;&lt;'PY'
+import json, os
+data=json.load(open('/tmp/license_issue.json','r'))
+t=data.get('license_token','')
+if not t:
+  raise SystemExit('no license_token in response')
+open('/tmp/provenance_license.jwt','w').write(t)
+print('wrote /tmp/provenance_license.jwt')
+PY
+chmod 600 /tmp/provenance_license.jwt
+</code></pre>
+<h2 id="4-install-and-start-the-gateway-services-relay-inbound">4) Install and start the gateway services (relay + inbound)<a class="headerlink" href="#4-install-and-start-the-gateway-services-relay-inbound" title="Permanent link">&para;</a></h2>
+<p>This installs service definitions (launchd on macOS, systemd on Linux), enables them, and starts them.</p>
+<p>macOS (launchd):</p>
+<pre><code class="language-bash">make install-services ENABLE_IMAP=0
+make enable-services ENABLE_IMAP=0
+make start-services ENABLE_IMAP=0
+</code></pre>
+<p>Linux (systemd):</p>
+<pre><code class="language-bash">make install-services ENABLE_IMAP=0
+make enable-services ENABLE_IMAP=0
+make start-services ENABLE_IMAP=0
+</code></pre>
+<p>Tip:
+- <code>make restart-services ENABLE_IMAP=0</code> is the “do the right thing” idempotent target on macOS.</p>
+<h2 id="5-confirm-the-gateway-is-healthy">5) Confirm the gateway is healthy<a class="headerlink" href="#5-confirm-the-gateway-is-healthy" title="Permanent link">&para;</a></h2>
+<p>Check listeners and health:</p>
+<pre><code class="language-bash">make gateway-status ENABLE_IMAP=0
+</code></pre>
+<p>Expected:
+- Port <code>2525</code> listening (relay)
+- Port <code>2527</code> listening (inbound stamper)
+- Inbound health endpoint returns JSON (may briefly “not ready” right after restart)</p>
+<p>If emails aren’t sending:
+- Check inbound SMTP auth:</p>
+<pre><code class="language-bash">tail -n 200 /tmp/nicrypt-inbound.err
+</code></pre>
+<ul>
+<li>Confirm launchd/systemd is using real upstream creds:</li>
+</ul>
+<pre><code class="language-bash">UID=$(id -u)
+launchctl print &quot;gui/$UID/com.nicrypt.gateway.inbound&quot; | grep -A6 INBOUND_SMTP_ 2&gt;/dev/null || true
+</code></pre>
+<h2 id="6-stamp-issue-a-certificate-pdf-you-will-attach">6) Stamp (issue) a certificate / PDF you will attach<a class="headerlink" href="#6-stamp-issue-a-certificate-pdf-you-will-attach" title="Permanent link">&para;</a></h2>
+<p>This creates a stamped PDF that carries hidden provenance.</p>
+<p>Example:</p>
+<pre><code class="language-bash">TOKEN=&quot;$(cat /tmp/api_token.jwt)&quot;
+LICENSE_TOKEN=&quot;$(cat /tmp/provenance_license.jwt)&quot;
+
+python scripts/issue_certificate.py \\
+  --api-base http://127.0.0.1:8125/v1 \\
+  --api-token &quot;$TOKEN&quot; \\
+  --license-token &quot;$LICENSE_TOKEN&quot; \\
+  --in docs/CoverLetterBinance.pdf \\
+  --out /tmp/pilot_stamped.pdf \\
+  --issuer-id &quot;uni:example&quot; \\
+  --cert-id &quot;cert:pilot-001&quot; \\
+  --recipient-id &quot;person:alice&quot; \\
+  --secret &quot;person:alice&quot;
+</code></pre>
+<p>Sanity check verification (local API):</p>
+<pre><code class="language-bash">python scripts/verify_certificate.py \\
+  --api-base http://127.0.0.1:8125/v1 \\
+  --api-token &quot;$TOKEN&quot; \\
+  --in /tmp/pilot_stamped.pdf
+</code></pre>
+<h2 id="7-activate-verifiers-gmail-extension-thunderbird-add-on">7) Activate verifiers (Gmail extension / Thunderbird add-on)<a class="headerlink" href="#7-activate-verifiers-gmail-extension-thunderbird-add-on" title="Permanent link">&para;</a></h2>
+<h3 id="gmail-extension-chrome">Gmail extension (Chrome)<a class="headerlink" href="#gmail-extension-chrome" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Install packaged artifact:</li>
+<li><code>dist/addons/gmail-extension.zip</code></li>
+<li>Chrome: <code>chrome://extensions</code></li>
+<li>Enable “Developer mode”</li>
+<li>“Load unpacked”:</li>
+<li>unzip <code>gmail-extension.zip</code> to a folder</li>
+<li>select that folder (contains <code>manifest.json</code>)</li>
+<li>Open extension Options and set:</li>
+<li>Base URL: <code>http://127.0.0.1:8125/v1</code> (pilot/local)</li>
+<li>Token: leave blank for public verify, or paste your JWT if your verify requires it</li>
+</ol>
+<h3 id="thunderbird-add-on">Thunderbird add-on<a class="headerlink" href="#thunderbird-add-on" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Install:</li>
+<li><code>dist/addons/thunderbird-addon.xpi</code></li>
+<li>Thunderbird → Add-ons and Themes → gear icon → “Install Add-on From File…”</li>
+<li>Set in add-on settings:</li>
+<li>API Base: <code>http://127.0.0.1:8125/v1</code></li>
+<li>API Token: <code>$(cat /tmp/api_token.jwt)</code> (Thunderbird can read headers; token often used in pilots)</li>
+</ol>
+<h2 id="8-send-an-email-with-the-stamped-attachment-and-verify-it">8) Send an email with the stamped attachment and verify it<a class="headerlink" href="#8-send-an-email-with-the-stamped-attachment-and-verify-it" title="Permanent link">&para;</a></h2>
+<p>Send through the relay so the gateway can inject/stamp:</p>
+<pre><code class="language-bash">python3 scripts/send_signed_attachment.py \\
+  --mail-to your.recipient@example.com \\
+  --attach /tmp/pilot_stamped.pdf \\
+  --qa-id &quot;pilot-$(date +%Y%m%d-%H%M%S)&quot; \\
+  --save-eml /tmp/nicrypt-last.eml \\
+  --api-token &quot;$(cat /tmp/api_token.jwt)&quot; \\
+  --license-token-path /tmp/provenance_license.jwt
+</code></pre>
+<p>Local verify of the generated <code>.eml</code> (before it hits the outside world):</p>
+<pre><code class="language-bash">python scripts/verify_email.py /tmp/nicrypt-last.eml \\
+  --api-base http://127.0.0.1:8125/v1 \\
+  --api-token &quot;$(cat /tmp/api_token.jwt)&quot; \\
+  --verdict
+</code></pre>
+<p>Then verify in the recipient client:
+- Gmail: open the email → click “Verify provenance” → expect “Verified sender” + attachments verified.
+- Thunderbird: open the email → click “Verify provenance” → expect sender + attachment verification.</p>
+<h2 id="troubleshooting-fast">Troubleshooting (Fast)<a class="headerlink" href="#troubleshooting-fast" title="Permanent link">&para;</a></h2>
+<p>Gateway sends but upstream rejects (SMTP 535 auth):
+- Verify <code>INBOUND_SMTP_USER/INBOUND_SMTP_PASS</code> in <code>.env</code>
+- Restart services: <code>make restart-services ENABLE_IMAP=0</code></p>
+<p>Gmail says “No provenance markers”:
+- Ensure <code>STAMP_BODY=1</code>
+- Ensure inbound stamper is in the path (relay → inbound → upstream)
+- Ensure your message body includes the minimal marker badge (ns-stego verified)</p>
+<p>Attachment shows unverified:
+- Ensure <code>PROVENANCE_ATTACHMENTS=1</code>
+- Ensure <code>PROVENANCE_ATTACHMENT_MODE=metadata</code> for certificate-style flows
+- Confirm license token is valid/not expired (if required)</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Book Table of Contents"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../SPEC/" class="btn btn-neutral float-right" title="SPEC">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../SPEC/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

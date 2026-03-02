@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/LICENSED_OFFLINE_EMBED/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Licensed Offline Embed - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Licensed Offline Embed";
+        var mkdocs_page_input_path = "LICENSED_OFFLINE_EMBED.md";
+        var mkdocs_page_url = "/ns-stego/LICENSED_OFFLINE_EMBED/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Licensed Offline Embed</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#concepts">Concepts</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#1-vendor-license-token-ed25519">1) Vendor License Token (Ed25519)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#2-plaintext-layout-before-nicrypt-encryption">2) Plaintext Layout (Before Nicrypt Encryption)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#3-feature-gates-recommended">3) Feature Gates (Recommended)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-by-step">Step-by-Step</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#a-generate-vendor-keys-ed25519">A) Generate Vendor Keys (Ed25519)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#b-issue-a-license-token-online-once-per-org-rotation-period">B) Issue a License Token (Online, once per org / rotation period)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#b2-refresh-a-license-token-online-recommended">B2) Refresh a License Token (Online, recommended)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#c-embed-offline-keep-ciphertext-offline">C) Embed Offline, Keep Ciphertext (Offline)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#d-verify-online-ciphertext-only">D) Verify Online (Ciphertext-Only)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#revocation-storage-notes">Revocation Storage Notes</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#practical-use-cases">Practical Use Cases</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Security & Governance</li>
+      <li class="breadcrumb-item active">Licensed Offline Embed</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="licensed-offline-embed-cyberpunk-mode">Licensed Offline Embed (Cyberpunk Mode)<a class="headerlink" href="#licensed-offline-embed-cyberpunk-mode" title="Permanent link">&para;</a></h1>
+<p>This workflow is for “offline embedding, online verification” with <strong>vendor-controlled licensing</strong>:</p>
+<ul>
+<li>The institution embeds provenance <strong>offline</strong> (no API calls) using the standalone SDK.</li>
+<li>The embedded payload contains a <strong>vendor-signed license token</strong> (Ed25519 / JWKS-verifiable).</li>
+<li>Anyone can <strong>verify the license token online</strong> (public key), and a verifier service can <strong>decrypt</strong> the ciphertext if it has the tenant’s Nicrypt keys.</li>
+</ul>
+<p>It’s a practical control/compliance lever:
+- If the offline SDK is abused, the payload still carries a license identity (<code>lic_id</code>/<code>jti</code>), and you can revoke it.</p>
+<h2 id="concepts">Concepts<a class="headerlink" href="#concepts" title="Permanent link">&para;</a></h2>
+<h3 id="1-vendor-license-token-ed25519">1) Vendor License Token (Ed25519)<a class="headerlink" href="#1-vendor-license-token-ed25519" title="Permanent link">&para;</a></h3>
+<p>The API can mint a license token:
+- <code>POST /v1/licenses/issue</code> (requires scope <code>licenses:issue</code>)
+- Anyone can verify the token signature:
+  - <code>POST /v1/licenses/verify</code> (no auth)
+  - <code>GET /v1/.well-known/jwks.json</code> (public keys)</p>
+<h3 id="2-plaintext-layout-before-nicrypt-encryption">2) Plaintext Layout (Before Nicrypt Encryption)<a class="headerlink" href="#2-plaintext-layout-before-nicrypt-encryption" title="Permanent link">&para;</a></h3>
+<p>We encrypt a plaintext that looks like:</p>
+<pre><code class="language-text">mh:&lt;model_hash&gt;|lic:&lt;license_token&gt;|&lt;secret&gt;
+</code></pre>
+<ul>
+<li><code>mh:&lt;model_hash&gt;|</code> lets verifiers detect model/config mismatch (optional but recommended).</li>
+<li><code>lic:&lt;license_token&gt;|</code> provides vendor-controlled proof and revocation.</li>
+<li><code>&lt;secret&gt;</code> is the human meaningful claim you want to recover at verification time.</li>
+</ul>
+<h3 id="3-feature-gates-recommended">3) Feature Gates (Recommended)<a class="headerlink" href="#3-feature-gates-recommended" title="Permanent link">&para;</a></h3>
+<p>License tokens can include a <code>features</code> object. The API can optionally enforce these:</p>
+<ul>
+<li>Embed flows: require one of <code>features.embed=true</code> or <code>features.offline_embed=true</code></li>
+<li>Email signature issuance: require one of <code>features.email_sign=true</code> or <code>features.signature_issue=true</code></li>
+</ul>
+<h2 id="step-by-step">Step-by-Step<a class="headerlink" href="#step-by-step" title="Permanent link">&para;</a></h2>
+<h3 id="a-generate-vendor-keys-ed25519">A) Generate Vendor Keys (Ed25519)<a class="headerlink" href="#a-generate-vendor-keys-ed25519" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">openssl genpkey -algorithm Ed25519 -out vendor_ed25519_private.pem
+openssl pkey -in vendor_ed25519_private.pem -pubout -out vendor_ed25519_public.pem
+</code></pre>
+<p>Run the API with:</p>
+<pre><code class="language-bash">export LICENSE_SIGNING_PRIVATE_KEY=&quot;$PWD/vendor_ed25519_private.pem&quot;
+export LICENSE_SIGNING_PUBLIC_KEY=&quot;$PWD/vendor_ed25519_public.pem&quot;
+</code></pre>
+<h3 id="b-issue-a-license-token-online-once-per-org-rotation-period">B) Issue a License Token (Online, once per org / rotation period)<a class="headerlink" href="#b-issue-a-license-token-online-once-per-org-rotation-period" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">TOKEN=&quot;$(JWT_SECRET=dev-secret python scripts/gen_token.py)&quot;
+
+curl -sS -X POST http://127.0.0.1:8125/v1/licenses/issue \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;days_valid&quot;:30,&quot;features&quot;:{&quot;offline_embed&quot;:true}}'
+</code></pre>
+<p>Copy the <code>token</code> from the response.</p>
+<h3 id="b2-refresh-a-license-token-online-recommended">B2) Refresh a License Token (Online, recommended)<a class="headerlink" href="#b2-refresh-a-license-token-online-recommended" title="Permanent link">&para;</a></h3>
+<p>For production, prefer short-lived tokens (e.g. 7–30 days) and refresh them on a schedule.</p>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/licenses/refresh \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;token&quot;:&quot;PASTE_OLD_TOKEN_HERE&quot;,&quot;days_valid&quot;:30}'
+</code></pre>
+<h3 id="c-embed-offline-keep-ciphertext-offline">C) Embed Offline, Keep Ciphertext (Offline)<a class="headerlink" href="#c-embed-offline-keep-ciphertext-offline" title="Permanent link">&para;</a></h3>
+<p>This produces:
+- <code>ciphertext</code> (store in headers / file metadata for online verification)
+- <code>stego_text</code> (innocent-looking cover text output, if you’re using LLM stego)</p>
+<p>Key idea: capacity depends on payload size, so we do:</p>
+<ol>
+<li>Build + encrypt payload (includes license token)</li>
+<li>Estimate needed tokens</li>
+<li>Set <code>max_new_tokens = needed + margin</code></li>
+<li>Recompute model hash with final <code>max_new_tokens</code>, re-encrypt, then embed</li>
+</ol>
+<pre><code class="language-python">from nicrypt_stego.crypto import ficha
+from nicrypt_stego.model_hash import compute_model_hash
+from nicrypt_stego.bitcodec import estimated_tokens_for
+from nicrypt_stego.provenance import ProvenanceWriter
+
+LIC = &quot;PASTE_LICENSE_TOKEN_HERE&quot;
+secret = &quot;alice@example.com|2026-02-19|Licensed offline embed&quot;
+cover_prompt = &quot;Subject: Test\n\nHello team,\nThis is a cover memo.\n&quot;
+
+cfg = dict(
+    backend=&quot;mvp&quot;,
+    model_name=&quot;sshleifer/tiny-gpt2&quot;,
+    bits_per_token=3,
+    device=&quot;cpu&quot;,
+    top_k=64,
+    redundancy=1,
+    ecc_mode=&quot;repetition&quot;,
+    ecc_symbols=16,
+)
+
+margin = 50
+
+# Pass 1: encrypt with a provisional max_new_tokens (only to size ciphertext)
+provisional_max = 300
+mh1 = compute_model_hash(
+    cfg[&quot;model_name&quot;], cfg[&quot;backend&quot;], cfg[&quot;bits_per_token&quot;], provisional_max,
+    cfg[&quot;device&quot;], cfg[&quot;top_k&quot;], cfg[&quot;redundancy&quot;], cfg[&quot;ecc_mode&quot;], cfg[&quot;ecc_symbols&quot;],
+)
+pt1 = f&quot;mh:{mh1}|lic:{LIC}|{secret}&quot;
+ct1 = ficha(pt1, &quot;enc&quot;)
+needed = estimated_tokens_for(
+    ct1,
+    bits_per_token=cfg[&quot;bits_per_token&quot;],
+    redundancy=cfg[&quot;redundancy&quot;],
+    ecc_mode=cfg[&quot;ecc_mode&quot;],
+    ecc_symbols=cfg[&quot;ecc_symbols&quot;],
+)
+max_new_tokens = needed + margin
+
+# Pass 2: recompute mh with the final max_new_tokens, then re-encrypt for correctness
+mh2 = compute_model_hash(
+    cfg[&quot;model_name&quot;], cfg[&quot;backend&quot;], cfg[&quot;bits_per_token&quot;], max_new_tokens,
+    cfg[&quot;device&quot;], cfg[&quot;top_k&quot;], cfg[&quot;redundancy&quot;], cfg[&quot;ecc_mode&quot;], cfg[&quot;ecc_symbols&quot;],
+)
+plaintext = f&quot;mh:{mh2}|lic:{LIC}|{secret}&quot;
+ciphertext = ficha(plaintext, &quot;enc&quot;)
+
+writer = ProvenanceWriter(max_new_tokens=max_new_tokens, **cfg)
+stego_text = writer.embed_cipher(ciphertext, cover_prompt)
+
+print(&quot;ciphertext:&quot;, ciphertext)
+print(&quot;stego_preview:&quot;, stego_text[:120] + &quot;...&quot;)
+</code></pre>
+<h3 id="d-verify-online-ciphertext-only">D) Verify Online (Ciphertext-Only)<a class="headerlink" href="#d-verify-online-ciphertext-only" title="Permanent link">&para;</a></h3>
+<p>Store the <code>ciphertext</code> in a durable channel (examples):
+- Email headers: <code>X-Provenance-Ciphertext: &lt;ciphertext&gt;</code>
+- PDF/DOCX metadata: <code>X-Provenance-Ciphertext</code>
+- Attachment header packing: <code>X-Provenance-Attachment: filename=...; ciphertext=...; ...</code></p>
+<p>Then online verification is one call:</p>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/provenance/verify \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;ciphertext&quot;:&quot;gAAAAA...&quot;,
+    &quot;model_name&quot;:&quot;sshleifer/tiny-gpt2&quot;,
+    &quot;bits_per_token&quot;:4
+  }'
+</code></pre>
+<p>If you set <code>LICENSE_REQUIRED=1</code> on the API, verification will only succeed if:
+- the decrypted plaintext includes <code>lic:&lt;token&gt;|...</code>, and
+- that token is valid (signature, expiry), and
+- it is not revoked.</p>
+<h2 id="revocation-storage-notes">Revocation Storage Notes<a class="headerlink" href="#revocation-storage-notes" title="Permanent link">&para;</a></h2>
+<p>Revocations are stored by <code>jti</code>. For PoC, JSON file storage is fine. For higher throughput deployments,
+switch to SQLite and enable a small cache:</p>
+<pre><code class="language-bash">export LICENSE_REVOCATIONS_BACKEND=sqlite
+export LICENSE_REVOCATIONS_SQLITE_PATH=/var/lib/nicrypt/revocations.sqlite
+export LICENSE_REVOCATIONS_CACHE_TTL_S=2.0
+</code></pre>
+<h2 id="practical-use-cases">Practical Use Cases<a class="headerlink" href="#practical-use-cases" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Institution offline pipelines</strong>: stamp documents on-prem, verify via cloud service.</li>
+<li><strong>Edge signing</strong>: desktop apps / mail gateways embed without latency to a central API.</li>
+<li><strong>Compliance control</strong>: every provenance claim carries a vendor-issued license identity you can revoke.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../TECHNICAL_PROTECTION_CHECKLIST/" class="btn btn-neutral float-left" title="Technical Protection Checklist"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../PRIVACY_POLICY_GMAIL_EXTENSION/" class="btn btn-neutral float-right" title="Privacy Policy (Gmail Extension)">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../TECHNICAL_PROTECTION_CHECKLIST/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../PRIVACY_POLICY_GMAIL_EXTENSION/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

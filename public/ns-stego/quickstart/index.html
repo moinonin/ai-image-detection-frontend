@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/quickstart/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Quickstart - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Quickstart";
+        var mkdocs_page_input_path = "quickstart.md";
+        var mkdocs_page_url = "/ns-stego/quickstart/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Quickstart</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#0-start-the-api">0) Start the API</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-create-a-full-scope-jwt-dev">1) Create a full-scope JWT (dev)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1b-issue-a-vendor-license-token-sprint-9">1b) Issue a vendor license token (Sprint 9)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-embed-provenance-text">2) Embed provenance (text)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2b-standalone-sdk-smoke-test-no-api">2b) Standalone SDK smoke test (no API)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-verify-ciphertext-only-recommended">3) Verify (ciphertext-only, recommended)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-file-embed">4) File embed</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-verify-email-headers-recommended-production">5) Verify email headers (recommended production)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5b-verify-a-raw-email-eml-preprocess-verify">5b) Verify a Raw Email (.eml) (preprocess + verify)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5c-compute-a-single-badge-verdict-recommended-for-pluginsgateways">5c) Compute a Single Badge Verdict (recommended for plugins/gateways)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-outbound-smtp-poc-adds-headers-automatically">6) Outbound SMTP PoC (adds headers automatically)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7-gateway-relay-inbound-stamping-recommended">7) Gateway relay + inbound stamping (recommended)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8-gmail-extension-poc-attachments">8) Gmail Extension PoC (attachments)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8b-thunderbird-add-on-header-verification">8b) Thunderbird add-on (header verification)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#9-imap-watcher-optional">9) IMAP watcher (optional)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#9b-issue-verify-a-certificate-sprint-10">9b) Issue + Verify a Certificate (Sprint 10)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#10-model-status-per-org">10) Model status (per org)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#11-batch-embed-files">11) Batch embed (files)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#12-batch-embed-text-items">12) Batch embed (text items)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#13-upload-gateway-metadata-forward">13) Upload gateway (metadata + forward)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#14-gateway-metadata-extract">14) Gateway metadata extract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#15-gateway-batch-upload">15) Gateway batch upload</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#16-gateway-verify-badge-status">16) Gateway verify (badge status)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#17-visible-signature-token-email-friendly">17) Visible signature token (email-friendly)</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Start Here</li>
+      <li class="breadcrumb-item active">Quickstart</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h1>
+<p>This is the daily workflow cheat-sheet for running and verifying Nicrypt-Stego.</p>
+<h2 id="0-start-the-api">0) Start the API<a class="headerlink" href="#0-start-the-api" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">. .venv/bin/activate
+PYTHONPATH=apps/api JWT_SECRET=dev-secret uvicorn server.app:app --reload --port 8125
+</code></pre>
+<h2 id="1-create-a-full-scope-jwt-dev">1) Create a full-scope JWT (dev)<a class="headerlink" href="#1-create-a-full-scope-jwt-dev" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">export TOKEN=&quot;$(JWT_SECRET=dev-secret python scripts/gen_token.py)&quot;
+</code></pre>
+<h2 id="1b-issue-a-vendor-license-token-sprint-9">1b) Issue a vendor license token (Sprint 9)<a class="headerlink" href="#1b-issue-a-vendor-license-token-sprint-9" title="Permanent link">&para;</a></h2>
+<p>If <code>LICENSE_REQUIRED_FOR_EMBED=1</code> or <code>LICENSE_REQUIRED_FOR_SIGNATURE=1</code> is enabled on the API, you must supply a <code>license_token</code> when issuing certificates or signature tokens.</p>
+<p>Issue a license (requires a JWT with <code>licenses:issue</code>):</p>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/licenses/issue \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;org_id&quot;:&quot;public&quot;,
+    &quot;lic_id&quot;:&quot;lic_demo&quot;,
+    &quot;ttl_seconds&quot;:3600,
+    &quot;features&quot;:{
+      &quot;offline_embed&quot;:true,
+      &quot;signature_issue&quot;:true
+    }
+  }'
+</code></pre>
+<p>Then export the returned value as <code>LICENSE_TOKEN</code> for later calls:</p>
+<pre><code class="language-bash">export LICENSE_TOKEN=&quot;v1.&lt;vendor_payload&gt;.&lt;vendor_sig&gt;&quot;
+</code></pre>
+<h2 id="2-embed-provenance-text">2) Embed provenance (text)<a class="headerlink" href="#2-embed-provenance-text" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/provenance/embed \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;secret&quot;:&quot;you@example.com|2026-02-15|Email QA&quot;,
+    &quot;cover_prompt&quot;:&quot;a short compliance memo&quot;,
+    &quot;backend&quot;:&quot;mvp&quot;,
+    &quot;bits_per_token&quot;:3,
+    &quot;max_new_tokens&quot;:700,
+    &quot;auto_expand&quot;:true,
+    &quot;auto_expand_margin&quot;:50
+  }'
+</code></pre>
+<h2 id="2b-standalone-sdk-smoke-test-no-api">2b) Standalone SDK smoke test (no API)<a class="headerlink" href="#2b-standalone-sdk-smoke-test-no-api" title="Permanent link">&para;</a></h2>
+<p>If you see <code>ValueError: Payload too large for max_new_tokens</code>, estimate capacity first and set <code>max_new_tokens = needed + margin</code>.</p>
+<pre><code class="language-bash">. .venv/bin/activate
+python - &lt;&lt;'PY'
+from nicrypt_stego.provenance import estimate_capacity, protect, verify
+
+secret = &quot;alice@example.com|2026-02-15|SDK smoke&quot;
+topic = &quot;Subject: Test\n\nHello team,\nThis is a cover memo.\n&quot;
+
+cfg = dict(
+    backend=&quot;mvp&quot;,
+    model_name=&quot;sshleifer/tiny-gpt2&quot;,
+    bits_per_token=3,  # must match on verify()
+    redundancy=1,
+    ecc_mode=&quot;repetition&quot;,
+    ecc_symbols=16,
+)
+
+needed = estimate_capacity(secret, **cfg)
+max_new_tokens = needed + 50
+
+stego = protect(secret=secret, topic=topic, max_new_tokens=max_new_tokens, **cfg)
+out = verify(stego_text=stego, topic=topic, max_new_tokens=max_new_tokens, **cfg)
+
+print(&quot;verified:&quot;, out == secret)
+print(&quot;extracted:&quot;, out)
+PY
+</code></pre>
+<h2 id="3-verify-ciphertext-only-recommended">3) Verify (ciphertext-only, recommended)<a class="headerlink" href="#3-verify-ciphertext-only-recommended" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/provenance/verify \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;ciphertext&quot;:&quot;gAAAAAB...&quot;,
+    &quot;model_name&quot;:&quot;sshleifer/tiny-gpt2&quot;,
+    &quot;bits_per_token&quot;:4
+  }'
+</code></pre>
+<h2 id="4-file-embed">4) File embed<a class="headerlink" href="#4-file-embed" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/provenance/embed_file \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -F &quot;file=@/path/doc.pdf&quot; \
+  -F &quot;cover_prompt=Policy update memo.&quot; \
+  -F &quot;backend=mvp&quot; \
+  -F &quot;bits_per_token=3&quot; \
+  -F &quot;max_new_tokens=700&quot; \
+  -F &quot;auto_expand=true&quot; \
+  -F &quot;auto_expand_margin=50&quot;
+</code></pre>
+<h2 id="5-verify-email-headers-recommended-production">5) Verify email headers (recommended production)<a class="headerlink" href="#5-verify-email-headers-recommended-production" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/provenance/verify_headers \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;headers&quot;: {
+      &quot;From&quot;: &quot;Acme Bank &lt;alerts@yourbank.com&gt;&quot;,
+      &quot;X-Provenance-Ciphertext&quot;: &quot;gAAAAAB...&quot;,
+      &quot;X-Provenance-Model&quot;: &quot;sshleifer/tiny-gpt2&quot;,
+      &quot;X-Provenance-Bpt&quot;: &quot;4&quot;,
+      &quot;X-Provenance-Timestamp&quot;: &quot;2026-02-15T12:00:00Z&quot;
+    }
+  }'
+</code></pre>
+<h2 id="5b-verify-a-raw-email-eml-preprocess-verify">5b) Verify a Raw Email (.eml) (preprocess + verify)<a class="headerlink" href="#5b-verify-a-raw-email-eml-preprocess-verify" title="Permanent link">&para;</a></h2>
+<p>Instead of manually sifting through huge header blocks, upload the entire RFC822 message:</p>
+<pre><code class="language-bash">python scripts/verify_email.py /path/to/message.eml --api-base http://127.0.0.1:8125/v1 --api-token &quot;$TOKEN&quot; --print-extracted
+</code></pre>
+<h2 id="5c-compute-a-single-badge-verdict-recommended-for-pluginsgateways">5c) Compute a Single Badge Verdict (recommended for plugins/gateways)<a class="headerlink" href="#5c-compute-a-single-badge-verdict-recommended-for-pluginsgateways" title="Permanent link">&para;</a></h2>
+<p>Use this when you want a single <code>verified/unverified/partial</code> status without hand-parsing:</p>
+<pre><code class="language-bash">python scripts/verify_email.py /path/to/message.eml --api-base http://127.0.0.1:8125/v1 --api-token &quot;$TOKEN&quot; --verdict
+</code></pre>
+<h2 id="6-outbound-smtp-poc-adds-headers-automatically">6) Outbound SMTP PoC (adds headers automatically)<a class="headerlink" href="#6-outbound-smtp-poc-adds-headers-automatically" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">python poc/smtp_sender.py \
+  --subject &quot;Provenance QA&quot; \
+  --body &quot;This is a QA email with provenance headers.&quot; \
+  --secret &quot;qa@veriforensic.com|2026-02-15|Email QA&quot;
+</code></pre>
+<h2 id="7-gateway-relay-inbound-stamping-recommended">7) Gateway relay + inbound stamping (recommended)<a class="headerlink" href="#7-gateway-relay-inbound-stamping-recommended" title="Permanent link">&para;</a></h2>
+<p>One-command bootstrap (relay + inbound, IMAP disabled by default).</p>
+<p>Recommended setup (so you don’t need a huge env list every time):
+- Put your API JWT in <code>/tmp/api_token.jwt</code> (or set <code>API_TOKEN</code> / <code>API_TOKEN_PATH</code>).
+- Put your license JWT in <code>/tmp/provenance_license.jwt</code> (or set <code>PROVENANCE_LICENSE_TOKEN_PATH</code>).
+- Put SMTP creds in <code>.env</code> (<code>INBOUND_SMTP_HOST</code>, <code>INBOUND_SMTP_USER</code>, <code>INBOUND_SMTP_PASS</code>). (<code>.env.example</code> is treated as defaults only.)</p>
+<pre><code class="language-bash">make bootstrap-gateway ENABLE_IMAP=0
+</code></pre>
+<p>Restart later (no giant env list)</p>
+<pre><code class="language-bash">make restart-services ENABLE_IMAP=0
+</code></pre>
+<p>Ports:
+- Outbound relay listens on <code>2525</code> (signs + adds attachment header)
+- Inbound daemon listens on <code>2527</code> (stamps HTML for Gmail)</p>
+<p>Gateway flow (relay + inbound):</p>
+<pre><code>Sender -&gt; [smtp_relay.py:2525] -&gt; [smtp_inbound_daemon.py:2527] -&gt; SMTP Provider -&gt; Gmail
+                       (adds X-Provenance-Attachment)       (stamps data-provenance-attachments)
+</code></pre>
+<p>Minimal marker policy (recommended)
+- In Gmail, the verifier primarily uses <code>NS-SIG-LINK</code> / <code>ns_sig=...</code> (a deterministic body marker) because webmail UIs can’t reliably expose raw headers to extensions.
+- Some SMTP providers rewrite <code>&lt;a href="..."&gt;</code> links for click-tracking; the gateway also carries <code>ns_sig=...</code> in HTML attributes so the Gmail extension can still extract it.
+- The inbound gateway shows a minimal visible badge like <code>🔒 ns-stego verified</code> and embeds the machine markers in a hidden HTML block.</p>
+<p>Quick check:</p>
+<pre><code class="language-bash">make post-check-services ENABLE_IMAP=0
+</code></pre>
+<p>Gateway status (pretty view):</p>
+<pre><code class="language-bash">make gateway-status
+</code></pre>
+<p>Example output:</p>
+<pre><code>Gateway status (relay + inbound, IMAP optional)
+Checking ports 2525 (relay) and 2527 (inbound)...
+COMMAND   PID       USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  51259 nickrotich    6u  IPv4 0xf185e29ab53bcf6c      0t0  TCP 127.0.0.1:2525 (LISTEN)
+COMMAND   PID       USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  51255 nickrotich    6u  IPv4 0xe51ef64e524ecbc1      0t0  TCP 127.0.0.1:2527 (LISTEN)
+Checking health endpoints (inbound 8099, imap 8100)...
+curl: (56) Recv failure: Connection reset by peer
+{&quot;status&quot;: &quot;ok&quot;, &quot;queued&quot;: 0, &quot;sent&quot;: 2, &quot;failed&quot;: 0, &quot;last_error&quot;: &quot;&quot;}
+IMAP health skipped (ENABLE_IMAP=0)
+</code></pre>
+<pre><code class="language-bash">python poc/smtp_inbound_daemon.py --listen-port 2527 --health-port 8099
+</code></pre>
+<p>Optional (inject hidden markers into HTML bodies for Gmail PoC):</p>
+<pre><code class="language-bash">STAMP_BODY=1 python poc/smtp_inbound_daemon.py --listen-port 2527
+</code></pre>
+<h2 id="8-gmail-extension-poc-attachments">8) Gmail Extension PoC (attachments)<a class="headerlink" href="#8-gmail-extension-poc-attachments" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Works only if hidden markers are present (inbound daemon with <code>STAMP_BODY=1</code>).</li>
+<li>Uses ciphertext markers, not headers (Gmail doesn’t expose headers to extensions).</li>
+<li>Shows verified badge near sender and attachment verification summary.</li>
+</ul>
+<p>Send an attachment test through the relay:</p>
+<pre><code class="language-bash">python scripts/send_signed_attachment.py --mail-to you@example.com --attach /tmp/binance_stamped.pdf
+</code></pre>
+<p>Deterministic QA (skip waiting on email delivery):</p>
+<pre><code class="language-bash"># Write tokens to files once per shell/session (avoids quoting issues).
+echo &quot;$TOKEN&quot; &gt; /tmp/api_token.jwt
+echo &quot;$LICENSE_TOKEN&quot; &gt; /tmp/license_token.jwt
+
+python scripts/send_signed_attachment.py \
+  --mail-to you@example.com \
+  --attach /tmp/binance_stamped.pdf \
+  --qa-id &quot;$(date +%Y%m%d-%H%M%S)&quot; \
+  --save-eml /tmp/nicrypt-last.eml \
+  --api-token &quot;$(cat /tmp/api_token.jwt)&quot; \
+  --license-token-path /tmp/license_token.jwt
+
+python scripts/verify_email.py /tmp/nicrypt-last.eml \
+  --api-base http://127.0.0.1:8125/v1 \
+  --api-token &quot;$(cat /tmp/api_token.jwt)&quot; \
+  --verdict
+</code></pre>
+<p>Notes:
+- Don’t use command substitution (e.g. <code>$(...)</code>) inside <code>.env</code> files. Export tokens in your shell instead.
+- <code>--license-token-path</code> expects a filesystem path (e.g. <code>/tmp/license_token.jwt</code>).
+- Do not pass the file <em>contents</em> to <code>--license-token-path</code> (use <code>--license-token</code> for that).</p>
+<h2 id="8b-thunderbird-add-on-header-verification">8b) Thunderbird add-on (header verification)<a class="headerlink" href="#8b-thunderbird-add-on-header-verification" title="Permanent link">&para;</a></h2>
+<p>See full guide: <code>docs/THUNDERBIRD_ADDON.md</code></p>
+<h2 id="9-imap-watcher-optional">9) IMAP watcher (optional)<a class="headerlink" href="#9-imap-watcher-optional" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">python poc/imap_watcher.py --dry-run --report --once
+</code></pre>
+<h2 id="9b-issue-verify-a-certificate-sprint-10">9b) Issue + Verify a Certificate (Sprint 10)<a class="headerlink" href="#9b-issue-verify-a-certificate-sprint-10" title="Permanent link">&para;</a></h2>
+<p>Stamp a PDF/DOCX by embedding <code>X-Provenance-*</code> into file metadata (PDF info dict / DOCX custom properties).</p>
+<p>Note: if the API is running with <code>LICENSE_REQUIRED_FOR_EMBED=1</code>, pass <code>--license-token "$LICENSE_TOKEN"</code>.</p>
+<pre><code class="language-bash">python scripts/issue_certificate.py \
+  --api-base http://127.0.0.1:8125/v1 \
+  --api-token &quot;$TOKEN&quot; \
+  --in docs/CoverLetterBinance.pdf \
+  --out /tmp/binance_stamped.pdf \
+  --issuer-id &quot;uni:example&quot; \
+  --cert-id &quot;cert:123&quot; \
+  --recipient-id &quot;person:alice&quot; \
+  --secret &quot;person:alice&quot; \
+  --license-token &quot;$LICENSE_TOKEN&quot;
+</code></pre>
+<p>Verify the stamped file:</p>
+<pre><code class="language-bash">python scripts/verify_certificate.py \
+  --api-base http://127.0.0.1:8125/v1 \
+  --api-token &quot;$TOKEN&quot; \
+  --in /tmp/binance_stamped.pdf
+</code></pre>
+<h2 id="10-model-status-per-org">10) Model status (per org)<a class="headerlink" href="#10-model-status-per-org" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">make model-status ORG_ID=org_a
+</code></pre>
+<h2 id="11-batch-embed-files">11) Batch embed (files)<a class="headerlink" href="#11-batch-embed-files" title="Permanent link">&para;</a></h2>
+<p>Create a <code>manifest.json</code>:</p>
+<pre><code class="language-json">{
+  &quot;items&quot;: [
+    {
+      &quot;filename&quot;: &quot;paper.pdf&quot;,
+      &quot;local_path&quot;: &quot;paper.pdf&quot;,
+      &quot;secret&quot;: &quot;alice@example.com|2026-02-15|Research Paper&quot;,
+      &quot;cover_prompt&quot;: &quot;research paper on cryptographic provenance&quot;,
+      &quot;model_name&quot;: &quot;sshleifer/tiny-gpt2&quot;,
+      &quot;bits_per_token&quot;: 3,
+      &quot;max_new_tokens&quot;: 700
+    }
+  ]
+}
+</code></pre>
+<p>Run:</p>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/provenance/embed_file_batch \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -F &quot;files=@paper.pdf&quot; \
+  -F &quot;manifest_json=$(cat manifest.json)&quot; \
+  -F &quot;strict_filename=false&quot;
+</code></pre>
+<h2 id="12-batch-embed-text-items">12) Batch embed (text items)<a class="headerlink" href="#12-batch-embed-text-items" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/provenance/embed_batch \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;items&quot;: [
+      {
+        &quot;secret&quot;: &quot;alice@example.com|2026-02-15|Batch&quot;,
+        &quot;cover_prompt&quot;: &quot;short compliance memo&quot;,
+        &quot;model_name&quot;: &quot;sshleifer/tiny-gpt2&quot;,
+        &quot;bits_per_token&quot;: 3,
+        &quot;max_new_tokens&quot;: 220
+      }
+    ]
+  }'
+</code></pre>
+<h2 id="13-upload-gateway-metadata-forward">13) Upload gateway (metadata + forward)<a class="headerlink" href="#13-upload-gateway-metadata-forward" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/gateway/upload \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -F &quot;file=@paper.pdf&quot; \
+  -F &quot;secret=alice@example.com|2026-02-15|Paper&quot; \
+  -F &quot;author=Alice Johnson&quot; \
+  -F &quot;title=Provenance Research&quot; \
+  -F &quot;metadata_mode=auto&quot; \
+  -F &quot;upstream_url=https://your-portal.example.com/upload&quot;
+</code></pre>
+<h2 id="14-gateway-metadata-extract">14) Gateway metadata extract<a class="headerlink" href="#14-gateway-metadata-extract" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/gateway/metadata \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -F &quot;file=@paper.pdf&quot; \
+  -F &quot;provenance_only=true&quot; \
+  -F 'expected_keys_json=[&quot;X-Provenance-Ciphertext&quot;,&quot;X-Provenance-Model&quot;,&quot;X-Provenance-Bpt&quot;,&quot;X-Provenance-Timestamp&quot;]'
+</code></pre>
+<h2 id="15-gateway-batch-upload">15) Gateway batch upload<a class="headerlink" href="#15-gateway-batch-upload" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/gateway/upload_batch \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -F &quot;files=@paper.pdf&quot; \
+  -F &quot;manifest_json=$(cat manifest.json)&quot; \
+  -F &quot;strict_filename=false&quot;
+</code></pre>
+<h2 id="16-gateway-verify-badge-status">16) Gateway verify (badge status)<a class="headerlink" href="#16-gateway-verify-badge-status" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/gateway/verify \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -F &quot;file=@paper.pdf&quot;
+</code></pre>
+<h2 id="17-visible-signature-token-email-friendly">17) Visible signature token (email-friendly)<a class="headerlink" href="#17-visible-signature-token-email-friendly" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/signature/token \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;sender&quot;:&quot;Nordea Bank Oy&quot;,&quot;note&quot;:&quot;Best regards&quot;}'
+</code></pre>
+<pre><code class="language-bash">curl -sS -X POST http://127.0.0.1:8125/v1/signature/verify \
+  -H &quot;Authorization: Bearer $TOKEN&quot; \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;token&quot;:&quot;v1.abcd.efgh&quot;}'
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../OVERVIEW/" class="btn btn-neutral float-right" title="Overview / SDK Usage">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+    
+      <span><a href="../OVERVIEW/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

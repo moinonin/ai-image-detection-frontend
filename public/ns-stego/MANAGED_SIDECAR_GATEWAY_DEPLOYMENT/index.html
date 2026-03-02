@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Managed Sidecar Gateway Deployment - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Managed Sidecar Gateway Deployment";
+        var mkdocs_page_input_path = "MANAGED_SIDECAR_GATEWAY_DEPLOYMENT.md";
+        var mkdocs_page_url = "/ns-stego/MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Managed Sidecar Gateway Deployment</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#what-sidecar-means-here">What “Sidecar” Means Here</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#components">Components</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#high-level-flow">High-Level Flow</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#network-ports">Network &amp; Ports</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#security-posture-recommended-defaults">Security Posture (Recommended Defaults)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#deployment-options">Deployment Options</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#option-a-vm-systemd-linux">Option A: VM + systemd (Linux)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#option-b-kubernetes-customer-vpc-onprem">Option B: Kubernetes (customer VPC / on‑prem)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#smtp-provider-integration-where-you-point-mail-flow">SMTP Provider Integration (Where You “Point Mail Flow”)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#operations-checklist">Operations Checklist</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#smoke-test-operator">Smoke Test (Operator)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#related-docs">Related Docs</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Deployment Integrations</li>
+      <li class="breadcrumb-item active">Managed Sidecar Gateway Deployment</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="managed-sidecar-gateway-deployment-customer-hosted">Managed Sidecar Gateway Deployment (Customer-Hosted)<a class="headerlink" href="#managed-sidecar-gateway-deployment-customer-hosted" title="Permanent link">&para;</a></h1>
+<p>This is the “gateway as a service” <strong>operating model</strong> that matches what we tested locally, but deployed inside a customer environment (on‑prem or customer VPC). Nicrypt (or an integrator) can operate it, while the customer keeps data inside their perimeter.</p>
+<h2 id="what-sidecar-means-here">What “Sidecar” Means Here<a class="headerlink" href="#what-sidecar-means-here" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The <strong>customer hosts</strong> the gateway runtime (VM(s) or Kubernetes) in their environment.</li>
+<li>The gateway relays mail <strong>only inside</strong> customer-controlled network paths.</li>
+<li>The gateway forwards to the customer’s chosen upstream (M365, Gmail/Workspace, Brevo/SES, Postfix, etc.).</li>
+</ul>
+<h2 id="components">Components<a class="headerlink" href="#components" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Outbound relay (injector)</strong>: accepts SMTP from the customer’s sending systems and injects attachment provenance headers.</li>
+<li>Local port (default): <code>2525</code></li>
+<li><strong>Inbound stamper (verifier/stamper)</strong>: receives the relayed message, stamps minimal UX (“ns-stego verified”) + machine markers for webmail verifiers, then forwards upstream.</li>
+<li>Local port (default): <code>2527</code></li>
+<li><strong>API server</strong> (<code>nicrypt-stego-api</code>): keys, verification, signature issuance, policy, audit.</li>
+<li>Local port (example): <code>8125</code></li>
+</ul>
+<h2 id="high-level-flow">High-Level Flow<a class="headerlink" href="#high-level-flow" title="Permanent link">&para;</a></h2>
+<pre><code class="language-mermaid">flowchart LR
+  A[Customer apps / MTA] --&gt;|SMTP| R[Outbound relay :2525]
+  R --&gt;|SMTP| S[Inbound stamper :2527]
+  S --&gt;|SMTP| U[Upstream provider\n(M365 / Workspace / Brevo / Postfix)]
+  S --&gt;|HTTP| API[nicrypt-stego-api :8125]
+  R --&gt;|HTTP (optional)| API
+</code></pre>
+<p>Notes:
+- The <strong>Gmail verifier extension</strong> can’t read message headers, so the inbound stamper must ensure the verification markers are present in the body in a Gmail-resilient way.
+- The API should be reachable from the gateway over the customer network (prefer private IPs).</p>
+<h2 id="network-ports">Network &amp; Ports<a class="headerlink" href="#network-ports" title="Permanent link">&para;</a></h2>
+<p>Minimum (pilot):
+- <code>2525/tcp</code> inbound from customer send path → outbound relay
+- <code>2527/tcp</code> inbound from outbound relay → inbound stamper (same host or internal network)
+- <code>8125/tcp</code> inbound stamper → API (<code>/v1/...</code>)</p>
+<p>Recommended:
+- Bind SMTP listeners to <strong>private interfaces</strong> only (no public exposure).
+- Allow-list sender IPs / subnets for <code>2525</code> and <code>2527</code>.</p>
+<h2 id="security-posture-recommended-defaults">Security Posture (Recommended Defaults)<a class="headerlink" href="#security-posture-recommended-defaults" title="Permanent link">&para;</a></h2>
+<p>SMTP hop security (pick one, strongest first):
+1. mTLS between customer MTA and gateway, plus IP allow-lists
+2. VPN / private peering + IP allow-lists
+3. SMTP AUTH on the relay hop (least preferred in enterprise)</p>
+<p>API security:
+- Use a <strong>least-privilege</strong> API token for the gateway.
+- Prefer file-based secrets (e.g., <code>API_TOKEN_PATH</code>, <code>PROVENANCE_LICENSE_TOKEN_PATH</code>) instead of environment literals.
+- Enable audit logging and forward logs to the customer SIEM if required.</p>
+<h2 id="deployment-options">Deployment Options<a class="headerlink" href="#deployment-options" title="Permanent link">&para;</a></h2>
+<h3 id="option-a-vm-systemd-linux">Option A: VM + systemd (Linux)<a class="headerlink" href="#option-a-vm-systemd-linux" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Deploy <code>nicrypt-stego-api</code> + gateway daemons on a hardened VM.</li>
+<li>Install services via the repo’s systemd targets and set environment via <code>/etc/...</code> or systemd drop-ins.</li>
+<li>Reference: <code>docs/WINDOWS_SERVICE_RUNBOOK.md</code> (concept), <code>docs/GATEWAY_INTEGRATION.md</code> (flow).</li>
+</ul>
+<h3 id="option-b-kubernetes-customer-vpc-onprem">Option B: Kubernetes (customer VPC / on‑prem)<a class="headerlink" href="#option-b-kubernetes-customer-vpc-onprem" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Run 3 Deployments:</li>
+<li>API (<code>nicrypt-stego-api</code>)</li>
+<li>relay (<code>smtp_relay.py</code>)</li>
+<li>stamper (<code>smtp_inbound_daemon.py</code>)</li>
+<li>Put SMTP behind an internal LoadBalancer / ClusterIP + an internal TCP ingress (depending on platform).</li>
+<li>Use Kubernetes Secrets for API tokens and upstream SMTP credentials.</li>
+</ul>
+<h2 id="smtp-provider-integration-where-you-point-mail-flow">SMTP Provider Integration (Where You “Point Mail Flow”)<a class="headerlink" href="#smtp-provider-integration-where-you-point-mail-flow" title="Permanent link">&para;</a></h2>
+<p>Common patterns:
+- <strong>M365</strong>: connectors/rules route outbound (and optionally inbound) through the sidecar gateway.
+  - Reference: <code>docs/EXCHANGE_AGENT_RUNBOOK.md</code>, <code>docs/EMAIL_GATEWAY_FLOW.md</code>
+- <strong>Postfix</strong>: <code>relayhost</code> for outbound, <code>content_filter</code> for inbound stamping.
+  - Reference: <code>docs/GATEWAY_INTEGRATION.md</code>
+- <strong>SMTP provider (Brevo/SES/Sendgrid)</strong>: gateway forwards upstream using provider credentials.</p>
+<p>Deliverability best practice:
+- Avoid having the gateway be the final public sender if it would break SPF/DKIM alignment.
+- Prefer forwarding to the customer’s official sending provider so DKIM/SPF remain consistent.</p>
+<h2 id="operations-checklist">Operations Checklist<a class="headerlink" href="#operations-checklist" title="Permanent link">&para;</a></h2>
+<p>Before pilot:
+- Confirm SMTP forwarding works end-to-end (relay → stamper → upstream).
+- Confirm provenance verify works (Gmail + Thunderbird verifiers).
+- Confirm queue/retry behavior is acceptable (transient upstream failures).
+- Confirm no secrets are logged.</p>
+<p>During production:
+- Monitor:
+  - upstream SMTP auth failures
+  - queue depth / retry counts
+  - verification failures (policy: missing_provenance, license_missing, etc.)
+- Rotate:
+  - API JWT secrets / signing keys per policy
+  - SMTP creds (provider rotation)
+- Incident response:
+  - export audit logs
+  - snapshot gateway config and versions (git SHA / package build-info)</p>
+<h2 id="smoke-test-operator">Smoke Test (Operator)<a class="headerlink" href="#smoke-test-operator" title="Permanent link">&para;</a></h2>
+<p>On the gateway host (or operator bastion):</p>
+<pre><code class="language-bash">make gateway-status
+</code></pre>
+<p>Then send a test message through the relay and verify it using:
+- Gmail extension (recipient experience)
+- Thunderbird add-on (admin/security experience)</p>
+<h2 id="related-docs">Related Docs<a class="headerlink" href="#related-docs" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>docs/EMAIL_GATEWAY_FLOW.md</code> (quick sheet, ports, flow)</li>
+<li><code>docs/GATEWAY_ONLY_MANUAL.md</code> (manual operation)</li>
+<li><code>docs/GATEWAY_INTEGRATION.md</code> (Exchange/Postfix integration)</li>
+<li><code>docs/PRODUCTION_WORKFLOW.md</code> and <code>docs/PRODUCTION_READINESS.md</code> (hardening)</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../GATEWAY_INTEGRATION/" class="btn btn-neutral float-left" title="Gateway Integration (Exchange + Postfix)"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../EXCHANGE_AGENT_RUNBOOK/" class="btn btn-neutral float-right" title="Exchange Transport Agent Runbook">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../GATEWAY_INTEGRATION/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../EXCHANGE_AGENT_RUNBOOK/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/EMAIL_PROVENANCE/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Email Provenance - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Email Provenance";
+        var mkdocs_page_input_path = "EMAIL_PROVENANCE.md";
+        var mkdocs_page_url = "/ns-stego/EMAIL_PROVENANCE/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Email Provenance</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#example-1-bank-alert">Example 1 — Bank Alert</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-2-hr-offer-email">Example 2 — HR Offer Email</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-3-university-record-notice">Example 3 — University Record Notice</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-4-legal-compliance-memo">Example 4 — Legal / Compliance Memo</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Email Provenance</li>
+      <li class="breadcrumb-item active">Email Provenance</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="email-provenance-verified-sender-for-antiscam-email">Email Provenance: Verified Sender for Anti‑Scam Email<a class="headerlink" href="#email-provenance-verified-sender-for-antiscam-email" title="Permanent link">&para;</a></h1>
+<p>Purpose
+Provide cryptographic proof that an email was authored by a legitimate organization, enabling recipients and mail systems to detect impersonation and phishing.</p>
+<p>Related
+- Certificate issuance and verification: <code>docs/CERTIFICATE_PROVENANCE_SPRINT.md</code></p>
+<p>Email vs Certificate Provenance (Quick Comparison)
+See <code>docs/EMAIL_VS_CERTIFICATE_COMPARISON.md</code>.</p>
+<p>Goals
+- Stop sender impersonation even when SPF/DKIM/DMARC pass or are bypassed.
+- Verify the content itself, not just the sending domain.
+- Make verification visible to users via a simple trust indicator.
+- Support on‑prem deployments for regulated institutions.</p>
+<p>Non‑Goals
+- Replace SPF/DKIM/DMARC. This complements them.
+- Guarantee safety of all links or attachments.
+- Prevent all social engineering. It verifies origin only.</p>
+<p>High‑Level Flow</p>
+<p>Outbound (Sender Organization)
+1. Compose email content.
+2. Generate provenance payload (org, timestamp, campaign, signer id).
+3. Encrypt payload with Nicrypt (institution‑managed keys).
+4. Embed ciphertext into the email body using steganography.
+5. Send email normally.</p>
+<p>Inbound (Recipient)
+1. Mail gateway or client extracts ciphertext from body.
+2. Decrypts using the institution’s public verification path (or shared key).
+3. Verifies model hash and key id.
+4. Shows Verified/Unverified status in the UI.</p>
+<p>Architecture Options</p>
+<ol>
+<li>Mail Gateway Integration (Recommended)</li>
+<li>Outbound: inject provenance in the final hop before SMTP.</li>
+<li>Inbound: verify for internal recipients and annotate headers.</li>
+<li>Pros: centralized, scalable, no client plugins required.</li>
+<li>
+<p>Cons: requires gateway integration and routing changes.</p>
+</li>
+<li>
+<p>Client Plugin (Outlook / Gmail)</p>
+</li>
+<li>Outbound: plugin embeds on send.</li>
+<li>Inbound: plugin verifies and renders badge.</li>
+<li>Pros: no gateway changes, faster pilot.</li>
+<li>
+<p>Cons: per‑user installation and updates.</p>
+</li>
+<li>
+<p>Application‑Level Integration</p>
+</li>
+<li>For custom CRM or internal portals that send email.</li>
+<li>Embed and verify within the app’s email pipeline.</li>
+</ol>
+<p>Verification UX
+- Verified: “Verified Sender” badge with org name and timestamp.
+- Unverified: “Sender not verified” warning with a short explanation.
+- Tampered: “Content altered” warning if extraction fails or mismatches.</p>
+<p>Provenance Payload Format (Example)
+org=AcmeBank|dept=Consumer|timestamp=2026-02-15T10:32Z|campaign=FraudAlert|key_id=key_9f4d2</p>
+<p>Security Model
+- Keys remain inside the institution’s boundary.
+- Only authorized systems can encrypt (embed).
+- Verification can be performed by recipients or gateways using allowed keys.
+- Model hash ties the message to the configured embedding model for consistency.</p>
+<p>Threats Addressed
+- Domain spoofing and look‑alike domains.
+- Compromised forwarding chains.
+- Content forgery and copy‑paste attacks.</p>
+<p>Threats Not Fully Addressed
+- A compromised sender system (attacker can embed valid provenance).
+- Social engineering that uses genuine verified messages.
+- Malicious links or attachments (requires separate scanning).</p>
+<p>Operational Considerations
+- Key rotation: rotate keys on a schedule and maintain a grace window for verification.
+- Model locking: fix model hash for long‑term verification.
+- Policy: define which communications must be verified (e.g., finance, HR, compliance).
+- Logs: record verification outcomes for audit and incident response.</p>
+<p>Integration Steps</p>
+<p>Phase 1: Pilot
+- Pick one high‑risk communication stream (bank alerts or HR memos).
+- Deploy embedding at send time only.
+- Measure verification success and false negatives.</p>
+<p>Phase 2: Verification UI
+- Add badge to internal mail client or gateway‑injected header.
+- Add warnings for unverified messages.</p>
+<p>Phase 3: Institution‑wide
+- Extend to all official communications.
+- Enforce verified status for trusted channels.</p>
+<p>API Usage (Minimal)</p>
+<p>Embed (Outbound)
+POST /v1/provenance/embed
+Body:
+{
+  "secret": "org=AcmeBank|dept=Consumer|timestamp=2026-02-15T10:32Z|campaign=FraudAlert",
+  "cover_prompt": "Subject: Policy Update...",
+  "backend": "mvp",
+  "bits_per_token": 3,
+  "max_new_tokens": 700
+}</p>
+<p>Verify (Inbound)
+POST /v1/provenance/verify
+Body:
+{
+  "ciphertext": "gAAAAABl...5g",
+  "model_name": "sshleifer/tiny-gpt2",
+  "bits_per_token": 4
+}</p>
+<p>Stego Quality Examples (Embed Cipher)</p>
+<p>These examples use <code>POST /v1/provenance/embed_cipher</code> so you can demonstrate "innocent" cover text while embedding an existing ciphertext.</p>
+<p>Config notes:
+- Demo model: <code>sshleifer/tiny-gpt2</code> (local + lightweight).
+- ECC: <code>ecc_mode="reed-solomon"</code> with <code>ecc_symbols=16</code> for robustness.
+- <code>stego_text</code> below is representative output style (your exact text will vary).</p>
+<h3 id="example-1-bank-alert">Example 1 — Bank Alert<a class="headerlink" href="#example-1-bank-alert" title="Permanent link">&para;</a></h3>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;ciphertext&quot;: &quot;gAAAAABl...bank&quot;,
+  &quot;cover_prompt&quot;: &quot;Subject: Important Security Notice\n\nHello,\nWe’re reaching out to confirm a recent security update to how we communicate with you.\n\nBest regards,\nAccount Security Team&quot;,
+  &quot;model_name&quot;: &quot;sshleifer/tiny-gpt2&quot;,
+  &quot;bits_per_token&quot;: 3,
+  &quot;max_new_tokens&quot;: 260,
+  &quot;ecc_mode&quot;: &quot;reed-solomon&quot;,
+  &quot;ecc_symbols&quot;: 16,
+  &quot;redundancy&quot;: 1
+}
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;request_id&quot;: &quot;req_bank_01&quot;,
+  &quot;stego_text&quot;: &quot;Subject: Important Security Notice\n\nHello,\nWe’re reaching out to confirm a recent security update to how we communicate with you. Please review the notice and follow the update process. Security review and account notice update. Verification status and message notice. If you did not request this update, use official support. Best regards,\nAccount Security Team\n\nSecurity policy update notice. Account verification notice. Review schedule. Update process.&quot;,
+  &quot;model_hash&quot;: &quot;mhash_tiny_001&quot;,
+  &quot;ciphertext&quot;: &quot;gAAAAABl...bank&quot;,
+  &quot;payload_bytes&quot;: 28,
+  &quot;tokens_used&quot;: 214,
+  &quot;quality&quot;: {
+    &quot;token_count&quot;: 235,
+    &quot;char_count&quot;: 612,
+    &quot;unique_ratio&quot;: 0.22,
+    &quot;avg_token_len&quot;: 4.7,
+    &quot;quality_score&quot;: 0.52
+  },
+  &quot;capacity&quot;: {
+    &quot;needed_tokens&quot;: 235,
+    &quot;max_new_tokens&quot;: 260
+  }
+}
+</code></pre>
+<h3 id="example-2-hr-offer-email">Example 2 — HR Offer Email<a class="headerlink" href="#example-2-hr-offer-email" title="Permanent link">&para;</a></h3>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;ciphertext&quot;: &quot;gAAAAABl...hr&quot;,
+  &quot;cover_prompt&quot;: &quot;Subject: Next Steps – Offer Details\n\nHi Alex,\nAttached you’ll find your offer letter.\n\nBest,\nPeople Operations&quot;,
+  &quot;model_name&quot;: &quot;sshleifer/tiny-gpt2&quot;,
+  &quot;bits_per_token&quot;: 3,
+  &quot;max_new_tokens&quot;: 280,
+  &quot;ecc_mode&quot;: &quot;reed-solomon&quot;,
+  &quot;ecc_symbols&quot;: 16,
+  &quot;redundancy&quot;: 1
+}
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;request_id&quot;: &quot;req_hr_01&quot;,
+  &quot;stego_text&quot;: &quot;Subject: Next Steps – Offer Details\n\nHi Alex,\nAttached you’ll find your offer letter and role summary for review. Please review the document and reply with questions. Team review schedule and update process. Approval and response required. Best,\nPeople Operations\n\nOffer details and review requirement. Document review tracking and update notice.&quot;,
+  &quot;model_hash&quot;: &quot;mhash_tiny_002&quot;,
+  &quot;ciphertext&quot;: &quot;gAAAAABl...hr&quot;,
+  &quot;payload_bytes&quot;: 24,
+  &quot;tokens_used&quot;: 214,
+  &quot;quality&quot;: {
+    &quot;token_count&quot;: 248,
+    &quot;char_count&quot;: 590,
+    &quot;unique_ratio&quot;: 0.24,
+    &quot;avg_token_len&quot;: 4.6,
+    &quot;quality_score&quot;: 0.54
+  },
+  &quot;capacity&quot;: {
+    &quot;needed_tokens&quot;: 248,
+    &quot;max_new_tokens&quot;: 280
+  }
+}
+</code></pre>
+<h3 id="example-3-university-record-notice">Example 3 — University Record Notice<a class="headerlink" href="#example-3-university-record-notice" title="Permanent link">&para;</a></h3>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;ciphertext&quot;: &quot;gAAAAABl...uni&quot;,
+  &quot;cover_prompt&quot;: &quot;Subject: Your Official Academic Record\n\nHello,\nAttached is your official academic record.\n\nSincerely,\nOffice of the Registrar&quot;,
+  &quot;model_name&quot;: &quot;sshleifer/tiny-gpt2&quot;,
+  &quot;bits_per_token&quot;: 3,
+  &quot;max_new_tokens&quot;: 320,
+  &quot;ecc_mode&quot;: &quot;reed-solomon&quot;,
+  &quot;ecc_symbols&quot;: 16,
+  &quot;redundancy&quot;: 1
+}
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;request_id&quot;: &quot;req_uni_01&quot;,
+  &quot;stego_text&quot;: &quot;Subject: Your Official Academic Record\n\nHello,\nAttached is your official academic record for verification and review. Record policy and standard notice. Verification status for partner institutions. Document record standard and approval. If you did not request this record, contact the registrar office through official channels.\n\nSincerely,\nOffice of the Registrar\n\nRecord system notice. Official document verification and process.&quot;,
+  &quot;model_hash&quot;: &quot;mhash_tiny_003&quot;,
+  &quot;ciphertext&quot;: &quot;gAAAAABl...uni&quot;,
+  &quot;payload_bytes&quot;: 26,
+  &quot;tokens_used&quot;: 214,
+  &quot;quality&quot;: {
+    &quot;token_count&quot;: 290,
+    &quot;char_count&quot;: 710,
+    &quot;unique_ratio&quot;: 0.20,
+    &quot;avg_token_len&quot;: 4.8,
+    &quot;quality_score&quot;: 0.50
+  },
+  &quot;capacity&quot;: {
+    &quot;needed_tokens&quot;: 290,
+    &quot;max_new_tokens&quot;: 320
+  }
+}
+</code></pre>
+<h3 id="example-4-legal-compliance-memo">Example 4 — Legal / Compliance Memo<a class="headerlink" href="#example-4-legal-compliance-memo" title="Permanent link">&para;</a></h3>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;ciphertext&quot;: &quot;gAAAAABl...legal&quot;,
+  &quot;cover_prompt&quot;: &quot;Subject: Policy Update – Data Retention\n\nTeam,\nPlease review the attached update to our data retention policy.\n\nThanks,\nLegal &amp; Compliance&quot;,
+  &quot;model_name&quot;: &quot;sshleifer/tiny-gpt2&quot;,
+  &quot;bits_per_token&quot;: 3,
+  &quot;max_new_tokens&quot;: 300,
+  &quot;ecc_mode&quot;: &quot;reed-solomon&quot;,
+  &quot;ecc_symbols&quot;: 16,
+  &quot;redundancy&quot;: 1
+}
+</code></pre>
+<p>Response:</p>
+<pre><code class="language-json">{
+  &quot;request_id&quot;: &quot;req_legal_01&quot;,
+  &quot;stego_text&quot;: &quot;Subject: Policy Update – Data Retention\n\nTeam,\nPlease review the attached update to our data retention policy. Governance and compliance requirement update. Retention schedule and exception process. Review tracking and approval procedure. Security and audit requirement. Thanks,\nLegal &amp; Compliance\n\nPolicy notice update. Compliance review schedule. Governance control and approved process.&quot;,
+  &quot;model_hash&quot;: &quot;mhash_tiny_004&quot;,
+  &quot;ciphertext&quot;: &quot;gAAAAABl...legal&quot;,
+  &quot;payload_bytes&quot;: 30,
+  &quot;tokens_used&quot;: 214,
+  &quot;quality&quot;: {
+    &quot;token_count&quot;: 270,
+    &quot;char_count&quot;: 648,
+    &quot;unique_ratio&quot;: 0.19,
+    &quot;avg_token_len&quot;: 4.7,
+    &quot;quality_score&quot;: 0.48
+  },
+  &quot;capacity&quot;: {
+    &quot;needed_tokens&quot;: 270,
+    &quot;max_new_tokens&quot;: 300
+  }
+}
+</code></pre>
+<p>Visible Signature Tokens (email-friendly)
+- Use /v1/signature/token to generate a short token.
+- Embed the token in a human-visible signature block:</p>
+<p>Example:
+Best regards,
+Nordea Bank Oy
+NS-SIGNATURE: v1.abcd.efgh</p>
+<p>Verification
+- Use /v1/signature/verify to validate the token and retrieve the signed payload.
+- Gmail/Outlook helpers can parse <code>NS-SIGNATURE:</code> and verify automatically.</p>
+<p>Scripted issuance (CLI)</p>
+<pre><code class="language-bash">TOKEN=&quot;...&quot; SENDER=&quot;Nordea Bank Oy&quot; NOTE=&quot;Best regards&quot; scripts/signature_token.sh
+</code></pre>
+<p>PowerShell</p>
+<pre><code class="language-powershell">$env:TOKEN=&quot;...&quot;
+$env:SENDER=&quot;Nordea Bank Oy&quot;
+$env:NOTE=&quot;Best regards&quot;
+.\scripts\signature_token.ps1
+</code></pre>
+<p>Gateway automation (no user action)
+- Set <code>SIGNATURE_MODE=visible</code> in the SMTP relay.
+- The relay appends <code>NS-SIGNATURE: ...</code> to outgoing emails automatically.
+- Optional: set <code>PROVENANCE_SENDER</code> and <code>PROVENANCE_SIGNATURE_NOTE</code> for consistent branding.</p>
+<p>Diagram (Outlook → Relay → Internet)</p>
+<pre><code class="language-mermaid">flowchart LR
+  A[&quot;Outlook Client&quot;] --&gt; B[&quot;SMTP Relay (Nicrypt Gateway)&quot;]
+  B --&gt; C[&quot;Internet / Recipient MX&quot;]
+  B --&gt; D[&quot;Signature Token API&quot;]
+  D --&gt; B
+  B --&gt; E[&quot;Adds NS-SIGNATURE to Body + Headers&quot;]
+</code></pre>
+<p>Practical use cases
+- Customer service and banking alerts: append a verifiable signature line.
+- HR and compliance emails: prove the sender without altering the body.
+- Press releases and public announcements: readers can verify authenticity.
+- Support tickets and incident responses: add a tamper-evident signature line.</p>
+<p>Rollout Checklist
+- Select model and lock hash.
+- Configure keys and rotation policy.
+- Integrate outbound embed at send time.
+- Integrate inbound verify at receive time.
+- Define UI badge and warning copy.
+- Add monitoring and audit logs.</p>
+<p>Success Metrics
+- Verified percentage on outbound streams.
+- False negative verification rate.
+- Reduction in phishing incidents.
+- Compliance audit readiness.</p>
+<p>Gmail and Outlook Implementation Notes</p>
+<p>Gmail (Google Workspace)
+- Outbound: use a Gmail add‑on or Apps Script that calls the embed API before send.
+- Inbound: add a Gmail add‑on that extracts from the message body and calls verify.
+- UI: show a Verified badge near the sender name and a warning if unverified.
+- Admin: restrict add‑on installation to approved domains and users.</p>
+<p>Outlook (Microsoft 365)
+- Outbound: use an Outlook add‑in (Office.js) to embed before send.
+- Inbound: use an Outlook add‑in or Exchange transport rule with a verification service.
+- UI: add a ribbon indicator or message header banner for verified senders.
+- Admin: deploy add‑ins centrally via Microsoft 365 admin center.</p>
+<p>Extension Monetization and Distribution (Recommended Path)</p>
+<p>Goal
+Monetize via an enterprise license while keeping the extension free to install.</p>
+<p>Approach
+- Ship the extension at no cost in the store or via managed deployment.
+- Access requires API tokens tied to an institutional license.
+- Tokens are issued and rotated by the institution’s admin.</p>
+<p>Benefits
+- Fits institutional procurement (annual license + support).
+- Avoids consumer payment friction and store policies.
+- Allows centralized revocation and auditability.</p>
+<p>Distribution Options
+- Managed deployment via Google Workspace Admin or Microsoft 365 Admin.
+- Private distribution for regulated environments.
+- Public store listing for easier discovery and trials.</p>
+<p>Phishing Simulator Test Plan</p>
+<p>Goal
+Validate that verified messages pass and impersonation attempts are flagged.</p>
+<p>Setup
+- Create a “legitimate” sender workflow that embeds provenance.
+- Create a “fraudulent” workflow that does not embed or uses wrong keys.</p>
+<p>Test Cases
+1) Verified message, correct key
+Expected: Verified badge, extracted payload matches sender metadata.</p>
+<p>2) Verified message, altered content
+Expected: Verification fails or tampered warning.</p>
+<p>3) Unverified message, spoofed display name
+Expected: Unverified warning shown.</p>
+<p>4) Forwarded verified message
+Expected: Still verifies if content intact.</p>
+<p>5) Forwarded and edited message
+Expected: Verification fails or tampered warning.</p>
+<p>6) Mixed HTML/plain text
+Expected: Extractor handles plaintext fallback or warns if content lost.</p>
+<p>Measurements
+- Verification success rate by client (web, mobile, desktop).
+- Time to verify (client latency).
+- False positives and false negatives.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../BUILDING/" class="btn btn-neutral float-left" title="Building Distributions"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../EMAIL_GATEWAY_FLOW/" class="btn btn-neutral float-right" title="Email Gateway Flow">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../BUILDING/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../EMAIL_GATEWAY_FLOW/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

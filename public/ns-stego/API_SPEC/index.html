@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/API_SPEC/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>API Spec - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "API Spec";
+        var mkdocs_page_input_path = "API_SPEC.md";
+        var mkdocs_page_url = "/ns-stego/API_SPEC/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">API Spec</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">System Reference</li>
+      <li class="breadcrumb-item active">API Spec</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="nicrypt-stego-api-spec-v1">Nicrypt-Stego API Spec (v1)<a class="headerlink" href="#nicrypt-stego-api-spec-v1" title="Permanent link">&para;</a></h1>
+<p>Decision: REST + JSON
+Rationale: easiest enterprise integration, works with standard gateways, audit tooling, and log pipelines. gRPC can be added later as a parallel interface.</p>
+<p>Base URL
+- /v1</p>
+<p>Auth
+- Bearer tokens (JWT or opaque) via Authorization header.
+- Optional mTLS for internal deployments.
+- All write operations require scope-based authorization.
+- Multi-tenant support via <code>org_id</code> in JWT (or <code>X-Org-Id</code> header).
+- Rate limits and quotas are enforced per org.</p>
+<p>Content Types
+- Request: application/json
+- Response: application/json</p>
+<p>Common Fields
+- model_name: string
+- bits_per_token: integer (1-4, default 2)
+- max_new_tokens: integer (default 200)
+- model_hash: string (server-computed, stable hash of model + tokenizer + config + sampling params)
+- request_id: string (server-generated UUID)
+- org_id: string (derived from JWT or <code>X-Org-Id</code> header)</p>
+<p>Endpoints</p>
+<p>1) Create key profile
+POST /v1/keys
+Request
+{
+  "name": "legal-team-2026",
+  "rotation_policy": "annual",
+  "metadata": {
+    "owner": "legal",
+    "purpose": "authorship-provenance"
+  }
+}
+Response
+{
+  "key_id": "key_9f4d2",
+  "name": "legal-team-2026",
+  "rotation_policy": "annual",
+  "created_at": "2026-02-13T10:30:00Z"
+}</p>
+<p>2) List key profiles
+GET /v1/keys
+Response
+{
+  "keys": [
+    {
+      "key_id": "key_9f4d2",
+      "name": "legal-team-2026",
+      "rotation_policy": "annual",
+      "created_at": "2026-02-13T10:30:00Z"
+    }
+  ]
+}</p>
+<p>Note: Keys are scoped to org_id. Requests from one org cannot list or rotate keys from another org.</p>
+<p>3) Rotate key
+POST /v1/keys/{key_id}/rotate
+Response
+{
+  "key_id": "key_9f4d2",
+  "rotated_at": "2026-02-13T10:40:00Z",
+  "status": "rotated"
+}</p>
+<p>4) Embed provenance (encrypt + embed)
+POST /v1/provenance/embed
+Request
+{
+  "secret": "Alice Johnson, 2026-02-12, CC-BY-NC",
+  "cover_prompt": "a short compliance memo about data retention",
+  "model_name": "meta-llama/Llama-3-8B",
+  "bits_per_token": 2,
+  "max_new_tokens": 220,
+  "key_id": "key_9f4d2"
+}
+Response
+{
+  "request_id": "req_1b2c3",
+  "stego_text": "...",
+  "model_hash": "mhash_7e83...",
+  "payload_bytes": 92,
+  "tokens_used": 214
+}</p>
+<p>5) Embed ciphertext (embed only)
+POST /v1/provenance/embed_cipher
+Request
+{
+  "ciphertext": "gAAAAABl...",
+  "cover_prompt": "a short compliance memo about data retention",
+  "model_name": "meta-llama/Llama-3-8B",
+  "bits_per_token": 2,
+  "max_new_tokens": 220
+}
+Response
+{
+  "request_id": "req_1b2c3",
+  "stego_text": "...",
+  "model_hash": "mhash_7e83...",
+  "payload_bytes": 132,
+  "tokens_used": 214
+}</p>
+<p>6) Extract ciphertext
+POST /v1/provenance/extract
+Request
+{
+  "stego_text": "...",
+  "model_name": "meta-llama/Llama-3-8B",
+  "bits_per_token": 2
+}
+Response
+{
+  "request_id": "req_4d5e6",
+  "ciphertext": "gAAAAABl...",
+  "model_hash": "mhash_7e83...",
+  "confidence": 0.93
+}</p>
+<p>7) Verify (extract + decrypt)
+POST /v1/provenance/verify
+Request
+{
+  "stego_text": "...",
+  "model_name": "meta-llama/Llama-3-8B",
+  "bits_per_token": 2,
+  "key_id": "key_9f4d2"
+}
+Response
+{
+  "request_id": "req_4d5e6",
+  "secret": "Alice Johnson, 2026-02-12, CC-BY-NC",
+  "verified": true,
+  "model_hash": "mhash_7e83...",
+  "metadata": {
+    "detected": true,
+    "tampered": false
+  }
+}</p>
+<p>8) List models
+GET /v1/models
+Response
+{
+  "models": [
+    {
+      "model_name": "meta-llama/Llama-3-8B",
+      "model_hash": "mhash_7e83...",
+      "context_length": 8192,
+      "notes": "Production baseline"
+    }
+  ]
+}</p>
+<p>Note: Model pull/status tracking is scoped per org.</p>
+<p>9) Pull model
+POST /v1/models/pull
+Request
+{
+  "model_name": "meta-llama/Llama-3-8B"
+}
+Response
+{
+  "status": "queued",
+  "model_name": "meta-llama/Llama-3-8B"
+}</p>
+<p>Note: Model pull status is stored per org_id.</p>
+<p>10) Health
+GET /v1/health
+Response
+{
+  "status": "ok",
+  "uptime_s": 104233
+}</p>
+<p>11) Metrics
+GET /v1/metrics
+Response
+{
+  "format": "prometheus"
+}
+Note: Metrics requires auth and is scoped by org_id for rate limiting.</p>
+<p>Error Model
+All errors return:
+{
+  "request_id": "req_...",
+  "error": {
+    "code": "MODEL_NOT_FOUND",
+    "message": "Model not available on server",
+    "details": {
+      "model_name": "meta-llama/Llama-3-8B"
+    }
+  }
+}</p>
+<p>Error Codes
+- INVALID_REQUEST
+- AUTH_REQUIRED
+- AUTH_FORBIDDEN
+- KEY_NOT_FOUND
+- KEY_ROTATION_FAILED
+- MODEL_NOT_FOUND
+- MODEL_MISMATCH
+- INVALID_BITS_PER_TOKEN
+- PAYLOAD_TOO_LARGE
+- EXTRACTION_FAILED
+- DECRYPTION_FAILED
+- RATE_LIMITED
+- INTERNAL_ERROR</p>
+<p>Security Constraints
+- Scope-based access control (example scopes: provenance:embed, provenance:verify, keys:manage, models:read, models:pull).
+- All provenance write operations logged with request_id, key_id, model_hash, and payload_bytes.
+- Optional tamper-evidence: append audit hash to server logs (hash chain per day).
+- mTLS optional for internal deployments.
+- Encrypt key material at rest using KMS or HSM.</p>
+<p>Notes
+- Deterministic settings required for extraction. The server pins model_name, tokenizer version, and sampling parameters into model_hash.
+- If model_hash mismatch is detected, extraction returns MODEL_MISMATCH unless override is allowed.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../SPEC/" class="btn btn-neutral float-left" title="SPEC"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../SPRINTS/" class="btn btn-neutral float-right" title="Sprints">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../SPEC/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../SPRINTS/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

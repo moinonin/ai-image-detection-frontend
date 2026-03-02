@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/OVERVIEW/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Overview / SDK Usage - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Overview / SDK Usage";
+        var mkdocs_page_input_path = "OVERVIEW.md";
+        var mkdocs_page_url = "/ns-stego/OVERVIEW/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Overview / SDK Usage</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#nicrypt-stego">Nicrypt-Stego</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-to-use-the-sdk">How to use the SDK</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-start-the-server">1) Start the server</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-generate-a-token-all-scopes-by-default">2) Generate a token (all scopes by default)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-call-the-api-with-the-python-client">3) Call the API with the Python client</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-local-library-usage-standalone-sdk-mvp-stego-engine">4) Local library usage (Standalone SDK / MVP stego engine)</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Start Here</li>
+      <li class="breadcrumb-item active">Overview / SDK Usage</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="overview-sdk-usage">Overview / SDK Usage<a class="headerlink" href="#overview-sdk-usage" title="Permanent link">&para;</a></h1>
+<p>This page mirrors <code>docs/README.md</code>, but is named <code>OVERVIEW.md</code> so it can be included in the MkDocs site without the <code>README.md</code> vs <code>index.md</code> URL conflict.</p>
+<h2 id="nicrypt-stego">Nicrypt-Stego<a class="headerlink" href="#nicrypt-stego" title="Permanent link">&para;</a></h2>
+<p>Nicrypt-Stego provides cryptographic provenance for text in the AI era by embedding encrypted metadata inside natural language. It is designed for enterprise workflows where origin, compliance, and auditability matter. This approach is feasible today, best suited to server or desktop deployments, and pairs well with on-prem LLMs to preserve privacy and control.</p>
+<p>Related docs
+- Technical protection checklist: <code>docs/TECHNICAL_PROTECTION_CHECKLIST.md</code>
+- Production readiness: <code>docs/PRODUCTION_READINESS.md</code>
+- Thunderbird add-on: <code>docs/THUNDERBIRD_ADDON.md</code>
+- Email vs certificate comparison: <code>docs/EMAIL_VS_CERTIFICATE_COMPARISON.md</code></p>
+<p>Docs navigation
+- Book-style table of contents: <code>docs/index.md</code>
+- Quickstart: <code>docs/quickstart.md</code>
+- <code>docs/EMAIL_GATEWAY_FLOW.md</code>
+- <code>docs/GATEWAY_ONLY_MANUAL.md</code></p>
+<h2 id="how-to-use-the-sdk">How to use the SDK<a class="headerlink" href="#how-to-use-the-sdk" title="Permanent link">&para;</a></h2>
+<p>Install dependencies</p>
+<pre><code class="language-bash">python -m venv .venv
+. .venv/bin/activate
+make setup
+</code></pre>
+<p>Note: this repo is a monorepo. <code>make setup</code> installs:
+- SDK: <code>pyproject.toml</code> (root)
+- Client SDK: <code>packages/client/pyproject.toml</code>
+- API: <code>apps/api/pyproject.toml</code></p>
+<p>Optional (Linux-only, Postfix/Sendmail milter)</p>
+<p>This PoC uses <code>pymilter</code> (see <code>poc/postfix_milter.py</code>). Install:</p>
+<pre><code class="language-bash">pip install -r requirements-milter.txt
+</code></pre>
+<h2 id="1-start-the-server">1) Start the server<a class="headerlink" href="#1-start-the-server" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">. .venv/bin/activate
+PYTHONPATH=apps/api uvicorn server.app:app --reload
+</code></pre>
+<h2 id="2-generate-a-token-all-scopes-by-default">2) Generate a token (all scopes by default)<a class="headerlink" href="#2-generate-a-token-all-scopes-by-default" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">. .venv/bin/activate
+JWT_SECRET=dev-secret python scripts/gen_token.py
+</code></pre>
+<h2 id="3-call-the-api-with-the-python-client">3) Call the API with the Python client<a class="headerlink" href="#3-call-the-api-with-the-python-client" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">from nicrypt_stego_client import ClientConfig, TypedNicryptStegoClient
+
+cfg = ClientConfig(
+    base_url=&quot;http://127.0.0.1:8125/v1&quot;,
+    token=&quot;test-token&quot;,
+    scopes=&quot;keys:manage keys:read provenance:embed provenance:verify models:read models:pull&quot;,
+)
+client = TypedNicryptStegoClient(cfg)
+
+health = client.health()
+print(health)
+print(health.request_id)
+
+key = client.create_key(&quot;legal-team-2026&quot;)
+
+stego = client.embed(
+    secret=&quot;Alice Johnson, 2026-02-12, CC-BY-NC&quot;,
+    cover_prompt=&quot;a short compliance memo about data retention&quot;,
+)
+
+verified = client.verify(
+    stego_text=stego.stego_text,
+)
+print(verified)
+print(verified.request_id)
+</code></pre>
+<h2 id="4-local-library-usage-standalone-sdk-mvp-stego-engine">4) Local library usage (Standalone SDK / MVP stego engine)<a class="headerlink" href="#4-local-library-usage-standalone-sdk-mvp-stego-engine" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">from nicrypt_stego import protect, verify
+
+secret = &quot;Alice Johnson, 2026-02-12, CC-BY-NC&quot;
+topic = &quot;a short compliance memo about data retention&quot;
+
+stego_text = protect(secret, topic, bits_per_token=3, max_new_tokens=200, seed=0)
+recovered = verify(stego_text, topic, bits_per_token=3, seed=0)
+print(recovered)
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../quickstart/" class="btn btn-neutral float-left" title="Quickstart"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href=".." class="btn btn-neutral float-right" title="Book Table of Contents">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../quickstart/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

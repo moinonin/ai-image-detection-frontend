@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/PRODUCTION_WORKFLOW/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Production Workflow - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Production Workflow";
+        var mkdocs_page_input_path = "PRODUCTION_WORKFLOW.md";
+        var mkdocs_page_url = "/ns-stego/PRODUCTION_WORKFLOW/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_GATEWAY_FLOW/">Email Gateway Flow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Production Workflow</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Email Provenance</li>
+      <li class="breadcrumb-item active">Production Workflow</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="production-workflow-email-provenance">Production Workflow: Email Provenance<a class="headerlink" href="#production-workflow-email-provenance" title="Permanent link">&para;</a></h1>
+<p>Overview
+Production deployments should avoid relying on email body steganography in consumer clients.
+Use SMTP header injection for outbound mail and header verification on inbound mail.</p>
+<p>Certificate provenance
+For institutional certificates (PDFs), see <code>docs/CERTIFICATE_PROVENANCE_SPRINT.md</code>.</p>
+<p>Email vs Certificate Provenance (Quick Comparison)
+See <code>docs/EMAIL_VS_CERTIFICATE_COMPARISON.md</code>.</p>
+<p>Outbound (Signing)
+1. Email is created in the organization’s mail system.
+2. SMTP relay injects provenance headers:
+   - X-Provenance-Ciphertext
+   - X-Provenance-Model
+   - X-Provenance-BPT
+   - X-Provenance-Timestamp
+   - X-Provenance-KeyId
+3. Email is delivered without modifying the visible body.</p>
+<p>Inbound (Verification)
+1. Mail gateway or client reads provenance headers.
+2. Verify via <code>/v1/provenance/verify_headers</code>.
+3. UI displays Verified/Unverified badge.</p>
+<p>Gateway Stamp (PoC)
+Use <code>poc/gateway_stamp.py</code> to turn inbound headers into verification headers:</p>
+<pre><code class="language-bash">python poc/gateway_stamp.py /path/to/message.eml
+</code></pre>
+<p>Example output headers:</p>
+<pre><code>X-Provenance-Verified: true
+X-Provenance-Reason: ok
+X-Provenance-Model-Hash: mhash_...
+X-Provenance-Timestamp: 2026-02-15T...
+</code></pre>
+<p>Policy Enforcement
+Use <code>apps/api/server/config/policy.yaml</code> to enforce which sender domains must include provenance.</p>
+<p>Example</p>
+<pre><code class="language-yaml">required_sender_domains:
+  - veriforensic.com
+allow_missing_provenance: false
+</code></pre>
+<p>PoC Tools
+- <code>poc/smtp_sender.py</code> for direct SMTP sending with headers.
+- <code>poc/smtp_relay.py</code> as a lightweight header‑injecting relay.
+- <code>poc/verify_headers.py</code> for verifying <code>.eml</code> files.</p>
+<p>Operational Checklist
+- Rotate keys and keep key ids in headers.
+- Lock model hashes for stable verification.
+- Enable audit logging for header verification.</p>
+<p>Daemon Config
+- <code>poc/daemon_config.env</code> for inbound verifier settings.
+- <code>poc/nicrypt-*.service</code> legacy templates (deprecated; do not copy as-is).
+- <code>scripts/systemd_render.py</code> renders correct systemd unit files for the current repo root.</p>
+<p>Install systemd service (example)</p>
+<pre><code>make install-services ENABLE_IMAP=1
+make enable-services ENABLE_IMAP=1
+make start-services ENABLE_IMAP=1
+make status-services ENABLE_IMAP=1
+</code></pre>
+<p>Outbound relay systemd (example)</p>
+<pre><code>make install-services ENABLE_IMAP=0
+make enable-services ENABLE_IMAP=0
+make start-services ENABLE_IMAP=0
+make status-services ENABLE_IMAP=0
+</code></pre>
+<p>systemd override example</p>
+<pre><code>sudo systemctl edit nicrypt-inbound.service
+</code></pre>
+<p>Then add:</p>
+<pre><code>[Service]
+Environment=&quot;STAMP_BODY=1&quot;
+Environment=&quot;INBOUND_SMTP_PORT=587&quot;
+</code></pre>
+<p>Outbound override example</p>
+<pre><code>sudo systemctl edit nicrypt-outbound.service
+</code></pre>
+<p>Then add:</p>
+<pre><code>[Service]
+Environment=&quot;SMTP_PORT=587&quot;
+</code></pre>
+<p>IMAP override example</p>
+<pre><code>sudo systemctl edit nicrypt-imap.service
+</code></pre>
+<p>Then add:</p>
+<pre><code>[Service]
+Environment=&quot;IMAP_HOST=mail.privateemail.com&quot;
+Environment=&quot;IMAP_USE_KEYWORDS=1&quot;
+</code></pre>
+<p>IMAP Watcher Report
+Run with <code>--report</code> to print per-cycle totals:</p>
+<pre><code>python poc/imap_watcher.py --report
+</code></pre>
+<p>IMAP Watcher Health
+Default health endpoint on <code>127.0.0.1:8100</code> (configurable via <code>IMAP_HEALTH_PORT</code>).</p>
+<p>IMAP Watcher Options
+- <code>--all</code> to process all messages (not just UNSEEN)
+- <code>--label-only</code> to avoid moving messages
+- <code>--audit-log /path/file.jsonl</code> to append JSONL audit records</p>
+<p>launchd log override (macOS)
+Edit the plist to change log paths:</p>
+<pre><code>~/Library/LaunchAgents/com.nicrypt.imap.plist
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../GATEWAY_ONLY_MANUAL/" class="btn btn-neutral float-left" title="Gateway-Only Manual"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../EMAIL_SOCIAL_DEPLOYMENT/" class="btn btn-neutral float-right" title="Email & Social Deployment">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../GATEWAY_ONLY_MANUAL/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../EMAIL_SOCIAL_DEPLOYMENT/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

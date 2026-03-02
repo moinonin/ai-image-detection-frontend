@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://veriforensic.com/ns-stego/EMAIL_GATEWAY_FLOW/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Email Gateway Flow - Nicrypt-Stego (ns-stego)</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Email Gateway Flow";
+        var mkdocs_page_input_path = "EMAIL_GATEWAY_FLOW.md";
+        var mkdocs_page_url = "/ns-stego/EMAIL_GATEWAY_FLOW/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Nicrypt-Stego (ns-stego)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Start Here</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../OVERVIEW/">Overview / SDK Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="..">Book Table of Contents</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PILOT_GATEWAY_LOCAL_TEST_GUIDE/">Pilot Gateway Local Test Guide</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">System Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPEC/">SPEC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../API_SPEC/">API Spec</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../SPRINTS/">Sprints</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../QA/">QA</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../RELEASE/">Release Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../BUILDING/">Building Distributions</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Email Provenance</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_PROVENANCE/">Email Provenance</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Email Gateway Flow</a>
+    <ul class="current">
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_ONLY_MANUAL/">Gateway-Only Manual</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_WORKFLOW/">Production Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_SOCIAL_DEPLOYMENT/">Email & Social Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Deployment Integrations</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DEPLOYMENT/">Deployment Guide</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../GATEWAY_INTEGRATION/">Gateway Integration (Exchange + Postfix)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MANAGED_SIDECAR_GATEWAY_DEPLOYMENT/">Managed Sidecar Gateway Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EXCHANGE_AGENT_RUNBOOK/">Exchange Transport Agent Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../WINDOWS_SERVICE_RUNBOOK/">Windows Service Runbook</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AZURE_DEPLOYMENT/">Azure Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRODUCTION_READINESS/">Production Readiness Checklist</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documents & Certificates</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../DOCUMENT_WORKFLOW/">Document Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UPLOAD_GATEWAY/">Upload Gateway</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PROVENANCE_STORE/">Provenance Store</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../EMAIL_VS_CERTIFICATE_COMPARISON/">Email vs Certificate Provenance</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../CERTIFICATE_PROVENANCE_SPRINT/">Certificate Provenance Sprint</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Security & Governance</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../KEY_MANAGEMENT/">Key Management & Rotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../AUDIT_LOGGING/">Audit Logging & Retention</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../TECHNICAL_PROTECTION_CHECKLIST/">Technical Protection Checklist</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../LICENSED_OFFLINE_EMBED/">Licensed Offline Embed</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PRIVACY_POLICY_GMAIL_EXTENSION/">Privacy Policy (Gmail Extension)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Client UX</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../THUNDERBIRD_ADDON/">Thunderbird Add-on (Verifier)</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Business</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../INSTITUTIONAL_ROLLOUT_ONEPAGER/">Institutional Rollout (One Pager)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../PITCH/">Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../UNIVERSITY_PITCH/">University Pitch</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../MONETIZATION/">Monetization</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Nicrypt-Stego (ns-stego)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Email Provenance</li>
+      <li class="breadcrumb-item active">Email Gateway Flow</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="email-gateway-flow-quick-sheet">Email Gateway Flow (Quick Sheet)<a class="headerlink" href="#email-gateway-flow-quick-sheet" title="Permanent link">&para;</a></h1>
+<p>Diagram (High-Level)
+Outbound (sign + attachments):
+Client -&gt; SMTP Relay (inject headers) -&gt; Inbound Verifier (stamp HTML) -&gt; SMTP Provider -&gt; Recipient</p>
+<p>ASCII Diagram</p>
+<pre><code>[Client] -&gt; [SMTP Relay (inject)] -&gt; [Inbound Verifier (stamp)] -&gt; [SMTP Provider] -&gt; [Mailbox]
+</code></pre>
+<p>Gateway status check</p>
+<pre><code>make gateway-status
+</code></pre>
+<p>Example output</p>
+<pre><code>Gateway status (relay + inbound, IMAP optional)
+Checking ports 2525 (relay) and 2527 (inbound)...
+COMMAND   PID       USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  51259 nickrotich    6u  IPv4 0xf185e29ab53bcf6c      0t0  TCP 127.0.0.1:2525 (LISTEN)
+COMMAND   PID       USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  51255 nickrotich    6u  IPv4 0xe51ef64e524ecbc1      0t0  TCP 127.0.0.1:2527 (LISTEN)
+Checking health endpoints (inbound 8099, imap 8100)...
+curl: (56) Recv failure: Connection reset by peer
+{&quot;status&quot;: &quot;ok&quot;, &quot;queued&quot;: 0, &quot;sent&quot;: 2, &quot;failed&quot;: 0, &quot;last_error&quot;: &quot;&quot;}
+IMAP health skipped (ENABLE_IMAP=0)
+</code></pre>
+<p>Email vs Certificate Provenance (Quick Comparison)
+See <code>docs/EMAIL_VS_CERTIFICATE_COMPARISON.md</code>.</p>
+<p>Components
+- Outbound injector: <code>poc/smtp_relay.py</code> (listens on <code>2525</code>)
+- Inbound verifier: <code>poc/smtp_inbound_daemon.py</code> (listens on <code>2527</code>)
+- Verification API: <code>/v1/provenance/verify_headers</code>
+- Attachment verification: <code>/v1/provenance/verify_attachment_headers</code></p>
+<p>Quick Start</p>
+<p>1) Start API</p>
+<pre><code>. .venv/bin/activate
+PYTHONPATH=apps/api JWT_SECRET=dev-secret uvicorn server.app:app --reload --port 8125
+</code></pre>
+<p>2) Outbound relay (inject headers)</p>
+<pre><code>export API_TOKEN=&quot;$(JWT_SECRET=dev-secret python scripts/gen_token.py)&quot;
+python poc/smtp_relay.py --listen-port 2525
+</code></pre>
+<p>Configure your SMTP client to use:
+- Host: localhost
+- Port: 2525</p>
+<p>3) Inbound daemon (verify headers)</p>
+<pre><code>export API_TOKEN=&quot;$(JWT_SECRET=dev-secret python scripts/gen_token.py)&quot;
+python poc/smtp_inbound_daemon.py --listen-port 2527
+</code></pre>
+<p>Configure inbound routing to forward mail to:
+- Host: localhost
+- Port: 2527</p>
+<p>Reliability flags (SMTP relay / inbound)
+- SMTP_MAX_ATTEMPTS (default 5)
+- SMTP_RETRY_BACKOFF (seconds, default 5)
+- SMTP_API_TIMEOUT (seconds, default 10)
+- SMTP_INBOUND_QUEUE (JSON queue path)
+- SMTP_RELAY_QUEUE (JSON queue path)</p>
+<p>Headers
+Injected outbound:
+- X-Provenance-Ciphertext
+- X-Provenance-Model
+- X-Provenance-BPT
+- X-Provenance-Timestamp
+- X-Provenance-KeyId
+- X-Provenance-Attachment (per file)</p>
+<p>Stamped inbound:
+- X-Provenance-Verified
+- X-Provenance-Reason
+- X-Provenance-Model-Hash
+- X-Provenance-Timestamp
+- X-Provenance-Sender-Domain</p>
+<p>IMAP Watcher (PrivateEmail)
+Use <code>poc/imap_watcher.py</code> to auto-verify headers and move mail to folders:</p>
+<pre><code>python poc/imap_watcher.py --imap-user you@domain.com --imap-pass &lt;password&gt;
+</code></pre>
+<p>Verify attachments from .eml</p>
+<pre><code>python scripts/verify_attachments.py message.eml --api-token $API_TOKEN
+</code></pre>
+<p>Reliability flags (IMAP watcher)
+- IMAP_MAX_ATTEMPTS (default 5)
+- IMAP_RETRY_BACKOFF (seconds, default 5)
+- IMAP_API_TIMEOUT (seconds, default 10)
+- IMAP_QUEUE_PATH (JSON queue path)</p>
+<p>Environment Template</p>
+<pre><code>API_BASE=http://127.0.0.1:8125/v1
+API_TOKEN=REPLACE_WITH_RUNTIME_TOKEN
+
+# Relay -&gt; Inbound (local)
+SMTP_HOST=127.0.0.1
+SMTP_PORT=2527
+
+# Inbound -&gt; Provider
+INBOUND_SMTP_HOST=smtp-relay.brevo.com
+INBOUND_SMTP_PORT=587
+INBOUND_SMTP_USER=your-smtp-login
+INBOUND_SMTP_PASS=your-smtp-key
+
+# Gmail PoC
+STAMP_BODY=1
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../EMAIL_PROVENANCE/" class="btn btn-neutral float-left" title="Email Provenance"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../GATEWAY_ONLY_MANUAL/" class="btn btn-neutral float-right" title="Gateway-Only Manual">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://veriforensic.com/ns-stego/" class="fa fa-code-fork" style="color: #fcfcfc"> Veriforensic</a>
+        </span>
+    
+    
+      <span><a href="../EMAIL_PROVENANCE/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../GATEWAY_ONLY_MANUAL/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
