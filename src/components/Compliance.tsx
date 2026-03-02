@@ -5,8 +5,8 @@ const Compliance: React.FC = () => {
     <div className="legal-page">
       <h1>Compliance</h1>
       <p className="legal-intro">
-        VeriForensic is designed for high-trust workflows that require verifiable authenticity
-        and auditability.
+        VeriForensic is designed for high-trust workflows that require verifiable authenticity,
+        auditability, and defensible evidence handling.
       </p>
 
       <section>
@@ -46,6 +46,11 @@ const Compliance: React.FC = () => {
         <p>
           For compliance inquiries, contact support@veriforensic.com.
         </p>
+      </section>
+
+      <section>
+        <h2>Last Updated</h2>
+        <p>March 2, 2026</p>
       </section>
     </div>
   );
