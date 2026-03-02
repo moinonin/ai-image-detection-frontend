@@ -14,6 +14,9 @@ import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Pricing from './components/Pricing';
 import About from './components/About';
+import Privacy from './components/Privacy';
+import Terms from './components/Terms';
+import Compliance from './components/Compliance';
 import AdminEmailHealth from './components/AdminEmailHealth';
 import './App.css';
 import Resources from './components/Resources';
@@ -41,6 +44,9 @@ const App: React.FC = () => {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/resources" element={<Resources />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/compliance" element={<Compliance />} />
             </Route>
             
             {/* Protected routes - require authentication */}
@@ -67,6 +73,9 @@ const PublicLayout: React.FC = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/compliance" element={<Compliance />} />
         </Routes>
       </main>
       <Footer />

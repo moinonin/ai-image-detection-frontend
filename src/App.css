@@ -5523,6 +5523,37 @@ body {
   color: #95a5a6;
 }
 
+/* Legal pages */
+.legal-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.legal-page h1 {
+  font-size: 2.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.legal-intro {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.legal-page section {
+  margin-bottom: 1.75rem;
+}
+
+.legal-page h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.6rem;
+}
+
+.legal-page p {
+  line-height: 1.65;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .footer-sections {
