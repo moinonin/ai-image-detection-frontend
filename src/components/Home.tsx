@@ -100,23 +100,23 @@ const Home: React.FC = () => {
             <div className="trust-item education-institution">
               <div className="trust-icon">🎓</div>
               <h4>Research Institutions</h4>
-              <p>Academic researchers use our tools for digital media literacy education and understanding AI generation patterns.</p>
+              <p>Researchers validate provenance protocols, steganographic embedding, and cryptographic verification at scale.</p>
               
               <div className="compliance-grid">
                 <div className="compliance-item">
                   <span className="checkmark">✅</span>
-                  <span>Educational Use</span>
+                  <span>Provenance Research</span>
                 </div>
                 <div className="compliance-item">
                   <span className="checkmark">✅</span>
-                  <span>Research Data</span>
+                  <span>Cryptographic Validation</span>
                 </div>
               </div>
               
               <div className="use-cases">
-                <span className="use-case">Media Literacy</span>
-                <span className="use-case">Pattern Analysis</span>
-                <span className="use-case">Academic Studies</span>
+                <span className="use-case">Stego Evaluation</span>
+                <span className="use-case">Protocol Benchmarking</span>
+                <span className="use-case">Audit Datasets</span>
               </div>
             </div>
 
@@ -148,23 +148,23 @@ const Home: React.FC = () => {
             <div className="trust-item legal-firm">
               <div className="trust-icon">⚖️</div>
               <h4>Legal & Insurance</h4>
-              <p>Used as part of comprehensive verification processes for evidence and claim documentation analysis.</p>
+              <p>Evidence-grade provenance and tamper-evident logs support chain-of-custody and claims verification.</p>
               
               <div className="compliance-grid">
                 <div className="compliance-item">
                   <span className="checkmark">✅</span>
-                  <span>Process Integration</span>
+                  <span>Chain of Custody</span>
                 </div>
                 <div className="compliance-item">
                   <span className="checkmark">✅</span>
-                  <span>Documentation Aid</span>
+                  <span>Audit-Ready Proof</span>
                 </div>
               </div>
               
               <div className="use-cases">
-                <span className="use-case">Evidence Screening</span>
-                <span className="use-case">Claim Verification</span>
-                <span className="use-case">Due Diligence</span>
+                <span className="use-case">Evidence Validation</span>
+                <span className="use-case">Claims Integrity</span>
+                <span className="use-case">Disclosure Support</span>
               </div>
             </div>
 
@@ -172,23 +172,23 @@ const Home: React.FC = () => {
             <div className="trust-item enterprise-client">
               <div className="trust-icon">🏢</div>
               <h4>Corporate Security</h4>
-              <p>Large organizations use our tools for internal training and as part of comprehensive digital security protocols.</p>
+              <p>Encrypt provenance signals, embed stego proofs, and verify assets across internal security workflows.</p>
               
               <div className="compliance-grid">
                 <div className="compliance-item">
                   <span className="checkmark">✅</span>
-                  <span>Security Training</span>
+                  <span>Asset Integrity</span>
                 </div>
                 <div className="compliance-item">
                   <span className="checkmark">✅</span>
-                  <span>Protocol Support</span>
+                  <span>Gateway Verification</span>
                 </div>
               </div>
               
               <div className="use-cases">
-                <span className="use-case">Employee Training</span>
-                <span className="use-case">Security Protocols</span>
-                <span className="use-case">Risk Assessment</span>
+                <span className="use-case">Secure Asset Trails</span>
+                <span className="use-case">Encrypted Proofs</span>
+                <span className="use-case">Risk Controls</span>
               </div>
             </div>
 
@@ -197,23 +197,23 @@ const Home: React.FC = () => {
               <div className="trust-icon">🏛️</div>
               <div className="security-clearance">MEDIA VERIFICATION</div>
               <h4>Government & NGOs</h4>
-              <p>Used for public awareness campaigns and as part of broader digital literacy and misinformation prevention efforts.</p>
+              <p>Provenance-backed verification and steganographic seals for sensitive communications and public trust.</p>
               
               <div className="compliance-grid">
                 <div className="compliance-item">
                   <span className="checkmark">✅</span>
-                  <span>Public Education</span>
+                  <span>Operational Integrity</span>
                 </div>
                 <div className="compliance-item">
                   <span className="checkmark">✅</span>
-                  <span>Awareness Tools</span>
+                  <span>Verified Distribution</span>
                 </div>
               </div>
               
               <div className="use-cases">
-                <span className="use-case">Public Awareness</span>
-                <span className="use-case">Digital Literacy</span>
-                <span className="use-case">Education Tools</span>
+                <span className="use-case">Trusted Broadcasts</span>
+                <span className="use-case">Stego Seals</span>
+                <span className="use-case">Crisis Communications</span>
               </div>
             </div>
           </div>
