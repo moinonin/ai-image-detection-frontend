@@ -7,57 +7,61 @@ const Home: React.FC = () => {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <h1>Media Authenticity in the Age of AI</h1>
+          <h1>Provenance-First Media Trust</h1>
           <p className="hero-subtitle">
-            Advanced analysis tools to help verify images and videos in a world where seeing is no longer believing. 
-            Get insights, not accusations.
+            Embed cryptographic provenance at creation time and verify authenticity with confidence. 
+            When the chain is verifiable, the truth is provable.
           </p>
           <div className="hero-stats">
             <div className="stat">
-              <span className="stat-number">2.3s</span>
-              <span className="stat-label">Average Analysis</span>
+              <span className="stat-number">A4+</span>
+              <span className="stat-label">Proof Formats</span>
             </div>
             <div className="stat">
-              <span className="stat-number">50K+</span>
-              <span className="stat-label">Media Files Analyzed</span>
+              <span className="stat-number">2nd</span>
+              <span className="stat-label">Layer of Trust</span>
             </div>
             <div className="stat">
               <span className="stat-number">100%</span>
-              <span className="stat-label">Privacy Focused</span>
+              <span className="stat-label">Verifiable Integrity</span>
             </div>
           </div>
-          <Link to="/resources" className="cta-button">
-            Analyze Your Media
-          </Link>
-          <p className="cta-note">No credit card required • First 5 analyses free</p>
+          <div className="cta-buttons">
+            <a href="/ns-stego/" className="cta-button primary">
+              Explore Provenance Docs
+            </a>
+            <Link to="/resources" className="cta-button secondary">
+              Analyze Media (Optional)
+            </Link>
+          </div>
+          <p className="cta-note">Embed provenance • Verify authenticity • Audit with confidence</p>
         </div>
       </section>
 
       {/* Value Proposition */}
       <section className="value-section">
         <div className="value-content">
-          <h2>Smart Tools for Complex Problems</h2>
+          <h2>Provenance Infrastructure for Real-World Trust</h2>
           <p className="value-description">
-            In a landscape where AI generation evolves daily, we provide sophisticated analysis 
-            to help you make informed decisions about media authenticity. We're honest about what 
-            we can detect and transparent about the limitations.
+            Detection is important, but provenance is foundational. We embed cryptographic proof at the 
+            source and provide verification pipelines that scale across teams, gateways, and workflows.
           </p>
           
           <div className="value-grid">
             <div className="value-card">
-              <div className="value-icon">🔍</div>
-              <h3>Pattern Analysis</h3>
-              <p>Advanced detection of AI-generated artifacts, inconsistencies, and generation patterns across multiple model types.</p>
+              <div className="value-icon">🔏</div>
+              <h3>Embed Provenance</h3>
+              <p>Cryptographically embed proof into images, documents, and emails at creation time.</p>
             </div>
             <div className="value-card">
-              <div className="value-icon">⚡</div>
-              <h3>Rapid Screening</h3>
-              <p>Quick preliminary analysis to flag potential AI content for further human investigation and verification.</p>
+              <div className="value-icon">🧾</div>
+              <h3>Audit-Ready Verification</h3>
+              <p>Verify authenticity with tamper-evident logs, chain-of-custody, and evidence-grade reporting.</p>
             </div>
             <div className="value-card">
-              <div className="value-icon">🛡️</div>
-              <h3>Privacy First</h3>
-              <p>Your media is processed securely and never stored. We prioritize your data protection above all else.</p>
+              <div className="value-icon">🧪</div>
+              <h3>Detection as a Backstop</h3>
+              <p>AI detection remains available for unprovenanced media and legacy workflows.</p>
             </div>
           </div>
         </div>
@@ -66,7 +70,7 @@ const Home: React.FC = () => {
       {/* Trust Indicators */}
       <section className="trust-section">
         <div className="trust-content">
-          <h2>Trusted by Professionals Who Understand the Limits</h2>
+          <h2>Designed for High-Trust Workflows</h2>
           <div className="trust-grid">
             {/* News & Media */}
             <div className="trust-item media-outlet">

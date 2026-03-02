@@ -64,11 +64,45 @@ const Resources: React.FC = () => {
     <div className="resources">
       {/* Header Section */}
       <section className="resources-header">
-        <h1>Media Analysis Tools</h1>
+        <h1>Provenance + Verification Tools</h1>
         <p className="resources-subtitle">
-          Advanced AI detection for images and videos. From quick single image checks 
-          to comprehensive video analysis, choose the right tool for your media verification needs.
+          Cryptographic provenance is the primary trust layer. Detection tools are available
+          when provenance is missing or for legacy workflows.
         </p>
+      </section>
+
+      <section className="tools-section">
+        <div className="tools-grid">
+          <div className="tool-card neon-blue">
+            <div className="tool-icon">🔏</div>
+            <h3>Provenance Docs (ns-stego)</h3>
+            <p className="tool-description">
+              Embed cryptographic proof, verify authenticity, and integrate with gateways.
+              Includes audit logging, SDK usage, and deployment guides.
+            </p>
+            <div className="tool-features">
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Embed provenance at creation
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Verify and audit evidence trails
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Gateway + service integrations
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Enterprise-ready workflows
+              </div>
+            </div>
+            <a href="/ns-stego/" className="tool-cta">
+              Open Provenance Docs
+            </a>
+          </div>
+        </div>
       </section>
 
       {/* Main Tools Grid */}

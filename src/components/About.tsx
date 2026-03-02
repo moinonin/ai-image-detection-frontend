@@ -8,9 +8,9 @@ const About: React.FC = () => {
         <section>
           <h2>Our Mission</h2>
           <p>
-            In a world where digital content can be manipulated, VeriForensic provides 
-            transparent, AI-powered media analysis to help you make confident decisions 
-            about the content you create, share, and trust.
+            VeriForensic is building a provenance-first trust layer for digital media. 
+            We embed cryptographic proof at the source and verify authenticity across 
+            workflows, gateways, and audit trails.
           </p>
         </section>
 
@@ -20,22 +20,22 @@ const About: React.FC = () => {
             <div className="principle">
               <h3>Transparency</h3>
               <p>
-                We believe you deserve to understand how our analysis works. 
-                Our methods are documented and our limitations are clearly stated.
+                We believe you deserve to understand how proof is embedded and verified. 
+                Our protocols are documented and our limitations are clearly stated.
               </p>
             </div>
             <div className="principle">
               <h3>Accuracy</h3>
               <p>
-                We continuously validate our AI models against known datasets 
-                and update our systems as new manipulation techniques emerge.
+                We continuously validate cryptographic verification paths and update 
+                our systems as new threats and manipulation techniques emerge.
               </p>
             </div>
             <div className="principle">
               <h3>Privacy</h3>
               <p>
                 Your content is processed with strict confidentiality. 
-                We don't store your media longer than necessary for analysis.
+                We prioritize minimal data exposure and evidence-grade logging.
               </p>
             </div>
           </div>
