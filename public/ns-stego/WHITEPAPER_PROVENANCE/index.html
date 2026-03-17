@@ -74,7 +74,215 @@
               <h1>The Deterministic Standard for Digital Provenance</h1>
               <p><em>Securing Authorship and Integrity in the Era of Ubiquitous AI</em></p>
               <p><a href="whitepaper.md">Download as Markdown</a></p>
-              <p>This page is the whitepaper entrypoint. Use the Markdown download above for the full text.</p>
+
+              <p><strong>Version:</strong> 1.0 (Draft)<br/>
+              <strong>Audience:</strong> Educated public, institutional leaders, regulators, and investors<br/>
+              <strong>Scope:</strong> Provenance for <em>content</em> (authorship + integrity) across text-first workflows, with extensions to documents (PDF/DOCX) and adjacent signals (e.g., media forensics).</p>
+
+              <hr/>
+
+              <h2>Executive Summary</h2>
+              <p>Digital society is experiencing an <strong>accountability gap</strong>: we can publish and distribute content at near-zero cost, but we cannot reliably prove (1) <em>who authored it</em> and (2) <em>whether it has been altered</em> after issuance—especially now that AI can generate convincing text at scale.</p>
+              <p><strong>Nicrypt-Stego (ns-stego)</strong> proposes a deterministic, audit-ready approach to provenance:</p>
+              <ul>
+                <li><strong>Deterministic cryptographic evidence</strong> instead of “best-effort” heuristics.</li>
+                <li><strong>In-band provenance</strong> embedded into natural language and document metadata so recipients can verify origin without trusting a platform.</li>
+                <li><strong>Institution-controlled verification</strong>: only authorized key holders can prove and attest origin in a way that stands up to audit and dispute.</li>
+              </ul>
+              <p>The aim is not to eliminate deception outright—no tool can—but to restore <strong>verifiable accountability</strong> to communication in high-trust contexts: finance, research, government, media, legal, and regulated enterprise operations.</p>
+
+              <hr/>
+
+              <h2>I. The Crisis of Digital Trust</h2>
+
+              <h3>1) The Accountability Gap</h3>
+              <p>When content is posted publicly, it is rapidly copied, forwarded, summarized, and ingested by models. The original author’s identity and intent become detached from the text itself. Over time, this creates:</p>
+              <ul>
+                <li><strong>Attribution loss:</strong> Who authored the content? Under what authority?</li>
+                <li><strong>Integrity loss:</strong> Has it been edited, cherry-picked, or re-assembled?</li>
+                <li><strong>Context collapse:</strong> Where did it come from, when was it issued, and what does it supersede?</li>
+              </ul>
+              <p>Historically, institutions leaned on “container trust” (the sender domain, the platform, the UI). AI-era workflows break that assumption: content moves across channels, is re-rendered, and is frequently copy-pasted into new contexts.</p>
+
+              <h3>2) Why the Status Quo Fails</h3>
+              <h4>Heuristic detection and watermarks (probabilistic)</h4>
+              <p>Heuristic detectors and many watermarking schemes aim to identify AI-generated text by statistical signatures or known generation patterns. These approaches are often:</p>
+              <ul>
+                <li><strong>Probabilistic</strong>: they output likelihoods, not proofs.</li>
+                <li><strong>Brittle</strong>: can be removed by paraphrasing, translation, or formatting changes.</li>
+                <li><strong>Adversarially fragile</strong>: attackers can tune outputs or post-process to evade.</li>
+              </ul>
+              <p>Heuristics can be useful signals, but they are rarely sufficient for audit-grade accountability.</p>
+
+              <h4>Domain verification (SPF/DKIM/DMARC) verifies the envelope, not the content</h4>
+              <p>Email authentication protocols help answer: “Did this domain authorize this sender to transmit mail?” They do <strong>not</strong> answer: “Is this <em>message content</em> authored by the purported party, unmodified, and intended for this recipient?”</p>
+              <p>Copy-paste impersonation attacks exploit this gap: a legitimate sender’s domain may be verified, while the <strong>semantic content</strong> is forged or transplanted.</p>
+
+              <h3>3) The Economic and Societal Impact</h3>
+              <p>As trust erodes, friction rises:</p>
+              <ul>
+                <li><strong>Fraud and impersonation</strong>: invoice scams, vendor changes, urgent payment requests.</li>
+                <li><strong>Research integrity stress</strong>: fabricated citations, manipulated summaries, falsified authorship claims.</li>
+                <li><strong>Legal exposure</strong>: unverifiable memos, unverifiable disclosures, contested records.</li>
+                <li><strong>Public discourse degradation</strong>: synthetic narratives and misattribution at scale.</li>
+              </ul>
+              <p>The costs are real: more manual review, slower decisions, higher insurance premiums, and increased regulatory pressure.</p>
+
+              <hr/>
+
+              <h2>II. What “Provenance” Must Mean in the AI Era</h2>
+              <p>Provenance tools need to be evaluated against clear requirements:</p>
+              <ol>
+                <li><strong>Authenticity (authorship):</strong> credible evidence that a specific issuer produced the content.</li>
+                <li><strong>Integrity (tamper evidence):</strong> credible evidence the content has not been modified since issuance.</li>
+                <li><strong>Portability:</strong> verifiable outside the originating platform, UI, and vendor.</li>
+                <li><strong>Auditability:</strong> produces evidence suitable for compliance, dispute resolution, and forensic review.</li>
+                <li><strong>Privacy and governance:</strong> key ownership, access control, and logging must align with enterprise reality.</li>
+              </ol>
+              <p>This is the distinction between <em>trust signals</em> (helpful hints) and <em>trust anchors</em> (verifiable evidence).</p>
+
+              <hr/>
+
+              <h2>III. The Nicrypt-Stego Solution: “Cryptographic DNA”</h2>
+              <h3>1) Deterministic vs. Probabilistic</h3>
+              <p>ns-stego is designed to produce <strong>deterministic evidence</strong>: verifiers do not “guess” whether content is authentic—they verify a cryptographic construction.</p>
+              <p>This is not a cosmetic distinction. In regulated environments:</p>
+              <ul>
+                <li>A probability score is a <em>risk signal</em>.</li>
+                <li>A verified cryptographic proof is <em>evidence</em>.</li>
+              </ul>
+
+              <h3>2) Core Mechanism (High-Level)</h3>
+              <p>ns-stego combines two layers:</p>
+              <ol>
+                <li><strong>Encryption (Nicrypt)</strong>: a structured “secret” (e.g., author ID, timestamp, grant ID, document ID, policy labels) is encrypted to ciphertext. Encryption transforms sensitive metadata into a tamper-evident payload that can be embedded without revealing the secret itself.</li>
+                <li><strong>Steganography (LLM-based embedding)</strong>: an LLM invisibly embeds this ciphertext into human-readable text at the token level. The resulting text remains readable and natural, while containing a verifiable provenance payload.</li>
+              </ol>
+              <p><strong>Key idea:</strong> provenance becomes part of the content’s DNA. When content is copied, the provenance can travel with it—subject to tamper detection rules.</p>
+
+              <h3>3) Asymmetric Verification and Institutional Control</h3>
+              <p>Verification is intentionally designed so that:</p>
+              <ul>
+                <li>The institution can <strong>control who can validate or attest</strong> provenance (via key custody and authorization).</li>
+                <li>Public recipients can be offered <strong>simple indicators</strong> (“verified” / “unverified” / “tampered”) without gaining access to sensitive metadata.</li>
+              </ul>
+              <p>This aligns with how institutions govern identity, signing authority, and compliance.</p>
+
+              <hr/>
+
+              <h2>IV. Technical Moats and Reliability (Why This Is Hard)</h2>
+              <h3>1) Model/Tokenizer Pinning to Prevent Verification Drift</h3>
+              <p>LLM-based embedding can be sensitive to model parameters, tokenization behavior, and prompt configuration. ns-stego addresses this by pinning model identity, tokenizer behavior, and embedding parameters (e.g., bits per token), summarized in a <strong>server-computed hash</strong>.</p>
+              <p><strong>Why this matters:</strong> provenance that cannot be reliably extracted in the future is not provenance—it is a temporary trick. Determinism requires controlling the verification surface area.</p>
+
+              <h3>2) Tamper Detection: From “Origin Proof” to “Integrity Proof”</h3>
+              <p>A usable provenance system must signal:</p>
+              <ul>
+                <li>“Issued by X” (origin)</li>
+                <li>“Still intact” (integrity)</li>
+              </ul>
+              <p>If a message is lightly edited—even a small change—ns-stego can detect that alteration as verification failure or “tampered” status depending on policy.</p>
+              <p><strong>Why this matters:</strong> many attacks involve subtle edits: changing bank details, swapping names, or removing disclaimers.</p>
+
+              <h3>3) Privacy-First Design (On-Prem / Private Cloud)</h3>
+              <p>Keys and logs are the heart of provenance. ns-stego supports institutional deployment models that keep keys under institutional custody and audit logs within organizational boundaries.</p>
+              <p><strong>Why this matters:</strong> provenance is a trust primitive; if you outsource the trust anchor, you inherit the vendor’s failure modes.</p>
+
+              <hr/>
+
+              <h2>V. Institutional Use Cases and Market Fit</h2>
+              <p>Provenance is not only for enterprises. It is a public-interest technology: it reduces friction and deception in shared information systems.</p>
+              <h3>1) Finance and Fraud Prevention</h3>
+              <ul>
+                <li>Verify that a payment instruction, invoice change, or escalation notice is authentically issued and unmodified.</li>
+                <li>Reduce the “panic window” attackers exploit (urgent requests, executive impersonation).</li>
+              </ul>
+
+              <h3>2) Research and Academic Integrity</h3>
+              <ul>
+                <li>Embed grant IDs, PI identifiers, and issuance timestamps into preprints and reports.</li>
+                <li>Improve compliance, attribution, and reproducibility with verifiable origin metadata.</li>
+              </ul>
+
+              <h3>3) Regulated Enterprises and Legal Communications</h3>
+              <ul>
+                <li>Produce defensible provenance trails for contracts, HR notices, compliance memos, and policy documents.</li>
+                <li>Support disputes with verifiable issuance evidence.</li>
+              </ul>
+
+              <h3>4) Document Integrity for the Public</h3>
+              <p>Issue <strong>tamper-evident certificates</strong> (PDF/DOCX) that recipients can verify independently.</p>
+              <p>This is critical for education credentials, employment letters, safety notices, medical or insurance documents, and government forms and advisories.</p>
+
+              <hr/>
+
+              <h2>VI. Deployment: Scalable, Workflow-Friendly Infrastructure</h2>
+              <h3>1) “Gateway-Only” Deployment</h3>
+              <p>Provenance succeeds when it does not require users to change behavior. A practical approach is to operate at communication gateways (SMTP gateways, document issuance services, internal publishing systems), enabling scale without retraining users or changing client software.</p>
+              <h3>2) Universal Verifiers and Trust Indicators</h3>
+              <p>Verification should be simple (badges/locks), portable across clients, and non-intrusive.</p>
+
+              <hr/>
+
+              <h2>VII. A Practical Product Model: Trust as a Service (TaaS)</h2>
+              <p>A sustainable model separates <strong>paid issuance and governance</strong> (institutions) from <strong>free or low-friction verification</strong> (public), enabling a network effect of trust.</p>
+              <p><strong>Revenue streams (illustrative):</strong> institutional annual licenses, usage-based overages, enterprise support/SLAs, and partner channels via systems integrators (SIs) while institutions retain key ownership.</p>
+              <p><strong>Why this matters:</strong> provenance is infrastructure. Infrastructure needs predictable funding and accountable operators.</p>
+
+              <hr/>
+
+              <h2>VIII. Current Readiness and Integration Footprint (What Exists Today)</h2>
+              <p>ns-stego is integrated as an upstream provenance service in the existing application stack, exposed through API routes intended to support verification and issuance workflows:</p>
+              <ul>
+                <li><strong>Verify signature token</strong> (sender provenance): <code>POST /api/v1/ns-stego/verify-signature</code></li>
+                <li><strong>Verify raw email</strong> (preprocess + verify): <code>POST /api/v1/ns-stego/verify-email</code></li>
+                <li><strong>Verify stamped certificate</strong> (PDF/DOCX): <code>POST /api/v1/ns-stego/verify-certificate</code></li>
+                <li><strong>Issue stamped certificate</strong> (paid): <code>POST /api/v1/ns-stego/issue-certificate</code></li>
+              </ul>
+              <p>Configuration keeps provenance secrets out of source control via environment variables (<code>NS_STEGO_API_BASE</code>, <code>NS_STEGO_API_TOKEN</code>, <code>NS_STEGO_TIMEOUT_SECONDS</code>).</p>
+              <p><strong>Why this matters:</strong> a provenance system that cannot be operationalized remains academic. These endpoints indicate a real path from concept → deployment → governance.</p>
+
+              <hr/>
+
+              <h2>IX. Roadmap: Toward a Public Standard for Content Accountability</h2>
+              <h3>1) Stabilize and standardize provenance payloads</h3>
+              <ul>
+                <li>Publish a clear schema for what can be embedded (issuer, timestamp, policy tags).</li>
+                <li>Define versioning and backward compatibility rules.</li>
+              </ul>
+              <h3>2) Make verification ubiquitous</h3>
+              <ul>
+                <li>Lightweight verifiers for email clients and document viewers.</li>
+                <li>Public verification portals and education UX.</li>
+              </ul>
+              <h3>3) Governance and policy controls</h3>
+              <ul>
+                <li>Key management, role-based issuance, revocation, and incident response playbooks.</li>
+                <li>Audit exports designed for regulators and internal compliance.</li>
+              </ul>
+              <h3>4) Expand from text to multi-modal provenance</h3>
+              <ul>
+                <li>Document certificates (PDF/DOCX)</li>
+                <li>Media forensics signals (e.g., image authenticity detection)</li>
+                <li>Secure event logs (timestamping, receipts, audit trails)</li>
+              </ul>
+
+              <hr/>
+
+              <h2>Conclusion: The Foundation of Future Trust</h2>
+              <p>In an AI-native world, the question is not whether deception is possible—it is. The question is whether our institutions and public life can recover <strong>verifiable accountability</strong>.</p>
+              <p>Provenance is the missing layer: a deterministic standard that turns “I think this is real” into “I can prove this is authentic and intact.”</p>
+              <p>Nicrypt-Stego is designed to be that foundation—cryptographic evidence embedded into the fabric of digital communication, governed by the institutions responsible for trust, and usable by the public that depends on it.</p>
+
+              <hr/>
+
+              <h2>Appendix A: Glossary (Short)</h2>
+              <ul>
+                <li><strong>Provenance:</strong> Evidence about origin and lifecycle of content (who issued it, when, and whether it was altered).</li>
+                <li><strong>Deterministic verification:</strong> Verification yields consistent results given the same inputs and keys; not a probability score.</li>
+                <li><strong>Steganography:</strong> Hiding information within another medium (here, within natural language tokens).</li>
+                <li><strong>Audit-ready evidence:</strong> Evidence that supports compliance, investigation, and dispute resolution.</li>
+              </ul>
             </div>
           </div>
 
@@ -102,4 +310,3 @@
   </script>
 </body>
 </html>
-
