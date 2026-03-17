@@ -22,6 +22,13 @@ type SingleClassificationResponse = {
   pdfBlob?: Blob;
 };
 
+function truncateFilename(name: string, maxChars: number = 50): string {
+  const n = String(name);
+  if (n.length <= maxChars) return n;
+  if (maxChars <= 3) return n.slice(0, maxChars);
+  return `${n.slice(0, maxChars - 3)}...`;
+}
+
 const SingleClassification: React.FC = () => {
   const { user } = useAuth();
   const toast = useToast();
@@ -429,7 +436,11 @@ const SingleClassification: React.FC = () => {
             {analysisResult && !error ? (
               <div className={`result-card ${getAIDetectedClass()}`}>
                 <div className="result-header">
-                  <h3>{analysisResult.filename || selectedFile?.name || 'Unknown File'}</h3>
+                  {(() => {
+                    const fullFilename = analysisResult.filename || selectedFile?.name || 'Unknown File';
+                    const displayFilename = truncateFilename(fullFilename, 50);
+                    return <h3 title={fullFilename}>{displayFilename}</h3>;
+                  })()}
                   <span className="result-badge">{getPredictedClass()}</span>
                 </div>
 
@@ -533,7 +544,11 @@ const SingleClassification: React.FC = () => {
 
                 <div className="action-buttons">
                   <EmailHealthBadge />
-                  {analysisResult && (
+                  {/*
+                    Download JSON button intentionally disabled (internal-only).
+                    Uncomment when ready to expose raw JSON downloads.
+                  */}
+                  {/* {analysisResult && (
                     <button
                       className="json-btn futuristic-btn"
                       onClick={() => {
@@ -550,7 +565,7 @@ const SingleClassification: React.FC = () => {
                       <span className="btn-icon">📊</span>
                       Download JSON
                     </button>
-                  )}
+                  )} */}
 
                   {analysisResult && (
                     <div className="email-report">

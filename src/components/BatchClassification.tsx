@@ -13,6 +13,13 @@ import {
   CurrentUsageResponse
 } from '../types';
 
+function truncateFilename(name: string, maxChars: number = 50): string {
+  const n = String(name);
+  if (n.length <= maxChars) return n;
+  if (maxChars <= 3) return n.slice(0, maxChars);
+  return `${n.slice(0, maxChars - 3)}...`;
+}
+
 //type ClassificationResponse = SingleClassificationResponse | BatchClassificationResponse;
 
 interface FileValidationError {
@@ -1420,7 +1427,8 @@ const BatchClassification: React.FC = () => {
                 {displayResults
                   .slice(0, isExpanded ? displayResults.length : 5)
                   .map((result: BatchAnalysisResult, index: number) => {
-                    const filename = result.filename || `Image ${index + 1}`;
+                    const fullFilename = result.filename || `Image ${index + 1}`;
+                    const filename = truncateFilename(fullFilename, 50);
                     
                     // Get data from the right place
                     const analysisData = result.analysis_results || result;
@@ -1447,7 +1455,7 @@ const BatchClassification: React.FC = () => {
                           className={`result-item ${expandedIndex === index ? 'expanded' : ''}`}
                           onClick={() => toggleExpand(index)}
                         >
-                          <span className="filename">{filename}</span>
+                          <span className="filename" title={fullFilename}>{filename}</span>
                           <span className={`prediction ${isAI ? 'batch-ai' : 'batch-human'}`}>
                             {predictedClass}
                           </span>
@@ -1463,7 +1471,7 @@ const BatchClassification: React.FC = () => {
                           <div className="result-details-expanded">
                             <div className={`result-card ${isAI ? 'batch-ai-detected' : 'batch-human-detected'}`}>
                               <div className="result-header">
-                                <h3>{filename}</h3>
+                                <h3 title={fullFilename}>{filename}</h3>
                                 <span className={`result-badge ${isAI ? 'batch-ai-badge' : 'batch-human-badge'}`}>
                                   {predictedClass}
                                 </span>

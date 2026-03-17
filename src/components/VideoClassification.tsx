@@ -6,6 +6,13 @@ import { useAuth } from '../contexts/AuthContext';
 import EmailHealthBadge from './EmailHealthBadge';
 import { useToast } from '../contexts/ToastContext';
 
+function truncateFilename(name: string, maxChars: number = 50): string {
+  const n = String(name);
+  if (n.length <= maxChars) return n;
+  if (maxChars <= 3) return n.slice(0, maxChars);
+  return `${n.slice(0, maxChars - 3)}...`;
+}
+
 const VideoClassification: React.FC = () => {
   const { user } = useAuth();
   const toast = useToast();
@@ -254,18 +261,19 @@ const VideoClassification: React.FC = () => {
     }
   };
 
-  const handleDownloadJSON = (): void => {
-    if (!analysisResult) return;
-    
-    const dataStr = JSON.stringify(analysisResult, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `video_analysis_${analysisResult.filename || 'result'}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  // Download JSON intentionally disabled (internal-only).
+  // const handleDownloadJSON = (): void => {
+  //   if (!analysisResult) return;
+  //
+  //   const dataStr = JSON.stringify(analysisResult, null, 2);
+  //   const dataBlob = new Blob([dataStr], { type: 'application/json' });
+  //   const url = URL.createObjectURL(dataBlob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = `video_analysis_${analysisResult.filename || 'result'}.json`;
+  //   a.click();
+  //   URL.revokeObjectURL(url);
+  // };
 
   // Upgrade prompt component - ONLY shown when hasExceededVideoUsage is true
   const UpgradePrompt = () => (
@@ -441,7 +449,11 @@ const VideoClassification: React.FC = () => {
             {analysisResult && !error ? (
               <div className={`result-card ${getAIDetectedClass()}`}>
                 <div className="result-header">
-                  <h3>{analysisResult.filename || selectedFile?.name || 'Unknown File'}</h3>
+                  {(() => {
+                    const fullFilename = analysisResult.filename || selectedFile?.name || 'Unknown File';
+                    const displayFilename = truncateFilename(fullFilename, 50);
+                    return <h3 title={fullFilename}>{displayFilename}</h3>;
+                  })()}
                   <span className="result-badge">
                     {analysisResult.dominant_class || 'Analysis Complete'}
                   </span>
@@ -598,13 +610,17 @@ const VideoClassification: React.FC = () => {
 
                 <div className="action-buttons">
                   <EmailHealthBadge />
-                  <button
+                  {/*
+                    Download JSON button intentionally disabled (internal-only).
+                    Uncomment when ready to expose raw JSON downloads.
+                  */}
+                  {/* <button
                     className="json-btn futuristic-btn"
                     onClick={handleDownloadJSON}
                   >
                     <span className="btn-icon">📊</span>
                     Download JSON
-                  </button>
+                  </button> */}
 
                   <div className="email-report">
                     <div className="email-display">
