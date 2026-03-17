@@ -39,7 +39,7 @@ $('div.rst-content table').addClass('docutils');
 (function injectWhitepaperNav() {
   try {
     var base = (typeof base_url === 'string' && base_url.length) ? base_url : '.';
-    var whitepaperHref = base + '/WHITEPAPER_PROVENANCE/';
+    var whitepaperHref = base + '/whitepaper_provenance/';
 
     // Find the Start Here section list.
     var startHereCaption = $('p.caption span.caption-text').filter(function () {
@@ -66,7 +66,10 @@ $('div.rst-content table').addClass('docutils');
     }
 
     // Mark as current when visiting the whitepaper.
-    if ((window.location.pathname || '').indexOf('/WHITEPAPER_PROVENANCE/') !== -1) {
+    if (
+      (window.location.pathname || '').indexOf('/whitepaper_provenance/') !== -1 ||
+      (window.location.pathname || '').indexOf('/WHITEPAPER_PROVENANCE/') !== -1
+    ) {
       startHereUl.find('li.current').removeClass('current');
       startHereUl.find('a.reference.internal.current').removeClass('current');
       li.addClass('current');
