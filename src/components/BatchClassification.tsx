@@ -56,7 +56,7 @@ const BatchClassification: React.FC = () => {
   const toast = useToast();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const MODEL_TYPES = ['ml', 'net', 'scalpel'];
-  const [model, setModel] = useState('scalpel');
+  const [model, setModel] = useState('ml');
   const [loading, setLoading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<BatchJobWithDebug | null>(null);
