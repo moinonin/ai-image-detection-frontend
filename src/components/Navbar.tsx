@@ -5,6 +5,7 @@ import { classificationService } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 
 const Navbar: React.FC = () => {
+  const brandLogoSrc = `${import.meta.env.BASE_URL}VeriForensice%20Ai-logo/verifLogo.png`;
   const { user, logout } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
@@ -70,7 +71,8 @@ const Navbar: React.FC = () => {
     <nav className="navbar">
       <div className="nav-content">
         <Link to="/" className="logo" onClick={closeMenu}>
-          VeriForensic
+          <img className="logo-img" src={brandLogoSrc} alt="VeriF logo" />
+          <span className="logo-text">VeriF</span>
         </Link>
         
         {/* Hamburger Menu Button */}

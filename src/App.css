@@ -62,8 +62,19 @@ body {
 }
 
 .logo::before {
-  content: '🤖';
-  font-size: 1.8rem;
+  content: none;
+}
+
+.logo-img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35));
+}
+
+.logo-text {
+  line-height: 1;
 }
 
 .nav-links {
@@ -1847,6 +1858,14 @@ body {
     rgba(255, 0, 255, 0.1) 50%, 
     rgba(0, 255, 136, 0.1) 100%);
   pointer-events: none;
+}
+
+.hero-logo {
+  display: block;
+  width: min(240px, 60vw);
+  height: auto;
+  margin: 0 auto 1.25rem;
+  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.35));
 }
 
 .hero-section h1 {
