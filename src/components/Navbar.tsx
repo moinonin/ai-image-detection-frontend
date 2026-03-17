@@ -98,8 +98,12 @@ const Navbar: React.FC = () => {
             </Link>
           </li>
           <li>
-            <a href="/ns-stego/" className={location.pathname.startsWith('/ns-stego') ? 'active' : ''} onClick={closeMenu}>
-              Provenance Docs
+            <a
+              href="/ns-stego/whitepaper_provenance/"
+              className={location.pathname.startsWith('/ns-stego') ? 'active' : ''}
+              onClick={closeMenu}
+            >
+              Whitepaper
             </a>
           </li>
           <li>
