@@ -47,5 +47,5 @@ coverage/
 *.tsbuildinfo
 
 # Logo assets (keep cover.png only)
-public/VeriForensice Ai-logo/*
-!public/VeriForensice Ai-logo/cover.png
+#public/VeriForensice Ai-logo/*
+public/VeriForensice Ai-logo/cover.png
