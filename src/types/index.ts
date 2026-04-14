@@ -199,6 +199,45 @@ export interface ModelInfo {
   description: string;
 }
 
+export type ProvenanceStatus =
+  | 'verified'
+  | 'unverified'
+  | 'tampered'
+  | 'upstream_error'
+  | 'unsupported'
+  | 'unknown';
+
+export interface ProvenanceVerifyResponse {
+  status?: ProvenanceStatus | string;
+  verified?: boolean;
+  valid?: boolean;
+  tampered?: boolean;
+  reason?: string;
+  request_id?: string;
+  secret?: string;
+  payload?: Record<string, any>;
+  metadata?: Record<string, any>;
+  raw?: Record<string, any>;
+  [key: string]: any;
+}
+
+export interface ProvenanceIssueCertificateInput {
+  secret: string;
+  issuer_id?: string;
+  cert_id?: string;
+  recipient_id?: string;
+  model_name?: string;
+  bits_per_token?: number;
+  timestamp?: string;
+  account_id?: string;
+}
+
+export interface ProvenanceIssueCertificateResponse {
+  blob: Blob;
+  filename: string;
+  contentType: string;
+}
+
 // Video Analysis Response with Cache Support
 export interface VideoAnalysisResponse {
   analysis_results: VideoSummary;

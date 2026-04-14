@@ -1,4 +1,4 @@
-import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse } from '../types';
+import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse, ProvenanceIssueCertificateInput, ProvenanceIssueCertificateResponse, ProvenanceVerifyResponse } from '../types';
 import { usageService } from '../services/usageService';
 
 type ReportFormat = 'json' | 'pdf';
@@ -6,6 +6,30 @@ type ReportFormat = 'json' | 'pdf';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 class ApiService {
+  private async throwResponseError(response: Response, fallbackMessage: string): Promise<never> {
+    let message = fallbackMessage;
+    let serverDetail: any = null;
+
+    try {
+      const text = await response.text();
+      if (text) {
+        try {
+          serverDetail = JSON.parse(text);
+          message = serverDetail.detail || serverDetail.error || serverDetail.message || text;
+        } catch {
+          message = text;
+        }
+      }
+    } catch {
+      // Keep the fallback message.
+    }
+
+    const error = new Error(message);
+    (error as any).status = response.status;
+    (error as any).serverDetail = serverDetail;
+    throw error;
+  }
+
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = localStorage.getItem('token');
     
@@ -252,6 +276,84 @@ class ApiService {
 
   async getFreeTier(): Promise<any> {
     return this.request('/api/v1/products/free-tier');
+  }
+
+  async verifyProvenanceSignature(tokenValue: string): Promise<ProvenanceVerifyResponse> {
+    return this.request<ProvenanceVerifyResponse>('/api/v1/ns-stego/verify-signature', {
+      method: 'POST',
+      body: JSON.stringify({ token: tokenValue }),
+    });
+  }
+
+  async verifyProvenanceEmail(raw: string): Promise<ProvenanceVerifyResponse> {
+    return this.request<ProvenanceVerifyResponse>('/api/v1/ns-stego/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ raw }),
+    });
+  }
+
+  async verifyProvenanceCertificate(file: File): Promise<ProvenanceVerifyResponse> {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/ns-stego/verify-certificate`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      credentials: 'include',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      return this.throwResponseError(response, 'Certificate verification failed');
+    }
+
+    return response.json();
+  }
+
+  async issueProvenanceCertificate(
+    file: File,
+    metadata: ProvenanceIssueCertificateInput
+  ): Promise<ProvenanceIssueCertificateResponse> {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('secret', metadata.secret);
+    formData.append('issuer_id', metadata.issuer_id || '');
+    formData.append('cert_id', metadata.cert_id || '');
+    formData.append('recipient_id', metadata.recipient_id || '');
+    formData.append('model_name', metadata.model_name || 'sshleifer/tiny-gpt2');
+    formData.append('bits_per_token', String(metadata.bits_per_token || 4));
+    formData.append('timestamp', metadata.timestamp || '');
+    if (metadata.account_id) {
+      formData.append('account_id', metadata.account_id);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/ns-stego/issue-certificate`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      credentials: 'include',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      return this.throwResponseError(response, 'Certificate issuance failed');
+    }
+
+    const contentType = response.headers.get('content-type') || 'application/octet-stream';
+    const disposition = response.headers.get('content-disposition') || '';
+    const match = disposition.match(/filename="?([^"]+)"?/i);
+    const filename = match?.[1] || `provenance_${file.name}`;
+
+    return {
+      blob: await response.blob(),
+      filename,
+      contentType,
+    };
   }
 
   async getProductCheckout(productId: string, customerEmail?: string): Promise<{

@@ -7,7 +7,7 @@ yarn-error.log*
 # Production builds
 dist/
 build/
-
+update_blues.py
 # Environment variables
 .env
 .env.local

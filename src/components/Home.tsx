@@ -31,11 +31,11 @@ const Home: React.FC = () => {
             </div>
           </div>
           <div className="cta-buttons">
-            <a href="/ns-stego/" className="cta-button primary">
-              Explore Provenance Docs
-            </a>
+            <Link to="/provenance/verify" className="cta-button primary">
+              Verify Provenance
+            </Link>
             <Link to="/resources" className="cta-button secondary">
-              Analyze Media (Optional)
+              Analyze Media
             </Link>
           </div>
           <p className="cta-note">Embed provenance • Verify authenticity • Audit with confidence</p>

@@ -1,6 +1,6 @@
 // Updated Resources component with the models section
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { getModels } from '../services/api';
 
 interface Model {
@@ -12,6 +12,7 @@ interface Model {
 const Resources: React.FC = () => {
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchModels = async () => {
@@ -46,6 +47,17 @@ const Resources: React.FC = () => {
     fetchModels();
   }, []);
 
+  useEffect(() => {
+    if (location.hash !== '#media-analysis-tools') return;
+
+    window.requestAnimationFrame(() => {
+      document.getElementById('media-analysis-tools')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  }, [location.hash]);
+
   // Function to get the appropriate neon color and icon based on model ID
   const getModelStyle = (modelId: string) => {
     switch (modelId) {
@@ -73,6 +85,64 @@ const Resources: React.FC = () => {
 
       <section className="tools-section">
         <div className="tools-grid">
+          <div className="tool-card neon-green">
+            <div className="tool-icon">✓</div>
+            <h3>Verify Provenance</h3>
+            <p className="tool-description">
+              Check signature tokens, raw emails, and stamped certificates for verifiable proof.
+            </p>
+            <div className="tool-features">
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Signature token verification
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Raw email checks
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                PDF/DOCX certificate upload
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Tamper status details
+              </div>
+            </div>
+            <Link to="/provenance/verify" className="tool-cta">
+              Verify Provenance
+            </Link>
+          </div>
+
+          <div className="tool-card neon-purple">
+            <div className="tool-icon">📜</div>
+            <h3>Issue Certificate</h3>
+            <p className="tool-description">
+              Team users can stamp official PDF/DOCX files with renewable provenance metadata.
+            </p>
+            <div className="tool-features">
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Team issuance workflow
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Issuer and recipient metadata
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Stamped file download
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Works with the ns-stego service proxy
+              </div>
+            </div>
+            <Link to="/provenance/issue-certificate" className="tool-cta">
+              Issue Certificate
+            </Link>
+          </div>
+
           <div className="tool-card neon-blue">
             <div className="tool-icon">🔏</div>
             <h3>Provenance Docs (ns-stego)</h3>
@@ -98,7 +168,7 @@ const Resources: React.FC = () => {
                 Enterprise-ready workflows
               </div>
             </div>
-            <a href="/ns-stego/" className="tool-cta">
+            <a href="/ns-stego/index.html" className="tool-cta">
               Open Provenance Docs
             </a>
           </div>
@@ -106,7 +176,7 @@ const Resources: React.FC = () => {
       </section>
 
       {/* Main Tools Grid */}
-      <section className="tools-section">
+      <section id="media-analysis-tools" className="tools-section media-analysis-tools">
         <div className="tools-grid">
           <div className="tool-card neon-blue">
             <div className="tool-icon">🖼️</div>

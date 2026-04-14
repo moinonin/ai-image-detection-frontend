@@ -20,10 +20,10 @@ const Footer: React.FC = () => {
               Provenance-first trust for digital media.
               Embed proof, verify authenticity, and audit with confidence.
             </p>
-            <div className="social-links">
-              <a href="#" aria-label="Twitter">🐦</a>
-              <a href="#" aria-label="LinkedIn">💼</a>
-              <a href="#" aria-label="GitHub">🔗</a>
+            <div className="footer-meta-links">
+              <a href="/ns-stego/WHITEPAPER_PROVENANCE/index.html">Whitepaper</a>
+              <a href="/ns-stego/index.html">Docs</a>
+              <Link to="/about">About</Link>
             </div>
           </div>
 
@@ -31,10 +31,12 @@ const Footer: React.FC = () => {
           <div className="footer-section">
             <h4>Provenance</h4>
             <ul className="footer-links">
-              <li><a href="/ns-stego/">Docs Home</a></li>
-              <li><a href="/ns-stego/SPEC/">SPEC</a></li>
-              <li><a href="/ns-stego/API_SPEC/">API Spec</a></li>
-              <li><a href="/ns-stego/DEPLOYMENT/">Deployment Guide</a></li>
+              <li><Link to="/provenance/verify">Verify Provenance</Link></li>
+              <li><Link to="/provenance/issue-certificate">Issue Certificate</Link></li>
+              <li><a href="/ns-stego/index.html">Docs Home</a></li>
+              <li><a href="/ns-stego/SPEC/index.html">SPEC</a></li>
+              <li><a href="/ns-stego/API_SPEC/index.html">API Spec</a></li>
+              <li><a href="/ns-stego/DEPLOYMENT/index.html">Deployment Guide</a></li>
             </ul>
           </div>
 
@@ -42,10 +44,10 @@ const Footer: React.FC = () => {
           <div className="footer-section">
             <h4>Verification Tools</h4>
             <ul className="footer-links">
-              <li><Link to="/resources">Media Analysis</Link></li>
+              <li><Link to="/resources#media-analysis-tools">Media Analysis</Link></li>
               <li><Link to="/single">Single Image</Link></li>
               <li><Link to="/batch">Batch Images</Link></li>
-              <li><Link to="/video">Video Analysis</Link></li>
+              <li><Link to="/videos">Video Analysis</Link></li>
             </ul>
           </div>
 
@@ -53,10 +55,10 @@ const Footer: React.FC = () => {
           <div className="footer-section">
             <h4>Trust Center</h4>
             <ul className="footer-links">
-              <li><a href="/ns-stego/AUDIT_LOGGING/">Audit Logging</a></li>
-              <li><a href="/ns-stego/KEY_MANAGEMENT/">Key Management</a></li>
-              <li><a href="/ns-stego/PRODUCTION_READINESS/">Production Readiness</a></li>
-              <li><a href="/ns-stego/QA/">QA & Verification</a></li>
+              <li><a href="/ns-stego/AUDIT_LOGGING/index.html">Audit Logging</a></li>
+              <li><a href="/ns-stego/KEY_MANAGEMENT/index.html">Key Management</a></li>
+              <li><a href="/ns-stego/PRODUCTION_READINESS/index.html">Production Readiness</a></li>
+              <li><a href="/ns-stego/QA/index.html">QA & Verification</a></li>
             </ul>
           </div>
 
@@ -64,10 +66,10 @@ const Footer: React.FC = () => {
           <div className="footer-section">
             <h4>Assurance</h4>
             <div className="trust-badges">
-              <div className="trust-item">🔒 SSL Secured</div>
-              <div className="trust-item">📊 Audit Ready</div>
-              <div className="trust-item">⚖️ Legal Compliance</div>
-              <div className="trust-item">🔍 Evidence Integrity</div>
+              <div className="trust-item">SSL secured</div>
+              <div className="trust-item">Audit ready</div>
+              <div className="trust-item">Legal compliance</div>
+              <div className="trust-item">Evidence integrity</div>
             </div>
           </div>
         </div>
@@ -86,8 +88,7 @@ const Footer: React.FC = () => {
           {/* Forensic Certification Notice */}
           <div className="forensic-notice">
             <small>
-              🔍 Cryptographic provenance • Evidence-grade audit trails • 
-              Verification workflows designed for high-trust environments
+              Cryptographic provenance. Evidence-grade audit trails. Verification workflows for high-trust environments.
             </small>
           </div>
         </div>

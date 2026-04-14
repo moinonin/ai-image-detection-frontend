@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import Login from './components/Login';
@@ -18,6 +18,8 @@ import Privacy from './components/Privacy';
 import Terms from './components/Terms';
 import Compliance from './components/Compliance';
 import AdminEmailHealth from './components/AdminEmailHealth';
+import ProvenanceVerify from './components/ProvenanceVerify';
+import ProvenanceIssueCertificate from './components/ProvenanceIssueCertificate';
 import './App.css';
 import Resources from './components/Resources';
 import Footer from './components/Footer';
@@ -44,6 +46,8 @@ const App: React.FC = () => {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/resources" element={<Resources />} />
+              <Route path="/provenance/verify" element={<ProvenanceVerify />} />
+              <Route path="/ns-stego/*" element={<StaticDocsRedirect />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/compliance" element={<Compliance />} />
@@ -73,6 +77,8 @@ const PublicLayout: React.FC = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/resources" element={<Resources />} />
+          <Route path="/provenance/verify" element={<ProvenanceVerify />} />
+          <Route path="/ns-stego/*" element={<StaticDocsRedirect />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/compliance" element={<Compliance />} />
@@ -81,6 +87,26 @@ const PublicLayout: React.FC = () => {
       <Footer />
     </div>
   );
+};
+
+const StaticDocsRedirect: React.FC = () => {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    let targetPath = location.pathname;
+
+    if (targetPath.toLowerCase() === '/ns-stego/whitepaper_provenance/') {
+      targetPath = '/ns-stego/WHITEPAPER_PROVENANCE/';
+    }
+
+    if (!targetPath.endsWith('/')) {
+      targetPath = `${targetPath}/`;
+    }
+
+    window.location.replace(`${targetPath}index.html${location.search}${location.hash}`);
+  }, [location]);
+
+  return null;
 };
 
 const ProtectedLayout: React.FC = () => {
@@ -98,6 +124,7 @@ const ProtectedLayout: React.FC = () => {
           <Route path="/single" element={<SingleClassification />} />
           <Route path="/batch" element={<BatchClassification />} />
           <Route path="/videos" element={<VideoClassification />} />
+          <Route path="/provenance/issue-certificate" element={<ProvenanceIssueCertificate />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/admin/email" element={<AdminEmailHealth />} />
           <Route path="*" element={<Navigate to="/" replace />} />

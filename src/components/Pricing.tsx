@@ -279,6 +279,8 @@ const Pricing: React.FC = () => {
             <li>Smart video frame sampling</li>
             <li>Advanced PDF reports with visual evidence</li>
             <li>Email reports to multiple recipients</li>
+            <li>Email and signature-token provenance workflows</li>
+            <li>Certificate issuance available on Team</li>
             <li>Priority support (24h response)</li>
             <li>Faster processing queue</li>
           </ul>
@@ -314,6 +316,8 @@ const Pricing: React.FC = () => {
             <li>Unlimited batch processing</li>
             <li>Full video analysis</li>
             <li>Custom report branding</li>
+            <li>Valid certificate issuance renewed monthly</li>
+            <li>PDF/DOCX certificate provenance workflows</li>
             <li>3 team member seats</li>
             <li>Priority support (4h response)</li>
             <li>Dedicated processing resources</li>

@@ -1,3 +1,12 @@
 /ns-stego/api/*  https://imageclassifi.fly.dev/:splat  200
+/ns-stego/WHITEPAPER_PROVENANCE/  /ns-stego/WHITEPAPER_PROVENANCE/index.html  200
+/ns-stego/SPEC/                   /ns-stego/SPEC/index.html                   200
+/ns-stego/API_SPEC/               /ns-stego/API_SPEC/index.html               200
+/ns-stego/DEPLOYMENT/             /ns-stego/DEPLOYMENT/index.html             200
+/ns-stego/AUDIT_LOGGING/          /ns-stego/AUDIT_LOGGING/index.html          200
+/ns-stego/KEY_MANAGEMENT/         /ns-stego/KEY_MANAGEMENT/index.html         200
+/ns-stego/PRODUCTION_READINESS/   /ns-stego/PRODUCTION_READINESS/index.html   200
+/ns-stego/QA/                     /ns-stego/QA/index.html                     200
+/ns-stego/                        /ns-stego/index.html                        200
 /ns-stego/*      /ns-stego/index.html                 200
 /*               /index.html                          200
