@@ -10,6 +10,33 @@ const Home: React.FC = () => {
     <div className="home">
       {/* Hero Section */}
       <section className="hero-section">
+        <div className="hero-background-media">
+          <video 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            aria-hidden="true"
+            // No width/height props - we control sizing 100% via CSS
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover', // Crucial: fills the area without distortion
+              display: 'block',
+              opacity: 0.4,       // Keep text readable
+              mixBlendMode: 'overlay' // Optional: blends with the gradient
+            }}
+          >
+            <source src="/VeriForensice%20Ai-logo/herogif.mp4" type="video/mp4" />
+            {/* Fallback image if video fails to load */}
+            <img 
+              src="/VeriForensice%20Ai-logo/poster.png" 
+              alt="" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </video>
+        </div>
+        {/*
         <div className="hero-content">
           <h1>Provenance-First Media Trust</h1>
           <p className="hero-subtitle">
@@ -40,6 +67,7 @@ const Home: React.FC = () => {
           </div>
           <p className="cta-note">Embed provenance • Verify authenticity • Audit with confidence</p>
         </div>
+        */}
       </section>
 
       {/* Value Proposition */}
