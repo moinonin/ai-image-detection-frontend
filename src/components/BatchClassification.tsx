@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { classificationService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import EmailHealthBadge from './EmailHealthBadge';
@@ -91,14 +91,25 @@ const BatchClassification: React.FC = () => {
     maxBatchSize?: number;
     currentPlan: string;
   } | null>(null);
+  const checkPlanFeatures = useCallback(async () => {
+    try {
+      const features = await classificationService.checkPlanFeatures();
+      setPlanFeatures(features);
+
+      if (!features.allowsBatch) {
+        setShowUpgradeBadge(true);
+      }
+    } catch (error) {
+      console.error('Failed to check plan features:', error);
+    }
+  }, []);
+
   // Check usage on component mount
-   useEffect(() => {
+  useEffect(() => {
     const checkPlanAfterAuth = async () => {
       if (user) {
         try {
-          const features = await classificationService.checkPlanFeatures();
-          setPlanFeatures(features);
-          console.log('🔄 Plan features re-checked after auth:', features);
+          await checkPlanFeatures();
         } catch (error) {
           console.error('Failed to check plan features after auth:', error);
         }
@@ -106,7 +117,7 @@ const BatchClassification: React.FC = () => {
     };
 
     checkPlanAfterAuth();
-  }, [user]); // This will run whenever the user object changes
+  }, [checkPlanFeatures, user]); // This will run whenever the user object changes
   // Client-side file size validation constants
   const MAX_FILE_SIZE_MB = 0.5;
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -115,6 +126,44 @@ const BatchClassification: React.FC = () => {
   const [analyses, setAnalyses] = useState<BatchAnalysisResult[]>([]);
   const [isLoadingAnalyses, setIsLoadingAnalyses] = useState(false);
   const [resultsError, setResultsError] = useState<string | null>(null);
+
+  const getDisplayResults = useCallback((): BatchAnalysisResult[] => {
+    if (analyses.length > 0) {
+      console.log('Displaying analyses from state:', analyses.length);
+      return analyses;
+    }
+
+    if (jobStatus?.results && Array.isArray(jobStatus.results)) {
+      console.log('Displaying analyses from jobStatus:', jobStatus.results.length);
+      return jobStatus.results
+        .map((result: any) => {
+          const analysis = result.analysis_results || result.analysis || result;
+          return {
+            filename: analysis.filename || result.filename || 'Unknown',
+            predicted_class: analysis.predicted_class || result.predicted_class || 'Unknown',
+            is_ai: analysis.is_ai !== undefined ?
+              analysis.is_ai :
+              (result.is_ai !== undefined ? result.is_ai : false),
+            confidence: analysis.confidence !== undefined ?
+              analysis.confidence :
+              (result.confidence !== undefined ? result.confidence : null),
+            probability: analysis.probability !== undefined ?
+              analysis.probability :
+              (result.probability !== undefined ? result.probability : null),
+            model: analysis.model || result.model || model,
+            features: analysis.features || result.features || {},
+            analysis_type: 'batch',
+            total_images: 1,
+            analyzed_images: 1,
+            user: jobStatus?.user || 'batch_user'
+          };
+        })
+        .filter((item: BatchAnalysisResult) => item.filename !== 'Unknown');
+    }
+
+    console.log('No analyses to display');
+    return [];
+  }, [analyses, jobStatus, model]);
 
   // UI state
   const [isExpanded, setIsExpanded] = useState(false);
@@ -130,21 +179,7 @@ const BatchClassification: React.FC = () => {
       displayResults: getDisplayResults().length
     });
     checkPlanFeatures();
-  }, [analyses, analysisResults, jobStatus, loading,]);
-
-  const checkPlanFeatures = async () => {
-    try {
-      const features = await classificationService.checkPlanFeatures();
-      setPlanFeatures(features);
-      
-      // If batch is not allowed, show appropriate UI
-      if (!features.allowsBatch) {
-        setShowUpgradeBadge(true);
-      }
-    } catch (error) {
-      console.error('Failed to check plan features:', error);
-    }
-  };
+  }, [analyses, analysisResults, checkPlanFeatures, getDisplayResults, jobStatus, loading]);
   const handleBatchClassification = async (files: File[], model: string, accountId?: string) => {
     setApiError('');
     setAnalysisResults(null);
@@ -541,7 +576,7 @@ const BatchClassification: React.FC = () => {
   };
   
   // Debug info
-  const getDebugInfo = (): { 
+  const getDebugInfo = useCallback((): {
     analysesInDb: number; 
     analysesCount: number; 
     includeAnalyses: boolean; 
@@ -557,7 +592,7 @@ const BatchClassification: React.FC = () => {
       resultsSource: jobStatus._debug.results_source,
       jobStatus: jobStatus._debug.job_data_status
     };
-  };
+  }, [jobStatus]);
 
   // Fetch analyses when job completes but results are empty
   useEffect(() => {
@@ -653,43 +688,7 @@ const BatchClassification: React.FC = () => {
     };
 
     fetchAnalysesForJob();
-  }, [jobStatus, analyses.length, isLoadingAnalyses, model]);
-
-  // Get display results - FIXED
-  const getDisplayResults = (): BatchAnalysisResult[] => {
-    if (analyses.length > 0) {
-      console.log('Displaying analyses from state:', analyses.length);
-      return analyses;
-    }
-    
-    if (jobStatus?.results && Array.isArray(jobStatus.results)) {
-      console.log('Displaying analyses from jobStatus:', jobStatus.results.length);
-      return jobStatus.results
-        .map((result: any) => {
-          const analysis = result.analysis_results || result.analysis || result;
-          return {
-            filename: analysis.filename || result.filename || 'Unknown',
-            predicted_class: analysis.predicted_class || result.predicted_class || 'Unknown',
-            is_ai: analysis.is_ai !== undefined ? analysis.is_ai : 
-                  (result.is_ai !== undefined ? result.is_ai : false),
-            confidence: analysis.confidence !== undefined ? analysis.confidence : 
-                      (result.confidence !== undefined ? result.confidence : null),
-            probability: analysis.probability !== undefined ? analysis.probability : 
-                        (result.probability !== undefined ? result.probability : null),
-            model: analysis.model || result.model || model,
-            features: analysis.features || result.features || {},
-            analysis_type: 'batch',
-            total_images: 1,
-            analyzed_images: 1,
-            user: jobStatus?.user || 'batch_user'
-          };
-        })
-        .filter((item: BatchAnalysisResult) => item.filename !== 'Unknown');
-    }
-    
-    console.log('No analyses to display');
-    return [];
-  };
+  }, [analyses.length, getDebugInfo, isLoadingAnalyses, jobStatus, model]);
 
   const validateFiles = (files: File[]): FileValidationError | null => {
     const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE_BYTES);

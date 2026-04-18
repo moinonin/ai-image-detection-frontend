@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { classificationService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -27,7 +27,7 @@ const AdminEmailHealth: React.FC = () => {
     .filter(Boolean);
   const isAdmin = user?.email ? adminEmails.includes(user.email.toLowerCase()) : false;
 
-  const loadHealth = async () => {
+  const loadHealth = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -53,16 +53,15 @@ const AdminEmailHealth: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterEnd, filterRecipient, filterStart, filterUser, page, pageSize, sortBy, sortDir]);
 
   useEffect(() => {
     if (!isAdmin) return;
     loadHealth();
-  }, [isAdmin, page, pageSize]);
+  }, [isAdmin, loadHealth]);
 
   const applyFilters = () => {
     setPage(1);
-    loadHealth();
   };
 
   const clearFilters = () => {
@@ -73,7 +72,6 @@ const AdminEmailHealth: React.FC = () => {
     setSortBy('created_at');
     setSortDir('desc');
     setPage(1);
-    loadHealth();
   };
 
   const downloadCsv = async () => {

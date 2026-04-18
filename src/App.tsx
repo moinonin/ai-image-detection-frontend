@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import Login from './components/Login';
@@ -30,31 +30,38 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <ToastProvider>
-        <Router>
+        <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
           <div className="app">
             {/* Add SubscriptionSuccessHandler here - it will work on all routes */}
             <SubscriptionSuccessHandler />
             <ToastContainer />
             <Routes>
-            {/* Public routes - accessible without authentication */}
-            <Route path="/" element={<PublicLayout />}>
-              <Route index element={<Home />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/provenance/verify" element={<ProvenanceVerify />} />
-              <Route path="/ns-stego/*" element={<StaticDocsRedirect />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/compliance" element={<Compliance />} />
-            </Route>
-            
-            {/* Protected routes - require authentication */}
-            <Route path="/*" element={<ProtectedLayout />} />
+              <Route element={<PublicLayout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/resources" element={<Resources />} />
+                <Route path="/provenance/verify" element={<ProvenanceVerify />} />
+                <Route path="/ns-stego/*" element={<StaticDocsRedirect />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/compliance" element={<Compliance />} />
+              </Route>
+
+              <Route element={<ProtectedLayout />}>
+                <Route path="/single" element={<SingleClassification />} />
+                <Route path="/batch" element={<BatchClassification />} />
+                <Route path="/videos" element={<VideoClassification />} />
+                <Route path="/provenance/issue-certificate" element={<ProvenanceIssueCertificate />} />
+                <Route path="/profile" element={<UserProfile />} />
+                <Route path="/admin/email" element={<AdminEmailHealth />} />
+              </Route>
+
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </Router>
@@ -68,21 +75,7 @@ const PublicLayout: React.FC = () => {
     <div className="public-layout">
       <Navbar />
       <main className="main-content">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/provenance/verify" element={<ProvenanceVerify />} />
-          <Route path="/ns-stego/*" element={<StaticDocsRedirect />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/compliance" element={<Compliance />} />
-        </Routes>
+        <Outlet />
       </main>
       <Footer />
     </div>
@@ -120,15 +113,7 @@ const ProtectedLayout: React.FC = () => {
     <div className="protected-layout">
       <Navbar />
       <main className="main-content">
-        <Routes>
-          <Route path="/single" element={<SingleClassification />} />
-          <Route path="/batch" element={<BatchClassification />} />
-          <Route path="/videos" element={<VideoClassification />} />
-          <Route path="/provenance/issue-certificate" element={<ProvenanceIssueCertificate />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/admin/email" element={<AdminEmailHealth />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Outlet />
       </main>
       <Footer />
     </div>

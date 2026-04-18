@@ -148,9 +148,9 @@ const SingleClassification: React.FC = () => {
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence > 0.8) return '#00ff00';
-    if (confidence > 0.6) return '#ffff00';
-    return '#ff4444';
+    if (confidence > 0.8) return 'var(--vf-success)';
+    if (confidence > 0.6) return 'var(--vf-warning)';
+    return 'var(--vf-danger)';
   };
 
   const handleDownloadPDF = async (): Promise<void> => {

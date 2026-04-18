@@ -2,6 +2,38 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Home: React.FC = () => {
+  const heroVideoRef = React.useRef<HTMLVideoElement | null>(null);
+  const [heroVideoPlaying, setHeroVideoPlaying] = React.useState(false);
+
+  React.useEffect(() => {
+    const heroVideo = heroVideoRef.current;
+
+    if (!heroVideo) {
+      return;
+    }
+
+    const attemptPlayback = () => {
+      const playPromise = heroVideo.play();
+
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {
+          // Browsers can still reject autoplay during startup; the poster stays visible.
+        });
+      }
+    };
+
+    if (heroVideo.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      attemptPlayback();
+      return;
+    }
+
+    heroVideo.addEventListener('canplay', attemptPlayback, { once: true });
+
+    return () => {
+      heroVideo.removeEventListener('canplay', attemptPlayback);
+    };
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -11,63 +43,27 @@ const Home: React.FC = () => {
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-background-media">
-          <video 
-            autoPlay 
-            muted 
-            loop 
+          <img
+            className={`hero-video-fallback${heroVideoPlaying ? ' is-hidden' : ''}`}
+            src="/VeriForensice%20Ai-logo/herogif.gif"
+            alt=""
+            aria-hidden="true"
+          />
+          <video
+            ref={heroVideoRef}
+            autoPlay
+            className="hero-video"
+            loop
+            muted
+            onPlaying={() => setHeroVideoPlaying(true)}
+            poster="/VeriForensice%20Ai-logo/poster.png"
+            preload="auto"
             playsInline
             aria-hidden="true"
-            // No width/height props - we control sizing 100% via CSS
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover', // Crucial: fills the area without distortion
-              display: 'block',
-              opacity: 0.4,       // Keep text readable
-              mixBlendMode: 'overlay' // Optional: blends with the gradient
-            }}
           >
             <source src="/VeriForensice%20Ai-logo/herogif.mp4" type="video/mp4" />
-            {/* Fallback image if video fails to load */}
-            <img 
-              src="/VeriForensice%20Ai-logo/poster.png" 
-              alt="" 
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
           </video>
         </div>
-        {/*
-        <div className="hero-content">
-          <h1>Provenance-First Media Trust</h1>
-          <p className="hero-subtitle">
-            Embed cryptographic provenance at creation time and verify authenticity with confidence. 
-            When the chain is verifiable, the truth is provable.
-          </p>
-          <div className="hero-stats">
-            <div className="stat">
-              <span className="stat-number">A4+</span>
-              <span className="stat-label">Proof Formats</span>
-            </div>
-            <div className="stat">
-              <span className="stat-number">2nd</span>
-              <span className="stat-label">Layer of Trust</span>
-            </div>
-            <div className="stat">
-              <span className="stat-number">100%</span>
-              <span className="stat-label">Verifiable Integrity</span>
-            </div>
-          </div>
-          <div className="cta-buttons">
-            <Link to="/provenance/verify" className="cta-button primary">
-              Verify Provenance
-            </Link>
-            <Link to="/resources" className="cta-button secondary">
-              Analyze Media
-            </Link>
-          </div>
-          <p className="cta-note">Embed provenance • Verify authenticity • Audit with confidence</p>
-        </div>
-        */}
       </section>
 
       {/* Value Proposition */}

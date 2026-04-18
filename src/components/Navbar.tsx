@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { classificationService } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import lightLogo from '../../testlogos/lightlogo.jpeg';
+import darkLogo from '../../testlogos/darklogo.jpeg';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -26,8 +28,8 @@ const Navbar: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
 
   const brandLogoSrc = theme === 'dark' 
-    ? '/VeriForensice Ai-logo/verifLogo.png'
-    : '/VeriForensice Ai-logo/verifLightModeLogo.png';
+    ? darkLogo
+    : lightLogo;
 
   const handleLogout = () => {
     logout();
@@ -97,8 +99,10 @@ const Navbar: React.FC = () => {
     <nav className="navbar">
       <div className="nav-content">
         <Link to="/" className="logo" onClick={closeMenu}>
-          <img key={theme} className="logo-img" src={brandLogoSrc} alt="VeriF logo" />
-          <span className="logo-text">VeriF</span>
+          <span className="logo-frame">
+            <img key={theme} className="logo-img" src={brandLogoSrc} alt="VeriForensic logo" />
+          </span>
+          {/*<span className="logo-text">VeriF</span>*/}
         </Link>
         
         {/* Hamburger Menu Button */}

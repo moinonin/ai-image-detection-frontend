@@ -48,6 +48,39 @@ function statusCopy(status: ProvenanceStatus): string {
   }
 }
 
+function StatusBadge({ status }: { status: ProvenanceStatus }) {
+  switch (status) {
+    case 'verified':
+      return (
+        <span className="status-icon-badge success">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </span>
+      );
+    case 'tampered':
+    case 'upstream_error':
+      return (
+        <span className="status-icon-badge danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </span>
+      );
+    default:
+      return (
+        <span className="status-icon-badge warning">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </span>
+      );
+  }
+}
+
 const ProvenanceVerify: React.FC = () => {
   const [mode, setMode] = useState<VerifyMode>('signature');
   const [signatureToken, setSignatureToken] = useState('');
@@ -181,7 +214,10 @@ const ProvenanceVerify: React.FC = () => {
 
       {error && (
         <div className="provenance-result status-upstream_error">
-          <h2>Verification Error</h2>
+          <div className="status-header">
+            <StatusBadge status="upstream_error" />
+            <h2>Verification Error</h2>
+          </div>
           <p>{error}</p>
           {error.includes('Sign in') && <Link to="/login">Sign in</Link>}
         </div>
@@ -189,7 +225,10 @@ const ProvenanceVerify: React.FC = () => {
 
       {result && (
         <section className={`provenance-result status-${status}`}>
-          <h2>{statusCopy(status)}</h2>
+          <div className="status-header">
+            <StatusBadge status={status} />
+            <h2>{statusCopy(status)}</h2>
+          </div>
           <div className="result-details">
             <div className="detail-item">
               <span className="detail-label">Status</span>
