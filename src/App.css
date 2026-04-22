@@ -1953,3 +1953,220 @@ body {
   stroke: currentColor;
   stroke-width: 2.5;
 }
+
+.provenance-form select.model-select option {
+  background: var(--vf-surface);
+  color: var(--vf-text);
+}
+
+.detail-item-stack {
+  align-items: flex-start !important;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.hash-value,
+.registry-url,
+.registry-list-meta span {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.registry-url {
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.registry-actions,
+.registry-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.registry-toolbar {
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.secondary-action,
+.danger-action {
+  align-items: center;
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border-strong);
+  border-radius: 0;
+  color: var(--vf-text);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 600;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+}
+
+.secondary-action:hover {
+  border-color: var(--vf-blue);
+  color: var(--vf-blue);
+}
+
+.secondary-action:disabled,
+.danger-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.danger-action {
+  background: var(--vf-danger);
+  border-color: var(--vf-danger);
+  color: #ffffff;
+}
+
+.danger-action:hover {
+  background: #a2191f;
+  border-color: #a2191f;
+}
+
+.eyebrow {
+  color: var(--vf-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.registry-record-header,
+.registry-list-main {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.registry-record-header h2,
+.registry-list-main h2 {
+  color: var(--vf-text);
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0 0 0.5rem;
+}
+
+.registry-record-header p,
+.registry-list-main p {
+  color: var(--vf-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.registry-status-pill {
+  border: 1px solid var(--vf-border-strong);
+  color: var(--vf-text);
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 5.5rem;
+  padding: 0.45rem 0.7rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.registry-status-pill.active {
+  border-color: var(--vf-success);
+  color: var(--vf-success);
+}
+
+.registry-status-pill.revoked {
+  border-color: var(--vf-danger);
+  color: var(--vf-danger);
+}
+
+.registry-status-pill.expired,
+.registry-status-pill.superseded {
+  border-color: var(--vf-warning);
+  color: var(--vf-warning);
+}
+
+.registry-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.registry-list-item {
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border);
+  border-left: 4px solid var(--vf-blue);
+  padding: 1.5rem;
+}
+
+.registry-list-item:has(.registry-status-pill.revoked) {
+  border-left-color: var(--vf-danger);
+}
+
+.registry-list-item:has(.registry-status-pill.expired),
+.registry-list-item:has(.registry-status-pill.superseded) {
+  border-left-color: var(--vf-warning);
+}
+
+.registry-list-meta {
+  border-top: 1px solid var(--vf-border);
+  color: var(--vf-muted);
+  display: grid;
+  gap: 0.4rem;
+  padding-top: 1rem;
+}
+
+.revoke-panel {
+  background: var(--vf-input-bg);
+  border: 1px solid var(--vf-border);
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+.revoke-panel label {
+  color: var(--vf-text);
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.revoke-panel textarea {
+  background: var(--vf-surface);
+  border: 1px solid transparent;
+  border-bottom-color: var(--vf-border-strong);
+  color: var(--vf-text);
+  min-height: 6rem;
+  padding: 1rem;
+  resize: vertical;
+  width: 100%;
+}
+
+.revoke-panel textarea:focus {
+  border-color: var(--vf-blue);
+  box-shadow: inset 0 0 0 1px var(--vf-blue);
+  outline-color: var(--vf-blue);
+}
+
+@media (max-width: 720px) {
+  .registry-record-header,
+  .registry-list-main,
+  .registry-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .registry-actions {
+    flex-direction: column;
+  }
+
+  .secondary-action,
+  .danger-action {
+    width: 100%;
+  }
+}

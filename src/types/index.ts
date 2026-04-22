@@ -223,9 +223,15 @@ export interface ProvenanceVerifyResponse {
 
 export interface ProvenanceIssueCertificateInput {
   secret: string;
+  title?: string;
+  document_type?: string;
   issuer_id?: string;
   cert_id?: string;
   recipient_id?: string;
+  recipient_name?: string;
+  recipient_email?: string;
+  expires_at?: string;
+  metadata_visibility?: 'public_safe' | 'recipient_only' | 'issuer_only';
   model_name?: string;
   bits_per_token?: number;
   timestamp?: string;
@@ -236,6 +242,34 @@ export interface ProvenanceIssueCertificateResponse {
   blob: Blob;
   filename: string;
   contentType: string;
+  documentId?: string;
+  verificationUrl?: string;
+  status?: string;
+  storageMode?: string;
+}
+
+export interface ProvenanceRegistryRecord {
+  document_id: string;
+  issuer_name?: string;
+  document_type?: string;
+  title?: string;
+  status?: string;
+  issued_at?: string;
+  expires_at?: string | null;
+  verification_url?: string;
+  storage_mode?: string;
+  metadata_visibility?: string;
+  document_hash?: string;
+  revoked_at?: string | null;
+  revocation_reason?: string | null;
+  [key: string]: any;
+}
+
+export interface ProvenanceRegistryListResponse {
+  account_id: string;
+  items: ProvenanceRegistryRecord[];
+  limit: number;
+  offset: number;
 }
 
 // Video Analysis Response with Cache Support

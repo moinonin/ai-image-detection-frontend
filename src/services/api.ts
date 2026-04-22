@@ -1,4 +1,4 @@
-import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse, ProvenanceIssueCertificateInput, ProvenanceIssueCertificateResponse, ProvenanceVerifyResponse } from '../types';
+import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse, ProvenanceIssueCertificateInput, ProvenanceIssueCertificateResponse, ProvenanceRegistryListResponse, ProvenanceRegistryRecord, ProvenanceVerifyResponse } from '../types';
 import { usageService } from '../services/usageService';
 
 type ReportFormat = 'json' | 'pdf';
@@ -321,9 +321,15 @@ class ApiService {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('secret', metadata.secret);
+    formData.append('title', metadata.title || file.name);
+    formData.append('document_type', metadata.document_type || 'certificate');
     formData.append('issuer_id', metadata.issuer_id || '');
     formData.append('cert_id', metadata.cert_id || '');
     formData.append('recipient_id', metadata.recipient_id || '');
+    formData.append('recipient_name', metadata.recipient_name || '');
+    formData.append('recipient_email', metadata.recipient_email || '');
+    formData.append('expires_at', metadata.expires_at || '');
+    formData.append('metadata_visibility', metadata.metadata_visibility || 'public_safe');
     formData.append('model_name', metadata.model_name || 'sshleifer/tiny-gpt2');
     formData.append('bits_per_token', String(metadata.bits_per_token || 4));
     formData.append('timestamp', metadata.timestamp || '');
@@ -331,7 +337,7 @@ class ApiService {
       formData.append('account_id', metadata.account_id);
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/ns-stego/issue-certificate`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry/issue`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -353,7 +359,67 @@ class ApiService {
       blob: await response.blob(),
       filename,
       contentType,
+      documentId: response.headers.get('x-provenance-document-id') || undefined,
+      verificationUrl: response.headers.get('x-provenance-verification-url') || undefined,
+      status: response.headers.get('x-provenance-status') || undefined,
+      storageMode: response.headers.get('x-provenance-storage-mode') || undefined,
     };
+  }
+
+  async getProvenanceRegistryRecord(documentId: string): Promise<ProvenanceRegistryRecord> {
+    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry/${encodeURIComponent(documentId)}`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      return this.throwResponseError(response, 'Registered document lookup failed');
+    }
+
+    return response.json();
+  }
+
+  async listProvenanceRegistry(accountId?: string): Promise<ProvenanceRegistryListResponse> {
+    const token = localStorage.getItem('token');
+    const params = new URLSearchParams();
+    if (accountId) {
+      params.set('account_id', accountId);
+    }
+    const query = params.toString() ? `?${params.toString()}` : '';
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry${query}`, {
+      method: 'GET',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      return this.throwResponseError(response, 'Registered document list failed');
+    }
+
+    return response.json();
+  }
+
+  async revokeProvenanceRegistryRecord(documentId: string, reason: string): Promise<ProvenanceRegistryRecord> {
+    const token = localStorage.getItem('token');
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry/${encodeURIComponent(documentId)}/revoke`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      credentials: 'include',
+      body: JSON.stringify({ reason }),
+    });
+
+    if (!response.ok) {
+      return this.throwResponseError(response, 'Registered document revoke failed');
+    }
+
+    return response.json();
   }
 
   async getProductCheckout(productId: string, customerEmail?: string): Promise<{

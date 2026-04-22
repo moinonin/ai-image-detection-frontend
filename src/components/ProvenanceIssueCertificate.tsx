@@ -5,30 +5,53 @@ import { ProvenanceIssueCertificateInput } from '../types';
 
 const defaultMetadata = (): ProvenanceIssueCertificateInput => ({
   secret: '',
+  title: '',
+  document_type: 'certificate',
   issuer_id: '',
   cert_id: '',
   recipient_id: '',
+  recipient_name: '',
+  recipient_email: '',
+  expires_at: '',
+  metadata_visibility: 'public_safe',
   model_name: 'sshleifer/tiny-gpt2',
   bits_per_token: 4,
   timestamp: new Date().toISOString(),
 });
+
+type IssuedRegistryState = {
+  filename: string;
+  documentId?: string;
+  verificationUrl?: string;
+  status?: string;
+  storageMode?: string;
+};
 
 const ProvenanceIssueCertificate: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [metadata, setMetadata] = useState<ProvenanceIssueCertificateInput>(defaultMetadata);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [issuedRecord, setIssuedRecord] = useState<IssuedRegistryState | null>(null);
+  const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
   const [requiresUpgrade, setRequiresUpgrade] = useState(false);
 
   const updateMetadata = (key: keyof ProvenanceIssueCertificateInput, value: string | number) => {
     setMetadata((current) => ({ ...current, [key]: value }));
   };
 
+  const handleCopyVerificationUrl = async () => {
+    if (!issuedRecord?.verificationUrl) return;
+    await navigator.clipboard.writeText(issuedRecord.verificationUrl);
+    setCopyState('copied');
+    window.setTimeout(() => setCopyState('idle'), 1800);
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
-    setSuccess(null);
+    setIssuedRecord(null);
+    setCopyState('idle');
     setRequiresUpgrade(false);
 
     if (!file) {
@@ -37,6 +60,10 @@ const ProvenanceIssueCertificate: React.FC = () => {
     }
     if (!metadata.secret.trim()) {
       setError('Add the provenance secret to embed.');
+      return;
+    }
+    if (!metadata.title?.trim()) {
+      setError('Add a document title for the registry record.');
       return;
     }
 
@@ -51,7 +78,13 @@ const ProvenanceIssueCertificate: React.FC = () => {
       anchor.click();
       anchor.remove();
       window.URL.revokeObjectURL(url);
-      setSuccess(`Stamped certificate downloaded as ${issued.filename}.`);
+      setIssuedRecord({
+        filename: issued.filename,
+        documentId: issued.documentId,
+        verificationUrl: issued.verificationUrl,
+        status: issued.status,
+        storageMode: issued.storageMode,
+      });
     } catch (err: any) {
       setRequiresUpgrade(err.status === 402 || err.status === 403);
       setError(err.message || 'Certificate issuance failed.');
@@ -63,13 +96,13 @@ const ProvenanceIssueCertificate: React.FC = () => {
   return (
     <div className="provenance-service">
       <section className="page-header">
-        <h1>Issue Certificate</h1>
-        <p>Team plan feature. Embed renewable provenance metadata into an official PDF or DOCX and download the stamped result.</p>
+        <h1>Issue Registered Certificate</h1>
+        <p>Team plan feature. Stamp an official PDF or DOCX, register its fingerprint, and share a hosted verification record.</p>
       </section>
 
       <form className="upload-form provenance-form" onSubmit={handleSubmit}>
         <p className="form-help">
-          Professional covers email and signature-token provenance workflows. Certificate issuance is reserved for Team subscriptions, and issuance credentials are handled server-side.
+          Professional covers email and signature-token workflows. Team issuance creates a registry record with a monthly server-side provenance license.
         </p>
 
         <div className="form-group">
@@ -82,6 +115,41 @@ const ProvenanceIssueCertificate: React.FC = () => {
             onChange={(event) => setFile(event.target.files?.[0] || null)}
           />
           {file && <p className="form-help">Selected: {file.name}</p>}
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="title">Registry title</label>
+          <input
+            id="title"
+            value={metadata.title}
+            onChange={(event) => updateMetadata('title', event.target.value)}
+            placeholder="Official transcript for Jane Doe"
+          />
+        </div>
+
+        <div className="provenance-grid">
+          <div className="form-group">
+            <label htmlFor="document-type">Document type</label>
+            <input
+              id="document-type"
+              value={metadata.document_type}
+              onChange={(event) => updateMetadata('document_type', event.target.value)}
+              placeholder="certificate"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="metadata-visibility">Public visibility</label>
+            <select
+              id="metadata-visibility"
+              className="model-select"
+              value={metadata.metadata_visibility}
+              onChange={(event) => updateMetadata('metadata_visibility', event.target.value)}
+            >
+              <option value="public_safe">Public safe summary</option>
+              <option value="recipient_only">Recipient only</option>
+              <option value="issuer_only">Issuer only</option>
+            </select>
+          </div>
         </div>
 
         <div className="form-group">
@@ -121,6 +189,34 @@ const ProvenanceIssueCertificate: React.FC = () => {
               value={metadata.recipient_id}
               onChange={(event) => updateMetadata('recipient_id', event.target.value)}
               placeholder="recipient@example.com"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="recipient-name">Recipient name</label>
+            <input
+              id="recipient-name"
+              value={metadata.recipient_name}
+              onChange={(event) => updateMetadata('recipient_name', event.target.value)}
+              placeholder="Jane Doe"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="recipient-email">Recipient email</label>
+            <input
+              id="recipient-email"
+              type="email"
+              value={metadata.recipient_email}
+              onChange={(event) => updateMetadata('recipient_email', event.target.value)}
+              placeholder="recipient@example.com"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="expires-at">Expiry date</label>
+            <input
+              id="expires-at"
+              type="datetime-local"
+              value={metadata.expires_at}
+              onChange={(event) => updateMetadata('expires_at', event.target.value)}
             />
           </div>
           <div className="form-group">
@@ -165,11 +261,53 @@ const ProvenanceIssueCertificate: React.FC = () => {
         </div>
       )}
 
-      {success && (
+      {issuedRecord && (
         <div className="provenance-result status-verified">
-          <h2>Certificate Issued</h2>
-          <p>{success}</p>
-          <Link to="/provenance/verify">Verify the stamped certificate</Link>
+          <h2>Registered Certificate Issued</h2>
+          <p>Stamped certificate downloaded as {issuedRecord.filename}.</p>
+          <div className="result-details">
+            {issuedRecord.documentId && (
+              <div className="detail-item">
+                <span className="detail-label">Document ID</span>
+                <span className="detail-value">{issuedRecord.documentId}</span>
+              </div>
+            )}
+            {issuedRecord.status && (
+              <div className="detail-item">
+                <span className="detail-label">Status</span>
+                <span className="detail-value">{issuedRecord.status}</span>
+              </div>
+            )}
+            {issuedRecord.storageMode && (
+              <div className="detail-item">
+                <span className="detail-label">Storage mode</span>
+                <span className="detail-value">{issuedRecord.storageMode}</span>
+              </div>
+            )}
+            {issuedRecord.verificationUrl && (
+              <div className="detail-item detail-item-stack">
+                <span className="detail-label">Verification URL</span>
+                <a className="detail-value registry-url" href={issuedRecord.verificationUrl}>
+                  {issuedRecord.verificationUrl}
+                </a>
+              </div>
+            )}
+          </div>
+          <div className="registry-actions">
+            {issuedRecord.verificationUrl && (
+              <button className="secondary-action" type="button" onClick={handleCopyVerificationUrl}>
+                {copyState === 'copied' ? 'Copied' : 'Copy verification URL'}
+              </button>
+            )}
+            {issuedRecord.documentId && (
+              <Link className="secondary-action" to={`/provenance/registry/${issuedRecord.documentId}`}>
+                Open registry record
+              </Link>
+            )}
+            <Link className="secondary-action" to="/provenance/verify">
+              Verify stamped file
+            </Link>
+          </div>
         </div>
       )}
     </div>

@@ -118,7 +118,7 @@ const Resources: React.FC = () => {
             <div className="tool-icon">📜</div>
             <h3>Issue Certificate</h3>
             <p className="tool-description">
-              Team users can stamp official PDF/DOCX files with renewable provenance metadata.
+              Team users can stamp official PDF/DOCX files and register them for hosted verification.
             </p>
             <div className="tool-features">
               <div className="feature-item">
@@ -135,11 +135,40 @@ const Resources: React.FC = () => {
               </div>
               <div className="feature-item">
                 <span className="feature-check">✓</span>
-                Works with the ns-stego service proxy
+                Registry verification URL
               </div>
             </div>
             <Link to="/provenance/issue-certificate" className="tool-cta">
               Issue Certificate
+            </Link>
+          </div>
+
+          <div className="tool-card neon-blue">
+            <div className="tool-icon">⌁</div>
+            <h3>Issuer Registry</h3>
+            <p className="tool-description">
+              Review issued records, open public verification pages, and revoke documents that should no longer verify.
+            </p>
+            <div className="tool-features">
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Issued document list
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Public record links
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Revocation workflow
+              </div>
+              <div className="feature-item">
+                <span className="feature-check">✓</span>
+                Registry-only storage
+              </div>
+            </div>
+            <Link to="/provenance/registry" className="tool-cta">
+              Open Registry
             </Link>
           </div>
 

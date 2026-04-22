@@ -33,6 +33,7 @@ const Footer: React.FC = () => {
             <ul className="footer-links">
               <li><Link to="/provenance/verify">Verify Provenance</Link></li>
               <li><Link to="/provenance/issue-certificate">Issue Certificate</Link></li>
+              <li><Link to="/provenance/registry">Issuer Registry</Link></li>
               <li><a href="/ns-stego/index.html">Docs Home</a></li>
               <li><a href="/ns-stego/SPEC/index.html">SPEC</a></li>
               <li><a href="/ns-stego/API_SPEC/index.html">API Spec</a></li>

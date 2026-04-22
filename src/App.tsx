@@ -20,6 +20,8 @@ import Compliance from './components/Compliance';
 import AdminEmailHealth from './components/AdminEmailHealth';
 import ProvenanceVerify from './components/ProvenanceVerify';
 import ProvenanceIssueCertificate from './components/ProvenanceIssueCertificate';
+import ProvenanceRegistryRecord from './components/ProvenanceRegistryRecord';
+import ProvenanceRegistryDashboard from './components/ProvenanceRegistryDashboard';
 import './App.css';
 import Resources from './components/Resources';
 import Footer from './components/Footer';
@@ -46,6 +48,7 @@ const App: React.FC = () => {
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/resources" element={<Resources />} />
                 <Route path="/provenance/verify" element={<ProvenanceVerify />} />
+                <Route path="/provenance/registry/:documentId" element={<ProvenanceRegistryRecord />} />
                 <Route path="/ns-stego/*" element={<StaticDocsRedirect />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
@@ -57,6 +60,7 @@ const App: React.FC = () => {
                 <Route path="/batch" element={<BatchClassification />} />
                 <Route path="/videos" element={<VideoClassification />} />
                 <Route path="/provenance/issue-certificate" element={<ProvenanceIssueCertificate />} />
+                <Route path="/provenance/registry" element={<ProvenanceRegistryDashboard />} />
                 <Route path="/profile" element={<UserProfile />} />
                 <Route path="/admin/email" element={<AdminEmailHealth />} />
               </Route>

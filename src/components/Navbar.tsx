@@ -139,6 +139,13 @@ const Navbar: React.FC = () => {
               </Link>
             </li>
           )}
+          {user && (
+            <li>
+              <Link to="/provenance/registry" className={isActive('/provenance/registry')} onClick={closeMenu}>
+                Registry
+              </Link>
+            </li>
+          )}
           <li>
             <Link to="/pricing" className={isActive('/pricing')} onClick={closeMenu}>
               Pricing
