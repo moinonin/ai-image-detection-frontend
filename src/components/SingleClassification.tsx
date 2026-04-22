@@ -296,18 +296,18 @@ const SingleClassification: React.FC = () => {
         
         <div className="plan-actions">
           <button 
-            className="plan-btn explorer"
-            onClick={() => window.location.href = '/pricing?plan=explorer'}>
-            <span className="plan-name">Explorer Plan</span>
-            <span className="plan-price">$19/month</span>
-            <span className="plan-features">50 images/month</span>
-          </button>
-          <button 
             className="plan-btn pro primary"
             onClick={() => window.location.href = '/pricing?plan=pro'}>
             <span className="plan-name">Pro Plan</span>
-            <span className="plan-price">$79/month</span>
-            <span className="plan-features">Unlimited images</span>
+            <span className="plan-price">$299/month</span>
+            <span className="plan-features">Analysis plus personal provenance</span>
+          </button>
+          <button 
+            className="plan-btn team"
+            onClick={() => window.location.href = '/pricing?plan=team'}>
+            <span className="plan-name">Team Plan</span>
+            <span className="plan-price">$499/month</span>
+            <span className="plan-features">Registry and certificate issuance</span>
           </button>
         </div>
 

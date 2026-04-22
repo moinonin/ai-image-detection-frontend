@@ -1006,7 +1006,7 @@ const BatchClassification: React.FC = () => {
               marginBottom: '1rem',
               color: '#856404'
             }}>
-              <h4 style={{ margin: '0 0 0.5rem 0' }}>⚡ Explorer Plan</h4>
+              <h4 style={{ margin: '0 0 0.5rem 0' }}>Free Plan</h4>
               <p style={{ margin: 0 }}>
                 Your current plan supports single file analysis. {selectedFiles.length > 1 && 'Only the first file will be processed.'}
               </p>
@@ -1317,9 +1317,9 @@ const BatchClassification: React.FC = () => {
                         border: '1px solid rgba(0, 255, 255, 0.3)',
                         minWidth: '120px'
                       }}>
-                        <div style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>Explorer Plan</div>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>$19</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>100 analyses/month</div>
+                        <div style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>Pro</div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>$299</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Analysis plus personal provenance</div>
                       </div>
                       <div style={{ 
                         textAlign: 'center',
@@ -1329,9 +1329,9 @@ const BatchClassification: React.FC = () => {
                         minWidth: '120px',
                         background: 'rgba(0, 255, 136, 0.1)'
                       }}>
-                        <div style={{ fontWeight: 'bold', color: 'var(--accent-color)' }}>Pro</div>
-                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>$79</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>500 analyses/month</div>
+                        <div style={{ fontWeight: 'bold', color: 'var(--accent-color)' }}>Team</div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>$499</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Registry and certificate issuance</div>
                       </div>
                     </div>
                   </div>
@@ -1396,9 +1396,9 @@ const BatchClassification: React.FC = () => {
                       color: 'var(--text-secondary)',
                       fontSize: '0.8rem'
                     }}>
-                      Need a custom plan?{' '}
+                      Building your own workflow?{' '}
                       <a 
-                        href="/about#contact-info" 
+                        href="/ns-stego/BUILDING/index.html" 
                         style={{ 
                           color: 'var(--primary-color)',
                           textDecoration: 'none'
@@ -1410,7 +1410,7 @@ const BatchClassification: React.FC = () => {
                           e.currentTarget.style.textDecoration = 'none';
                         }}
                       >
-                        Contact us
+                        Download the SDK
                       </a>
                     </p>
                   </div>

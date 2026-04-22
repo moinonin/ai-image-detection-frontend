@@ -148,14 +148,6 @@ const Pricing: React.FC = () => {
   //   window.open('mailto:support@veriforensic.com', '_blank');
   // };
 
-
-  // Format price for display
-  const formatPrice = (product: PolarProduct) => {
-    if (!product.price_amount) return 'Free';
-    const amount = product.price_amount / 100;
-    return `$${amount}/${product.recurring_interval}`;
-  };
-
   // Get product by name pattern
   const getProductByName = (namePattern: string): PolarProduct | undefined => {
     return products.find(p => 
@@ -164,8 +156,7 @@ const Pricing: React.FC = () => {
   };
 
   // Main products
-  const explorerProduct = getProductByName('explorer');
-  const professionalProduct = getProductByName('professional');
+  const professionalProduct = getProductByName('professional') || getProductByName('pro');
   const teamProduct = getProductByName('team');
   const freeProduct = freeTier || getProductByName('free');
 
@@ -182,8 +173,10 @@ const Pricing: React.FC = () => {
 
   return (
     <div className="pricing">
-      <h1>Transparent Pricing</h1>
-      <p className="pricing-subtitle">Pay only for what you use with clear, predictable pricing</p>
+      <h1>Provenance-First Pricing</h1>
+      <p className="pricing-subtitle">
+        Start with public verification, then add provenance workflows for people and institutions that need documents to stay trusted after they move.
+      </p>
       
       {error && (
         <div style={{ 
@@ -204,82 +197,44 @@ const Pricing: React.FC = () => {
       )}
       
       <div className="pricing-cards">
-        {/*
-        // Free Tier (hidden for now)
-        {freeProduct && (
-          <div className="pricing-card">
-            <h3>Free Tier</h3>
-            <p className="price">{formatPrice(freeProduct)}</p>
-            <ul>
-              <li><strong>{freeProduct.limits.images} image analyses</strong> per month</li>
-              <li><strong>{freeProduct.limits.videos} video analysis</strong> per month</li>
-              <li>Single file processing</li>
-              <li>Basic analysis reports</li>
-              <li>Community support</li>
-              <li>Standard processing</li>
-            </ul>
-            <button 
-              className="pricing-cta"
-              onClick={() => handleSubscribe(freeProduct)}
-              disabled={redirectingProduct === freeProduct.id}
-            >
-              {redirectingProduct === freeProduct.id ? 'Redirecting...' : 'Start Free Forever'}
-            </button>
-            <p style={{ fontSize: '0.8em', color: '#666', marginTop: '10px' }}>
-              No credit card required
-            </p>
-          </div>
-        )}
-        */}
-
-        {/* Explorer Plan */}
         <div className="pricing-card">
-          <h3>Explorer</h3>
-          <p className="price">
-            {explorerProduct ? formatPrice(explorerProduct) : '$19/month'}
-          </p>
+          <h3>Free</h3>
+          <p className="price">Free</p>
           <ul>
-            <li><strong>{explorerProduct ? explorerProduct.limits.images : 100} image analyses</strong> per month</li>
-            <li><strong>{explorerProduct ? explorerProduct.limits.videos : 10} video analyses</strong> per month</li>
-            <li>Single file processing</li>
-            <li>Basic PDF reports</li>
-            <li>Email support (48h response)</li>
-            <li>Standard processing queue</li>
+            <li><strong>{freeProduct ? freeProduct.limits.images : 4} image analyses</strong> per month</li>
+            <li><strong>{freeProduct ? freeProduct.limits.videos : 1} video analysis</strong> per month</li>
+            <li>Public provenance verification</li>
+            <li>Signature, email, and certificate checks</li>
+            <li>Hosted registry record lookup</li>
+            <li>No certificate issuance</li>
+            <li>Community support</li>
           </ul>
           <button 
             className="pricing-cta"
             onClick={() => {
-              if (explorerProduct) {
-                handleSubscribe(explorerProduct);
+              if (freeProduct) {
+                handleSubscribe(freeProduct);
               } else {
-                window.open(generateDirectPolarUrl('explorer'), '_blank');
+                window.location.href = user ? '/resources' : '/register';
               }
             }}
-            disabled={redirectingProduct === explorerProduct?.id}
+            disabled={redirectingProduct === freeProduct?.id}
           >
-            {redirectingProduct === explorerProduct?.id ? 'Redirecting...' : 'Start with Explorer'}
+            {redirectingProduct === freeProduct?.id ? 'Redirecting...' : 'Start Free'}
           </button>
-          {!explorerProduct && (
-            <p style={{ fontSize: '0.8em', color: '#666', marginTop: '10px' }}>
-              Using fallback pricing
-            </p>
-          )}
         </div>
 
-        {/* Professional Plan - Main Offering */}
         <div className="pricing-card featured">
-          <h3>Professional</h3>
-          <p className="price">
-            {professionalProduct ? formatPrice(professionalProduct) : '$79/month'}
-          </p>
+          <h3>Pro</h3>
+          <p className="price">$299/month</p>
           <ul>
             <li><strong>{professionalProduct ? professionalProduct.limits.images : 500} image analyses</strong> per month</li>
             <li><strong>{professionalProduct ? professionalProduct.limits.videos : 50} video analyses</strong> per month</li>
             <li>Batch image processing</li>
             <li>Smart video frame sampling</li>
             <li>Advanced PDF reports with visual evidence</li>
-            <li>Email reports to multiple recipients</li>
             <li>Email and signature-token provenance workflows</li>
+            <li>Personal signed document workflows</li>
             <li>Certificate issuance available on Team</li>
             <li>Priority support (24h response)</li>
             <li>Faster processing queue</li>
@@ -295,7 +250,7 @@ const Pricing: React.FC = () => {
             }}
             disabled={redirectingProduct === professionalProduct?.id}
           >
-            {redirectingProduct === professionalProduct?.id ? 'Redirecting...' : 'Choose Professional'}
+            {redirectingProduct === professionalProduct?.id ? 'Redirecting...' : 'Choose Pro'}
           </button>
           {!professionalProduct && (
             <p style={{ fontSize: '0.8em', color: '#666', marginTop: '10px' }}>
@@ -304,20 +259,18 @@ const Pricing: React.FC = () => {
           )}
         </div>
 
-        {/* Team Plan */}
         <div className="pricing-card">
           <h3>Team</h3>
-          <p className="price">
-            {teamProduct ? formatPrice(teamProduct) : '$199/month'}
-          </p>
+          <p className="price">$499/month</p>
           <ul>
             <li><strong>{teamProduct ? teamProduct.limits.images : 2000} image analyses</strong> per month</li>
             <li><strong>{teamProduct ? teamProduct.limits.videos : 200} video analyses</strong> per month</li>
             <li>Unlimited batch processing</li>
             <li>Full video analysis</li>
-            <li>Custom report branding</li>
-            <li>Valid certificate issuance renewed monthly</li>
+            <li>Valid certificate issuance with monthly renewal</li>
             <li>PDF/DOCX certificate provenance workflows</li>
+            <li>Hosted registry records and verification URLs</li>
+            <li>Revocation dashboard for issued documents</li>
             <li>3 team member seats</li>
             <li>Priority support (4h response)</li>
             <li>Dedicated processing resources</li>
@@ -342,29 +295,22 @@ const Pricing: React.FC = () => {
           )}
         </div>
 
-        {/*
-        // Enterprise - Custom (hidden for now)
-        <div className="pricing-card enterprise">
-          <h3>Enterprise</h3>
-          <p className="price">Custom</p>
-          <ul>
-            <li>Custom analysis limits</li>
-            <li>API access licensing</li>
-            <li>White-label solutions</li>
-            <li>Dedicated infrastructure</li>
-            <li>SLAs and custom contracts</li>
-            <li>24/7 dedicated support</li>
-            <li>On-premise deployment options</li>
-            <li>Custom model training</li>
-          </ul>
-          <button className="pricing-cta" onClick={handleContactSales}>
-            Contact Sales
-          </button>
-        </div>
-        */}
       </div>
 
-      {/* Pay-as-you-go option */}
+      <div className="sdk-integration-strip">
+        <div>
+          <p className="eyebrow">Custom integrations</p>
+          <h3>Build on VeriForensic</h3>
+          <p>
+            Institutions can use the ns-stego SDK with the VeriForensic API to add provenance to their own portals, gateways, and document workflows.
+          </p>
+        </div>
+        <div className="sdk-actions">
+          <a className="secondary-action" href="/ns-stego/BUILDING/index.html">Download SDK</a>
+          <a className="secondary-action" href="/ns-stego/API_SPEC/index.html">API docs</a>
+        </div>
+      </div>
+
       <div className="usage-based-pricing">
         <h3>Need more flexibility?</h3>
         <div className="usage-grid">
@@ -385,11 +331,11 @@ const Pricing: React.FC = () => {
 
       {/* Free Trial Notice */}
       <div className="free-trial-notice">
-        <h3>Start Free Tier</h3>
+        <h3>Start with public verification</h3>
         <p>
-          Try all Professional features under free tier with{' '}
-          {freeProduct ? freeProduct.limits.images : 4} free image and{' '}
-          {freeProduct ? freeProduct.limits.videos : 1} video analyses every month
+          Verify public provenance records and run{' '}
+          {freeProduct ? freeProduct.limits.images : 4} image and{' '}
+          {freeProduct ? freeProduct.limits.videos : 1} video checks every month.
         </p>
         <button 
           className="trial-cta"
@@ -400,7 +346,7 @@ const Pricing: React.FC = () => {
               window.open(generateDirectPolarUrl('free'), '_blank');
             }
           }}
-          disabled={!freeProduct || redirectingProduct === freeProduct.id}
+          disabled={redirectingProduct === freeProduct?.id}
         >
           {redirectingProduct === freeProduct?.id ? 'Redirecting...' : 'Start Free Forever'}
         </button>

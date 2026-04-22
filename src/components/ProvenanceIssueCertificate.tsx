@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { classificationService } from '../services/api';
 import { ProvenanceIssueCertificateInput } from '../types';
@@ -15,7 +15,6 @@ const defaultMetadata = (): ProvenanceIssueCertificateInput => ({
   expires_at: '',
   metadata_visibility: 'public_safe',
   model_name: 'sshleifer/tiny-gpt2',
-  bits_per_token: 4,
   timestamp: new Date().toISOString(),
 });
 
@@ -35,6 +34,18 @@ const ProvenanceIssueCertificate: React.FC = () => {
   const [issuedRecord, setIssuedRecord] = useState<IssuedRegistryState | null>(null);
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
   const [requiresUpgrade, setRequiresUpgrade] = useState(false);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const refreshTimestamp = () => {
+      setMetadata((current) => ({ ...current, timestamp: new Date().toISOString() }));
+    };
+
+    refreshTimestamp();
+    const interval = window.setInterval(refreshTimestamp, 1000);
+    return () => window.clearInterval(interval);
+  }, [loading]);
 
   const updateMetadata = (key: keyof ProvenanceIssueCertificateInput, value: string | number) => {
     setMetadata((current) => ({ ...current, [key]: value }));
@@ -66,10 +77,29 @@ const ProvenanceIssueCertificate: React.FC = () => {
       setError('Add a document title for the registry record.');
       return;
     }
+    const requiredFields: Array<[keyof ProvenanceIssueCertificateInput, string]> = [
+      ['document_type', 'Add the document type.'],
+      ['issuer_id', 'Add the issuer ID.'],
+      ['cert_id', 'Add the certificate ID.'],
+      ['recipient_id', 'Add the recipient ID.'],
+      ['recipient_name', 'Add the recipient name.'],
+      ['recipient_email', 'Add the recipient email.'],
+      ['model_name', 'Add the model name.'],
+      ['metadata_visibility', 'Choose a visibility setting.'],
+    ];
+    for (const [field, message] of requiredFields) {
+      if (!String(metadata[field] || '').trim()) {
+        setError(message);
+        return;
+      }
+    }
 
     setLoading(true);
     try {
-      const issued = await classificationService.issueProvenanceCertificate(file, metadata);
+      const issued = await classificationService.issueProvenanceCertificate(file, {
+        ...metadata,
+        timestamp: new Date().toISOString(),
+      });
       const url = window.URL.createObjectURL(issued.blob);
       const anchor = document.createElement('a');
       anchor.href = url;
@@ -102,7 +132,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
 
       <form className="upload-form provenance-form" onSubmit={handleSubmit}>
         <p className="form-help">
-          Professional covers email and signature-token workflows. Team issuance creates a registry record with a monthly server-side provenance license.
+          Pro covers email and signature-token workflows. Team issuance creates a registry record with a monthly server-side provenance license.
         </p>
 
         <div className="form-group">
@@ -112,6 +142,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
             className="model-select"
             type="file"
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            required
             onChange={(event) => setFile(event.target.files?.[0] || null)}
           />
           {file && <p className="form-help">Selected: {file.name}</p>}
@@ -124,6 +155,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
             value={metadata.title}
             onChange={(event) => updateMetadata('title', event.target.value)}
             placeholder="Official transcript for Jane Doe"
+            required
           />
         </div>
 
@@ -135,6 +167,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
               value={metadata.document_type}
               onChange={(event) => updateMetadata('document_type', event.target.value)}
               placeholder="certificate"
+              required
             />
           </div>
           <div className="form-group">
@@ -144,6 +177,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
               className="model-select"
               value={metadata.metadata_visibility}
               onChange={(event) => updateMetadata('metadata_visibility', event.target.value)}
+              required
             >
               <option value="public_safe">Public safe summary</option>
               <option value="recipient_only">Recipient only</option>
@@ -160,6 +194,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
             onChange={(event) => updateMetadata('secret', event.target.value)}
             placeholder="issuer|certificate-id|recipient|timestamp"
             rows={4}
+            required
           />
         </div>
 
@@ -171,6 +206,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
               value={metadata.issuer_id}
               onChange={(event) => updateMetadata('issuer_id', event.target.value)}
               placeholder="university-a"
+              required
             />
           </div>
           <div className="form-group">
@@ -180,6 +216,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
               value={metadata.cert_id}
               onChange={(event) => updateMetadata('cert_id', event.target.value)}
               placeholder="cert-2026-001"
+              required
             />
           </div>
           <div className="form-group">
@@ -189,6 +226,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
               value={metadata.recipient_id}
               onChange={(event) => updateMetadata('recipient_id', event.target.value)}
               placeholder="recipient@example.com"
+              required
             />
           </div>
           <div className="form-group">
@@ -198,6 +236,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
               value={metadata.recipient_name}
               onChange={(event) => updateMetadata('recipient_name', event.target.value)}
               placeholder="Jane Doe"
+              required
             />
           </div>
           <div className="form-group">
@@ -208,6 +247,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
               value={metadata.recipient_email}
               onChange={(event) => updateMetadata('recipient_email', event.target.value)}
               placeholder="recipient@example.com"
+              required
             />
           </div>
           <div className="form-group">
@@ -223,9 +263,12 @@ const ProvenanceIssueCertificate: React.FC = () => {
             <label htmlFor="timestamp">Timestamp</label>
             <input
               id="timestamp"
+              className="muted-input"
               value={metadata.timestamp}
-              onChange={(event) => updateMetadata('timestamp', event.target.value)}
+              readOnly
+              aria-readonly="true"
             />
+            <p className="form-help">Set automatically at the moment of issuance.</p>
           </div>
           <div className="form-group">
             <label htmlFor="model-name">Model name</label>
@@ -233,17 +276,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
               id="model-name"
               value={metadata.model_name}
               onChange={(event) => updateMetadata('model_name', event.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="bits-per-token">Bits per token</label>
-            <input
-              id="bits-per-token"
-              type="number"
-              min="1"
-              max="8"
-              value={metadata.bits_per_token}
-              onChange={(event) => updateMetadata('bits_per_token', Number(event.target.value))}
+              required
             />
           </div>
         </div>

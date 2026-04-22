@@ -297,7 +297,7 @@ class ApiService {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/ns-stego/verify-certificate`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry/verify`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -331,7 +331,6 @@ class ApiService {
     formData.append('expires_at', metadata.expires_at || '');
     formData.append('metadata_visibility', metadata.metadata_visibility || 'public_safe');
     formData.append('model_name', metadata.model_name || 'sshleifer/tiny-gpt2');
-    formData.append('bits_per_token', String(metadata.bits_per_token || 4));
     formData.append('timestamp', metadata.timestamp || '');
     if (metadata.account_id) {
       formData.append('account_id', metadata.account_id);

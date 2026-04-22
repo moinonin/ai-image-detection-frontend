@@ -8,6 +8,11 @@ type VerifyMode = 'signature' | 'email' | 'certificate';
 function deriveStatus(result: ProvenanceVerifyResponse | null): ProvenanceStatus {
   if (!result) return 'unknown';
 
+  const registryStatus = String(result.registry_status || result.registry?.status || '').toLowerCase();
+  if (['revoked', 'expired', 'superseded', 'not_registered'].includes(registryStatus)) {
+    return registryStatus as ProvenanceStatus;
+  }
+
   const rawStatus = String(
     result.status ||
       result.metadata?.status ||
@@ -37,6 +42,14 @@ function statusCopy(status: ProvenanceStatus): string {
       return 'Verified provenance was found.';
     case 'tampered':
       return 'The provenance check indicates tampering.';
+    case 'revoked':
+      return 'Proof was found, but this document has been revoked.';
+    case 'expired':
+      return 'Proof was found, but this document has expired.';
+    case 'superseded':
+      return 'Proof was found, but this document has been superseded.';
+    case 'not_registered':
+      return 'Proof was checked, but no matching registry record was found.';
     case 'unverified':
       return 'No valid provenance proof was confirmed.';
     case 'unsupported':
@@ -59,6 +72,7 @@ function StatusBadge({ status }: { status: ProvenanceStatus }) {
         </span>
       );
     case 'tampered':
+    case 'revoked':
     case 'upstream_error':
       return (
         <span className="status-icon-badge danger">
@@ -139,7 +153,7 @@ const ProvenanceVerify: React.FC = () => {
     <div className="provenance-service">
       <section className="page-header">
         <h1>Verify Provenance</h1>
-        <p>Check sender tokens, raw emails, and stamped certificates for authentic proof.</p>
+        <p>Check embedded proof and, for registered documents, confirm whether the issuer record is still active.</p>
       </section>
 
       <div className="provenance-tabs" role="tablist" aria-label="Provenance verification modes">
@@ -234,6 +248,50 @@ const ProvenanceVerify: React.FC = () => {
               <span className="detail-label">Status</span>
               <span className="detail-value">{status}</span>
             </div>
+            {result.trust_decision && (
+              <div className="detail-item">
+                <span className="detail-label">Trust decision</span>
+                <span className="detail-value">{String(result.trust_decision)}</span>
+              </div>
+            )}
+            {result.verified !== undefined && (
+              <div className="detail-item">
+                <span className="detail-label">Embedded proof</span>
+                <span className="detail-value">{result.verified ? 'verified' : 'not verified'}</span>
+              </div>
+            )}
+            {result.registry_status && (
+              <div className="detail-item">
+                <span className="detail-label">Registry status</span>
+                <span className="detail-value">{String(result.registry_status)}</span>
+              </div>
+            )}
+            {result.registry?.title && (
+              <div className="detail-item">
+                <span className="detail-label">Registered title</span>
+                <span className="detail-value">{String(result.registry.title)}</span>
+              </div>
+            )}
+            {result.registry?.issuer_name && (
+              <div className="detail-item">
+                <span className="detail-label">Issuer</span>
+                <span className="detail-value">{String(result.registry.issuer_name)}</span>
+              </div>
+            )}
+            {result.verification_url && (
+              <div className="detail-item detail-item-stack">
+                <span className="detail-label">Registry record</span>
+                <Link className="detail-value registry-url" to={`/provenance/registry/${result.registry?.document_id}`}>
+                  {result.verification_url}
+                </Link>
+              </div>
+            )}
+            {result.message && (
+              <div className="detail-item detail-item-stack">
+                <span className="detail-label">Decision note</span>
+                <span className="detail-value">{String(result.message)}</span>
+              </div>
+            )}
             {result.reason && (
               <div className="detail-item">
                 <span className="detail-label">Reason</span>

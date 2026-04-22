@@ -1566,7 +1566,7 @@ body {
 
 .provenance-service .page-header::after {
   color: var(--vf-muted);
-  content: "Public verification stays lightweight. Issuance remains authenticated and policy-controlled.";
+  content: "Proof confirms origin. Registry status confirms whether an issued document is still active.";
   display: block;
   max-width: 640px;
   padding-top: 1rem;
@@ -1653,6 +1653,12 @@ body {
   outline-color: var(--vf-blue);
 }
 
+.provenance-form .muted-input {
+  color: var(--vf-muted);
+  cursor: default;
+  opacity: 0.78;
+}
+
 .provenance-service .analyze-btn {
   background: var(--vf-blue);
   border: 1px solid var(--vf-blue);
@@ -1698,11 +1704,15 @@ body {
 }
 
 .provenance-result.status-tampered,
+.provenance-result.status-revoked,
 .provenance-result.status-upstream_error {
   border-left-color: var(--vf-danger);
 }
 
 .provenance-result.status-unverified,
+.provenance-result.status-expired,
+.provenance-result.status-superseded,
+.provenance-result.status-not_registered,
 .provenance-result.status-unsupported,
 .provenance-result.status-unknown {
   border-left-color: var(--vf-warning);
@@ -2212,6 +2222,271 @@ body {
 
   .secondary-action,
   .danger-action {
+    width: 100%;
+  }
+}
+
+.pricing {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 3.5rem 0 4rem;
+}
+
+.pricing > h1,
+.pricing-subtitle {
+  text-align: center;
+}
+
+.pricing > h1 {
+  color: var(--vf-blue);
+  font-size: 3rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.08;
+  margin-bottom: 1rem;
+}
+
+.pricing-subtitle {
+  color: var(--vf-muted);
+  font-size: 1.1rem;
+  line-height: 1.55;
+  margin: 0 auto 2.5rem;
+  max-width: 780px;
+}
+
+.pricing-cards {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 2rem;
+}
+
+.pricing-card {
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border);
+  border-radius: 0;
+  color: var(--vf-text);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 2rem;
+  text-align: left;
+}
+
+.pricing-card.featured {
+  border-color: var(--vf-blue);
+  box-shadow: inset 0 4px 0 var(--vf-blue);
+}
+
+.pricing-card h3,
+.usage-based-pricing h3,
+.free-trial-notice h3,
+.sdk-integration-strip h3 {
+  color: var(--vf-blue);
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.pricing-card .price {
+  color: var(--vf-text);
+  font-size: 2.25rem;
+  font-weight: 400;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.pricing-card ul {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: .75rem;
+  list-style: none;
+  margin: 0 0 2rem;
+  padding: 0;
+}
+
+.pricing-card li {
+  border-top: 1px solid var(--vf-border);
+  color: var(--vf-muted);
+  line-height: 1.45;
+  padding-top: .75rem;
+}
+
+.pricing-card li strong {
+  color: var(--vf-text);
+  font-weight: 600;
+}
+
+.pricing-cta,
+.trial-cta {
+  align-items: center;
+  background: var(--vf-blue);
+  border: 1px solid var(--vf-blue);
+  border-radius: 0;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 600;
+  justify-content: center;
+  min-height: 3rem;
+  padding: .875rem 1.25rem;
+  text-decoration: none;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease;
+  width: 100%;
+}
+
+.pricing-cta:hover,
+.trial-cta:hover {
+  background: var(--vf-blue-hover);
+  border-color: var(--vf-blue-hover);
+}
+
+.pricing-cta:disabled,
+.trial-cta:disabled {
+  cursor: not-allowed;
+  opacity: .7;
+}
+
+.sdk-integration-strip {
+  align-items: center;
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border);
+  color: var(--vf-text);
+  display: flex;
+  gap: 2rem;
+  justify-content: space-between;
+  margin: 2rem 0;
+  padding: 2rem;
+}
+
+.sdk-integration-strip .eyebrow {
+  color: var(--vf-muted);
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-bottom: .5rem;
+  text-transform: uppercase;
+}
+
+.sdk-integration-strip p {
+  color: var(--vf-muted);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 680px;
+}
+
+.sdk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  justify-content: flex-end;
+}
+
+.secondary-action {
+  align-items: center;
+  background: transparent;
+  border: 1px solid var(--vf-blue);
+  border-radius: 0;
+  color: var(--vf-blue);
+  display: inline-flex;
+  font-weight: 600;
+  min-height: 3rem;
+  padding: .75rem 1rem;
+  text-decoration: none;
+  transition: background-color .16s ease, color .16s ease;
+}
+
+.secondary-action:hover {
+  background: var(--vf-blue);
+  color: #fff;
+}
+
+.usage-based-pricing,
+.free-trial-notice {
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border);
+  color: var(--vf-text);
+  margin-top: 2rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.usage-grid {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.5rem;
+}
+
+.usage-tier {
+  background: var(--vf-input-bg);
+  border: 1px solid var(--vf-border);
+  padding: 1.5rem;
+}
+
+.usage-tier h4 {
+  color: var(--vf-text);
+  font-weight: 600;
+  margin-bottom: .5rem;
+}
+
+.usage-tier p,
+.free-trial-notice p {
+  color: var(--vf-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.free-trial-notice p {
+  margin: 0 auto 1.25rem;
+  max-width: 640px;
+}
+
+@media (max-width: 900px) {
+  .pricing {
+    padding: 2.5rem 0 3rem;
+  }
+
+  .pricing > h1 {
+    font-size: 2.5rem;
+  }
+
+  .pricing-cards,
+  .usage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sdk-integration-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sdk-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .pricing > h1 {
+    font-size: 2rem;
+  }
+
+  .pricing-card,
+  .sdk-integration-strip,
+  .usage-based-pricing,
+  .free-trial-notice {
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .secondary-action,
+  .danger-action {
+    justify-content: center;
     width: 100%;
   }
 }

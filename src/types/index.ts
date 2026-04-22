@@ -203,6 +203,10 @@ export type ProvenanceStatus =
   | 'verified'
   | 'unverified'
   | 'tampered'
+  | 'revoked'
+  | 'expired'
+  | 'superseded'
+  | 'not_registered'
   | 'upstream_error'
   | 'unsupported'
   | 'unknown';
@@ -217,6 +221,14 @@ export interface ProvenanceVerifyResponse {
   secret?: string;
   payload?: Record<string, any>;
   metadata?: Record<string, any>;
+  proof?: Record<string, any>;
+  registry?: ProvenanceRegistryRecord | null;
+  registry_match?: boolean;
+  registry_status?: string;
+  trust_decision?: 'accept' | 'review' | 'do_not_accept' | string;
+  verification_url?: string;
+  document_hash?: string;
+  message?: string;
   raw?: Record<string, any>;
   [key: string]: any;
 }
@@ -233,7 +245,6 @@ export interface ProvenanceIssueCertificateInput {
   expires_at?: string;
   metadata_visibility?: 'public_safe' | 'recipient_only' | 'issuer_only';
   model_name?: string;
-  bits_per_token?: number;
   timestamp?: string;
   account_id?: string;
 }
