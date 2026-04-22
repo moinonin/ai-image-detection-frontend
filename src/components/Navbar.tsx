@@ -3,8 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { classificationService } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
-import lightLogo from '../../testlogos/lightsvg.svg';
-import darkLogo from '../../testlogos/darksvg.svg';
+import lightLogo from '../../lightshort.svg';
+import darkLogo from '../../darkshort.svg';
 
 type ThemeMode = 'light' | 'dark';
 
