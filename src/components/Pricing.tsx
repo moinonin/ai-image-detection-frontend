@@ -174,9 +174,7 @@ const Pricing: React.FC = () => {
   return (
     <div className="pricing">
       <h1>Provenance-First Pricing</h1>
-      <p className="pricing-subtitle">
-        Start with public verification, then add provenance workflows for people and institutions that need documents to stay trusted after they move.
-      </p>
+
       
       {error && (
         <div style={{ 
@@ -301,9 +299,6 @@ const Pricing: React.FC = () => {
         <div>
           <p className="eyebrow">Custom integrations</p>
           <h3>Build on VeriForensic</h3>
-          <p>
-            Institutions can use the ns-stego SDK with the VeriForensic API to add provenance to their own portals, gateways, and document workflows.
-          </p>
         </div>
         <div className="sdk-actions">
           <a className="secondary-action" href="/ns-stego/BUILDING/index.html">Download SDK</a>

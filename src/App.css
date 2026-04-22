@@ -2490,3 +2490,43 @@ body {
     width: 100%;
   }
 }
+
+/* Pricing Hover Effects Fixes */
+.pricing-cards {
+  position: relative;
+}
+
+.pricing-card {
+  /* Prevent overlapping issues by managing z-index */
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease, opacity 0.4s ease, z-index 0.4s ease, box-shadow 0.4s ease !important;
+  z-index: 1;
+}
+
+/* Default state: Pro is popped out */
+.pricing-card.featured {
+  transform: scale(1.05) !important;
+  z-index: 2;
+  box-shadow: 0 15px 50px rgba(15, 98, 254, 0.2) !important;
+}
+
+/* When the whole container is hovered, revert .featured back to regular size, unless it is the one being hovered */
+@media (hover: hover) {
+  .pricing-cards:hover .pricing-card.featured {
+    transform: scale(1) !important;
+    z-index: 1;
+    box-shadow: none !important;
+  }
+
+  /* On hover of any card, pop it out and increase z-index so it sits well and doesnt overlap under other cards */
+  .pricing-cards .pricing-card:hover {
+    transform: scale(1.05) !important;
+    z-index: 3;
+    box-shadow: 0 15px 50px rgba(15, 98, 254, 0.3) !important;
+  }
+
+  /* Slightly fade non-hovered cards when container is hovered to emphasize the hovered one */
+  .pricing-cards:hover .pricing-card:not(:hover) {
+    opacity: 0.9;
+    filter: brightness(0.95);
+  }
+}

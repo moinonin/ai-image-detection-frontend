@@ -131,9 +131,6 @@ const ProvenanceIssueCertificate: React.FC = () => {
       </section>
 
       <form className="upload-form provenance-form" onSubmit={handleSubmit}>
-        <p className="form-help">
-          Pro covers email and signature-token workflows. Team issuance creates a registry record with a monthly server-side provenance license.
-        </p>
 
         <div className="form-group">
           <label htmlFor="issue-file">Certificate file</label>
@@ -268,7 +265,6 @@ const ProvenanceIssueCertificate: React.FC = () => {
               readOnly
               aria-readonly="true"
             />
-            <p className="form-help">Set automatically at the moment of issuance.</p>
           </div>
           <div className="form-group">
             <label htmlFor="model-name">Model name</label>

@@ -22,8 +22,6 @@ const Footer: React.FC = () => {
             </p>
             <div className="footer-meta-links">
               <a href="/ns-stego/WHITEPAPER_PROVENANCE/index.html">Whitepaper</a>
-              <a href="/ns-stego/index.html">Docs</a>
-              <Link to="/about">About</Link>
             </div>
           </div>
 
@@ -34,10 +32,6 @@ const Footer: React.FC = () => {
               <li><Link to="/provenance/verify">Verify Provenance</Link></li>
               <li><Link to="/provenance/issue-certificate">Issue Certificate</Link></li>
               <li><Link to="/provenance/registry">Issuer Registry</Link></li>
-              <li><a href="/ns-stego/index.html">Docs Home</a></li>
-              <li><a href="/ns-stego/SPEC/index.html">SPEC</a></li>
-              <li><a href="/ns-stego/API_SPEC/index.html">API Spec</a></li>
-              <li><a href="/ns-stego/DEPLOYMENT/index.html">Deployment Guide</a></li>
             </ul>
           </div>
 
