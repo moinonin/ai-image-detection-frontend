@@ -13,6 +13,7 @@ const defaultMetadata = (): ProvenanceIssueCertificateInput => ({
   recipient_name: '',
   recipient_email: '',
   expires_at: '',
+  supersedes_document_id: '',
   metadata_visibility: 'public_safe',
   model_name: 'sshleifer/tiny-gpt2',
   timestamp: new Date().toISOString(),
@@ -24,6 +25,7 @@ type IssuedRegistryState = {
   verificationUrl?: string;
   status?: string;
   storageMode?: string;
+  supersedesDocumentId?: string;
 };
 
 const ProvenanceIssueCertificate: React.FC = () => {
@@ -114,6 +116,7 @@ const ProvenanceIssueCertificate: React.FC = () => {
         verificationUrl: issued.verificationUrl,
         status: issued.status,
         storageMode: issued.storageMode,
+        supersedesDocumentId: issued.supersedesDocumentId,
       });
     } catch (err: any) {
       setRequiresUpgrade(err.status === 402 || err.status === 403);
@@ -257,6 +260,15 @@ const ProvenanceIssueCertificate: React.FC = () => {
             />
           </div>
           <div className="form-group">
+            <label htmlFor="supersedes-document-id">Supersedes document ID</label>
+            <input
+              id="supersedes-document-id"
+              value={metadata.supersedes_document_id}
+              onChange={(event) => updateMetadata('supersedes_document_id', event.target.value)}
+              placeholder="Optional existing document ID"
+            />
+          </div>
+          <div className="form-group">
             <label htmlFor="timestamp">Timestamp</label>
             <input
               id="timestamp"
@@ -313,6 +325,12 @@ const ProvenanceIssueCertificate: React.FC = () => {
               <div className="detail-item">
                 <span className="detail-label">Storage mode</span>
                 <span className="detail-value">{issuedRecord.storageMode}</span>
+              </div>
+            )}
+            {issuedRecord.supersedesDocumentId && (
+              <div className="detail-item detail-item-stack">
+                <span className="detail-label">Supersedes document</span>
+                <span className="detail-value">{issuedRecord.supersedesDocumentId}</span>
               </div>
             )}
             {issuedRecord.verificationUrl && (

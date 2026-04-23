@@ -147,6 +147,30 @@ const ProvenanceRegistryRecord: React.FC = () => {
                 <span className="detail-value">{record.revocation_reason}</span>
               </div>
             )}
+            {record.supersedes_document_id && (
+              <div className="detail-item detail-item-stack">
+                <span className="detail-label">Supersedes</span>
+                <span className="detail-value">
+                  {record.supersedes_verification_url ? (
+                    <a href={record.supersedes_verification_url}>{record.supersedes_document_id}</a>
+                  ) : (
+                    record.supersedes_document_id
+                  )}
+                </span>
+              </div>
+            )}
+            {record.superseded_by_document_id && (
+              <div className="detail-item detail-item-stack">
+                <span className="detail-label">Superseded by</span>
+                <span className="detail-value">
+                  {record.superseded_by_verification_url ? (
+                    <a href={record.superseded_by_verification_url}>{record.superseded_by_document_id}</a>
+                  ) : (
+                    record.superseded_by_document_id
+                  )}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="registry-actions">

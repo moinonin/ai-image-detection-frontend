@@ -57,6 +57,27 @@ const SubscriptionSuccessHandler: React.FC = () => {
             }
           }
 
+          const usageBeforeFinalize = await classificationService.getCurrentUsage();
+          const accountId = usageBeforeFinalize.subscription.account_id;
+
+          if (sessionId && accountId) {
+            for (let attempt = 0; attempt < 4; attempt += 1) {
+              try {
+                await classificationService.completeUpgrade(accountId, {
+                  checkoutSessionId: sessionId,
+                });
+                break;
+              } catch (error) {
+                const statusCode = (error as { status?: number }).status;
+                if (statusCode !== 409 || attempt === 3) {
+                  console.warn('Could not finalize checkout immediately, webhook may still complete it:', error);
+                  break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 1500));
+              }
+            }
+          }
+
           // Refresh user data
           await refreshUser();
           

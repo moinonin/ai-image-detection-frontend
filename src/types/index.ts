@@ -258,6 +258,7 @@ export interface ProvenanceIssueCertificateInput {
   recipient_name?: string;
   recipient_email?: string;
   expires_at?: string;
+  supersedes_document_id?: string;
   metadata_visibility?: 'public_safe' | 'recipient_only' | 'issuer_only';
   model_name?: string;
   timestamp?: string;
@@ -272,6 +273,7 @@ export interface ProvenanceIssueCertificateResponse {
   verificationUrl?: string;
   status?: string;
   storageMode?: string;
+  supersedesDocumentId?: string;
 }
 
 export interface ProvenanceRegistryRecord {
@@ -288,6 +290,10 @@ export interface ProvenanceRegistryRecord {
   document_hash?: string;
   revoked_at?: string | null;
   revocation_reason?: string | null;
+  supersedes_document_id?: string | null;
+  supersedes_verification_url?: string | null;
+  superseded_by_document_id?: string | null;
+  superseded_by_verification_url?: string | null;
   [key: string]: any;
 }
 

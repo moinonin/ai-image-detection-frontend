@@ -9,13 +9,30 @@ class ApiService {
   private async throwResponseError(response: Response, fallbackMessage: string): Promise<never> {
     let message = fallbackMessage;
     let serverDetail: any = null;
+    let errorCode: string | undefined;
+    let errorCategory: string | undefined;
 
     try {
       const text = await response.text();
       if (text) {
         try {
           serverDetail = JSON.parse(text);
-          message = serverDetail.detail || serverDetail.error || serverDetail.message || text;
+          const detail = serverDetail.detail;
+          const nested =
+            detail && typeof detail === 'object'
+              ? detail
+              : serverDetail.error && typeof serverDetail.error === 'object'
+                ? serverDetail.error
+                : null;
+
+          errorCode = nested?.code || serverDetail.code;
+          errorCategory = nested?.category || serverDetail.category;
+          message =
+            nested?.message ||
+            serverDetail.message ||
+            (typeof detail === 'string' ? detail : null) ||
+            (typeof serverDetail.error === 'string' ? serverDetail.error : null) ||
+            text;
         } catch {
           message = text;
         }
@@ -27,6 +44,8 @@ class ApiService {
     const error = new Error(message);
     (error as any).status = response.status;
     (error as any).serverDetail = serverDetail;
+    (error as any).code = errorCode;
+    (error as any).category = errorCategory;
     throw error;
   }
 
@@ -55,9 +74,8 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
     if (!response.ok) {
-      const error = await response.text();
-      console.error('API Error:', response.status, error);
-      throw new Error(error || `HTTP error! status: ${response.status}`);
+      console.error('API Error:', response.status, endpoint);
+      return this.throwResponseError(response, `Request failed (${response.status})`);
     }
 
     return response.json();
@@ -256,15 +274,19 @@ class ApiService {
   }
 
   async completeUpgrade(
-    accountId: string, 
-    polarSubscriptionId: string, 
-    polarProductId: string
-  ): Promise<{ success: boolean; message: string }> {
+    accountId: string,
+    payload: {
+      polarSubscriptionId?: string;
+      polarProductId?: string;
+      checkoutSessionId?: string;
+    }
+  ): Promise<{ success: boolean; message: string; subscription_status?: string; subscription_plan_type?: string }> {
     return this.request(`/api/v1/subscriptions/${accountId}/complete-upgrade`, {
       method: 'POST',
       body: JSON.stringify({
-        polar_subscription_id: polarSubscriptionId,
-        polar_product_id: polarProductId
+        polar_subscription_id: payload.polarSubscriptionId,
+        polar_product_id: payload.polarProductId,
+        checkout_session_id: payload.checkoutSessionId,
       }),
     });
   }
@@ -329,6 +351,7 @@ class ApiService {
     formData.append('recipient_name', metadata.recipient_name || '');
     formData.append('recipient_email', metadata.recipient_email || '');
     formData.append('expires_at', metadata.expires_at || '');
+    formData.append('supersedes_document_id', metadata.supersedes_document_id || '');
     formData.append('metadata_visibility', metadata.metadata_visibility || 'public_safe');
     formData.append('model_name', metadata.model_name || 'sshleifer/tiny-gpt2');
     formData.append('timestamp', metadata.timestamp || '');
@@ -362,6 +385,7 @@ class ApiService {
       verificationUrl: response.headers.get('x-provenance-verification-url') || undefined,
       status: response.headers.get('x-provenance-status') || undefined,
       storageMode: response.headers.get('x-provenance-storage-mode') || undefined,
+      supersedesDocumentId: response.headers.get('x-provenance-supersedes-document-id') || undefined,
     };
   }
 
