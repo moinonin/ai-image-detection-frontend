@@ -173,7 +173,9 @@ const Pricing: React.FC = () => {
 
   return (
     <div className="pricing">
-      <h1>Provenance-First Pricing</h1>
+      <section className="page-header separator" style={{ paddingBottom: '2rem', textAlign: 'center' }}>
+        <h1>Provenance-First Pricing</h1>
+      </section>
 
       
       {error && (
