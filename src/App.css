@@ -621,6 +621,8 @@ body {
 .action-card,
 .tool-card,
 .value-card,
+.info-card,
+.stats-card,
 .trust-item,
 .usage-stats,
 .support-section,
@@ -630,7 +632,7 @@ body {
 .provenance-tabs button {
   background: var(--vf-surface);
   border-color: var(--vf-border);
-  border-radius: 0;
+  border-radius: 12px;
   box-shadow: none;
   color: var(--vf-text);
 }
@@ -1206,7 +1208,7 @@ body {
 .resources .tools-grid {
   align-items: stretch;
   display: grid;
-  gap: 1px;
+  gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   margin: 0 auto;
   max-width: 1280px;
@@ -1216,7 +1218,7 @@ body {
 .resources .tool-card {
   background: var(--vf-surface);
   border: 1px solid var(--vf-border);
-  border-radius: 0;
+  border-radius: 12px;
   box-shadow: none;
   display: flex;
   flex-direction: column;
@@ -1389,7 +1391,7 @@ body {
 
 .resources .stats-grid {
   display: grid;
-  gap: 1px;
+  gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   margin: 0 auto;
   max-width: 1280px;
@@ -1398,6 +1400,7 @@ body {
 .resources .stat-item {
   background: var(--vf-surface);
   border: 1px solid var(--vf-border);
+  border-radius: 12px;
   padding: 1.75rem 1rem;
 }
 
@@ -1453,7 +1456,7 @@ body {
 
 .resources .format-grid {
   display: grid;
-  gap: 1px;
+  gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   margin-top: 2rem;
 }
@@ -1461,7 +1464,7 @@ body {
 .resources .format-category {
   background: var(--vf-surface);
   border: 1px solid var(--vf-border);
-  border-radius: 0;
+  border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
 }
@@ -2256,7 +2259,7 @@ body {
 
 .pricing-cards {
   display: grid;
-  gap: 1px;
+  gap: 1.5rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-bottom: 2rem;
 }
@@ -2264,7 +2267,7 @@ body {
 .pricing-card {
   background: var(--vf-surface);
   border: 1px solid var(--vf-border);
-  border-radius: 0;
+  border-radius: 12px;
   color: var(--vf-text);
   display: flex;
   flex-direction: column;
@@ -2553,10 +2556,33 @@ body {
 .input-with-button input {
   flex: 1;
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--card-border);
+  background: var(--vf-input-bg);
+  border: 1px solid var(--vf-border);
   border-radius: 8px;
-  color: white;
+  color: var(--vf-text);
+}
+
+.input-with-button .primary-button {
+  padding: 0.75rem 1.5rem;
+  background: var(--vf-blue);
+  color: #ffffff;
+  border: 1px solid var(--vf-blue);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.input-with-button .primary-button:disabled {
+  background: transparent;
+  color: var(--vf-muted);
+  border-color: var(--vf-border);
+  cursor: not-allowed;
+}
+
+.input-with-button .primary-button:hover:not(:disabled) {
+  background: var(--vf-blue-hover);
+  border-color: var(--vf-blue-hover);
 }
 
 .keys-list h4 {
@@ -2633,6 +2659,34 @@ body {
   border-left: 4px solid var(--warning-color);
 }
 
+/* UserProfile Stats Fix */
+.profile-info .stats-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin-top: 1.5rem;
+}
+
+.profile-info .stat {
+  background: var(--vf-blue);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.profile-info .stat-value {
+  font-size: 2.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.profile-info .stat-label {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
 .key-display-box {
   display: flex;
   align-items: center;
@@ -2642,6 +2696,22 @@ body {
   border-radius: 8px;
   margin: 1.5rem 0;
   border: 1px dashed var(--primary-color);
+}
+
+/* Usage Banner Fix for Classification Pages */
+.usage-banner,
+.usage-banner .usage-stats {
+  background: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0 !important;
+  margin-top: 1rem;
+}
+
+.usage-banner .usage-item,
+.usage-banner .usage-item strong {
+  color: var(--vf-text) !important;
 }
 
 .key-display-box code {
@@ -2674,4 +2744,147 @@ body {
 .close-button:hover {
   background: white;
   color: black;
+}
+
+/* Center Classification Headers */
+.single-classification .page-header,
+.batch-classification .page-header,
+.video-classification .page-header {
+  text-align: center;
+}
+
+.single-classification .page-header p,
+.batch-classification .page-header p,
+.video-classification .page-header p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Classification Controls Layout */
+.usage-banner .usage-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+@media (max-width: 600px) {
+  .usage-banner .usage-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.pdf-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border);
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  margin: 2rem 0;
+  gap: 1rem;
+}
+
+.pdf-banner-text {
+  text-align: left;
+  flex: 1 1 300px;
+}
+
+.pdf-banner-text h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--vf-text);
+  font-size: 1.25rem;
+}
+
+.pdf-banner-text p {
+  margin: 0;
+  color: var(--vf-muted);
+  font-size: 0.95rem;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.email-report {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--vf-surface);
+  padding: 1.5rem;
+  border: 1px solid var(--vf-border);
+  border-radius: 8px;
+  width: 100%;
+}
+
+.email-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .pdf-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem 1rem;
+  }
+  
+  .pdf-banner-text {
+    text-align: center;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .action-buttons > button,
+  .action-buttons > .email-report .email-btn {
+    width: 100%;
+  }
+}
+
+.confidence-meters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.confidence-meter {
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.confidence-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.confidence-bar {
+  height: 8px;
+  background: var(--vf-input-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--vf-border);
+}
+
+.confidence-fill {
+  height: 100%;
+  transition: width 0.5s ease-out;
 }

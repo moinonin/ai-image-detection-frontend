@@ -270,8 +270,10 @@ const ProvenanceIssueCertificate: React.FC = () => {
             <label htmlFor="model-name">Model name</label>
             <input
               id="model-name"
+              className="muted-input"
               value={metadata.model_name}
-              onChange={(event) => updateMetadata('model_name', event.target.value)}
+              readOnly
+              aria-readonly="true"
               required
             />
           </div>

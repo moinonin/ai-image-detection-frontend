@@ -13,7 +13,7 @@ import ResetPassword from './components/ResetPassword';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Pricing from './components/Pricing';
-import About from './components/About';
+import Team from './components/Team';
 import Privacy from './components/Privacy';
 import Terms from './components/Terms';
 import Compliance from './components/Compliance';
@@ -42,7 +42,7 @@ const App: React.FC = () => {
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/pricing" element={<Pricing />} />
-                <Route path="/about" element={<About />} />
+                <Route path="/team" element={<Team />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />

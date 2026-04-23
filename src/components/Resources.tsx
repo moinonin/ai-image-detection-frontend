@@ -174,7 +174,7 @@ const Resources: React.FC = () => {
 
           <div className="tool-card neon-blue">
             <div className="tool-icon">🔏</div>
-            <h3>Provenance Docs (ns-stego)</h3>
+            <h3>Provenance</h3>
             <p className="tool-description">
               Embed cryptographic proof, verify authenticity, and integrate with gateways.
               Includes audit logging, SDK usage, and deployment guides.
@@ -311,7 +311,7 @@ const Resources: React.FC = () => {
       <section className="tools-section">
         <div className="models-content">
           <h2 className="av-models">Available AI Models</h2>
-          <p className="resources-subtitle">
+          <p className="resources-subtitle" style={{ marginBottom: '3rem' }}>
             Choose from our specialized AI detection models, each optimized for different use cases 
             and performance characteristics. Select the model that best fits your verification needs.
           </p>

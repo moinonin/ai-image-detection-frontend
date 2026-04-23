@@ -1316,8 +1316,8 @@ class ApiService {
     }
   }
 
-  // Updated batch PDF download to handle BatchJobResponse
-  async downloadBatchPDF(_selectedFiles: File[], _model: string, results: BatchJobResponse): Promise<Blob> {
+  // Updated batch PDF download to handle array of results natively
+  async downloadBatchPDF(_selectedFiles: File[], _model: string, results: any[]): Promise<Blob> {
     const token = localStorage.getItem('token');
     
     try {

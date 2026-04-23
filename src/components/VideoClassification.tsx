@@ -22,6 +22,7 @@ const VideoClassification: React.FC = () => {
   const [partialAnalysis, setPartialAnalysis] = useState(true);
   const [result, setResult] = useState<VideoClassificationResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<any>(null);
@@ -188,7 +189,7 @@ const VideoClassification: React.FC = () => {
   const handleDownloadPDF = async (): Promise<void> => {
     if (!result) return;
 
-    setLoading(true);
+    setIsDownloadingPdf(true);
     try {
       console.log('Full result structure:', JSON.stringify(result, null, 2));
       console.log('Analyses array:', result.analyses);
@@ -218,7 +219,7 @@ const VideoClassification: React.FC = () => {
       console.error('PDF download failed:', error);
       setError(`PDF download failed: ${error.message}`);
     } finally {
-      setLoading(false);
+      setIsDownloadingPdf(false);
     }
   };
 
@@ -300,7 +301,7 @@ const VideoClassification: React.FC = () => {
         </div>
 
         <div className="contact-support">
-          <p>Need help choosing? <a href="/about">Contact our support team</a></p>
+          <p>Need help choosing? <a href="/team">Contact our team</a></p>
         </div>
       </div>
     </div>
@@ -600,10 +601,10 @@ const VideoClassification: React.FC = () => {
                     <button
                       className="pdf-btn futuristic-btn"
                       onClick={handleDownloadPDF}
-                      disabled={loading}
+                      disabled={isDownloadingPdf}
                     >
                       <span className="btn-icon">📄</span>
-                      {loading ? 'Generating PDF...' : 'Download PDF'}
+                      {isDownloadingPdf ? 'Generating PDF...' : 'Download PDF'}
                     </button>
                   </div>
                 )}

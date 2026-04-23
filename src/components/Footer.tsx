@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
           
           {/* Brand & Mission */}
           <div className="footer-section">
-            <div className="footer-logo">VeriForensic</div>
+            <div className="footer-logo" onClick={scrollToTop} style={{ cursor: 'pointer' }} title="Scroll to top">VeriForensic</div>
             <p className="footer-mission">
               Provenance-first trust for digital media.
               Embed proof, verify authenticity, and audit with confidence.

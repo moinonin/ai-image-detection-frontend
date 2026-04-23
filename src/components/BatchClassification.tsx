@@ -7,7 +7,6 @@ import { useToast } from '../contexts/ToastContext';
 import { 
   BatchJob, 
   IndividualClassificationResult,
-  BatchJobResponse,
   BatchAnalysisResult,
   BatchClassificationResponse,
   CurrentUsageResponse
@@ -18,6 +17,13 @@ function truncateFilename(name: string, maxChars: number = 50): string {
   if (n.length <= maxChars) return n;
   if (maxChars <= 3) return n.slice(0, maxChars);
   return `${n.slice(0, maxChars - 3)}...`;
+}
+
+function determineIsAi(analysis: any, item: any = {}): boolean {
+  if (analysis && analysis.is_ai !== undefined) return analysis.is_ai;
+  if (item && item.is_ai !== undefined) return item.is_ai;
+  const pClass = (analysis?.predicted_class || item?.predicted_class || '').toLowerCase();
+  return pClass.includes('ai') || pClass.includes('generated') || pClass.includes('fake');
 }
 
 //type ClassificationResponse = SingleClassificationResponse | BatchClassificationResponse;
@@ -85,12 +91,12 @@ const BatchClassification: React.FC = () => {
   //const [usageData, setUsageData] = useState<CurrentUsageResponse | null>(null);
   const [currentUsageData, setCurrentUsageData] = useState<CurrentUsageResponse | null>(null);
   const [showUpgradeBadge, setShowUpgradeBadge] = useState(false);
-  // Add this state to track plan features
   const [planFeatures, setPlanFeatures] = useState<{
     allowsBatch: boolean;
     maxBatchSize?: number;
     currentPlan: string;
   } | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const checkPlanFeatures = useCallback(async () => {
     try {
       const features = await classificationService.checkPlanFeatures();
@@ -141,9 +147,7 @@ const BatchClassification: React.FC = () => {
           return {
             filename: analysis.filename || result.filename || 'Unknown',
             predicted_class: analysis.predicted_class || result.predicted_class || 'Unknown',
-            is_ai: analysis.is_ai !== undefined ?
-              analysis.is_ai :
-              (result.is_ai !== undefined ? result.is_ai : false),
+            is_ai: determineIsAi(analysis, result),
             confidence: analysis.confidence !== undefined ?
               analysis.confidence :
               (result.confidence !== undefined ? result.confidence : null),
@@ -230,7 +234,7 @@ const BatchClassification: React.FC = () => {
               id: `single-${Date.now()}-${i}`,
               filename: file.name,
               predicted_class: singleResult.analysis.predicted_class || 'Unknown',
-              is_ai: singleResult.analysis.is_ai !== undefined ? singleResult.analysis.is_ai : false,
+              is_ai: determineIsAi(singleResult.analysis),
               confidence: singleResult.analysis.confidence ?? 0,
               probability: singleResult.analysis.probability ?? 0,
               model: singleResult.analysis.model || model,
@@ -345,7 +349,7 @@ const BatchClassification: React.FC = () => {
               id: `batch-${Date.now()}-${index}`,
               filename: analysis.filename || item.filename || `file_${index}`,
               predicted_class: analysis.predicted_class || 'Unknown',
-              is_ai: analysis.is_ai !== undefined ? analysis.is_ai : false,
+              is_ai: determineIsAi(analysis, item),
               confidence: analysis.confidence ?? 0,
               probability: analysis.probability ?? 0,
               model: analysis.model || model,
@@ -656,10 +660,8 @@ const BatchClassification: React.FC = () => {
                 return {
                   filename: analysis.filename || item.filename || 'Unknown',
                   predicted_class: analysis.predicted_class || item.predicted_class || 'Unknown',
-                  is_ai: analysis.is_ai !== undefined ? analysis.is_ai : 
-                        (item.is_ai !== undefined ? item.is_ai : 
-                        (analysis.predicted_class?.toLowerCase().includes('ai') || false)),
-                  confidence: analysis.confidence !== undefined ? analysis.confidence : 
+                  is_ai: determineIsAi(analysis, item),
+                  confidence: analysis.confidence !== undefined ? analysis.confidence :
                             (item.confidence !== undefined ? item.confidence : null),
                   probability: analysis.probability !== undefined ? analysis.probability : 
                               (item.probability !== undefined ? item.probability : null),
@@ -720,11 +722,11 @@ const BatchClassification: React.FC = () => {
       return (
         <button 
           className="pdf-btn futuristic-btn"
-          onClick={() => handleDownloadBatchPDF(jobStatus)}
-          disabled={!jobStatus || getDisplayResults().length === 0}
+          onClick={() => handleDownloadBatchPDF()}
+          disabled={getDisplayResults().length === 0 || isDownloadingPdf}
         >
           <span className="btn-icon">📄</span>
-          Download Batch PDF
+          {isDownloadingPdf ? 'Generating PDF...' : 'Download Batch PDF'}
         </button>
       );
     }
@@ -788,7 +790,6 @@ const BatchClassification: React.FC = () => {
     }
   };
 
-  // Update handleSubmit to use pre-validation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedFiles.length === 0) return;
@@ -799,13 +800,15 @@ const BatchClassification: React.FC = () => {
       return;
     }
 
+    setLoading(true);
+
     // Check usage before proceeding
     const canProceed = await checkBatchUsageBeforeSubmit(selectedFiles.length);
     if (!canProceed) {
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
     setValidationError(null);
     setJobStatus(null);
     setJobId(null);
@@ -894,22 +897,26 @@ const BatchClassification: React.FC = () => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
-  const handleDownloadBatchPDF = async (jobStatus: BatchJobWithDebug | null): Promise<void> => {
-    if (!jobStatus) return;
+  const handleDownloadBatchPDF = async (): Promise<void> => {
+    const results = getDisplayResults();
+    if (results.length === 0) return;
 
+    setIsDownloadingPdf(true);
     try {
       console.log('Downloading batch PDF report...');
+      
+      const payloadReadyResults = results.map(adaptToIndividualClassificationResult);
       const pdfBlob = await classificationService.downloadBatchPDF(
         selectedFiles,
         model,
-        jobStatus as unknown as BatchJobResponse
+        payloadReadyResults
       );
       
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = url;
-      a.download = `batch_analysis_report_${jobId}.pdf`;
+      a.download = `batch_analysis_report_${Date.now()}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -918,6 +925,8 @@ const BatchClassification: React.FC = () => {
     } catch (error: any) {
       console.error('Batch PDF download failed:', error);
       alert('Batch PDF download failed. Please try again.');
+    } finally {
+      setIsDownloadingPdf(false);
     }
   };
 
@@ -1589,6 +1598,73 @@ const BatchClassification: React.FC = () => {
                   </button>
                 </div>
               )}
+
+              {/* PDF and Email actions - moved out of jobStatus rendering block */}
+              <div className="pdf-banner" style={{ marginTop: '2rem' }}>
+                <div className="pdf-banner-text">
+                  <h3>Download Batch Report</h3>
+                  <p>
+                    Summary: {displayResults.length} files • AI: {displayResults.filter(r => r.is_ai).length} • Human: {displayResults.filter(r => !r.is_ai).length}
+                  </p>
+                </div>
+                {renderDownloadButton()}
+              </div>
+
+              <div className="action-buttons">
+                <EmailHealthBadge />
+                <div className="email-report">
+                  <div className="email-display">
+                    <span className="email-label">Email report to:</span>
+                    <span className="email-value">{emailRecipient || 'No email on account'}</span>
+                  </div>
+                  <div className="email-note">
+                    Reports can only be emailed to your account address.
+                  </div>
+                  {emailError && (
+                    <div className="email-error">
+                      {emailError}
+                    </div>
+                  )}
+                  <button
+                    className="email-btn futuristic-btn"
+                    onClick={handleEmailBatchReport}
+                    disabled={loading || !emailRecipient}
+                  >
+                    <span className="btn-icon">✉️</span>
+                    Send Report
+                  </button>
+                  {emailFailed && (
+                    <button
+                      className="retry-btn futuristic-btn"
+                      onClick={handleEmailBatchReport}
+                      disabled={loading || !emailRecipient}
+                    >
+                      Resend
+                    </button>
+                  )}
+                </div>
+                {showEmailConfirm && (
+                  <div className="modal-backdrop">
+                    <div className="modal-card">
+                      <h3>Send Report?</h3>
+                      <p>We will email the report to <strong>{emailRecipient}</strong>.</p>
+                      <div className="modal-actions">
+                        <button className="futuristic-btn" onClick={confirmEmailBatchReport} disabled={loading}>
+                          Confirm
+                        </button>
+                        <button className="retry-btn futuristic-btn" onClick={() => setShowEmailConfirm(false)} disabled={loading}>
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {emailStatus && (
+                  <div className="email-status">
+                    {emailStatus}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -1649,74 +1725,6 @@ const BatchClassification: React.FC = () => {
                     <strong>Error loading results:</strong> {resultsError}
                   </div>
                 )}
-
-                {displayResults.length > 0 && (
-                  <div className="pdf-banner">
-                    <div className="pdf-banner-text">
-                      <h3>Download Batch Report</h3>
-                      <p>
-                        Summary: {displayResults.length} files • AI: {displayResults.filter(r => r.is_ai).length} • Human: {displayResults.filter(r => !r.is_ai).length}
-                      </p>
-                    </div>
-                    {renderDownloadButton()}
-                  </div>
-                )}
-
-                <div className="action-buttons">
-                  <EmailHealthBadge />
-                  <div className="email-report">
-                    <div className="email-display">
-                      <span className="email-label">Email report to:</span>
-                      <span className="email-value">{emailRecipient || 'No email on account'}</span>
-                    </div>
-                    <div className="email-note">
-                      Reports can only be emailed to your account address.
-                    </div>
-                    {emailError && (
-                      <div className="email-error">
-                        {emailError}
-                      </div>
-                    )}
-                    <button
-                      className="email-btn futuristic-btn"
-                      onClick={handleEmailBatchReport}
-                      disabled={loading || !emailRecipient}
-                    >
-                      <span className="btn-icon">✉️</span>
-                      Send Report
-                    </button>
-                    {emailFailed && (
-                      <button
-                        className="retry-btn futuristic-btn"
-                        onClick={handleEmailBatchReport}
-                        disabled={loading || !emailRecipient}
-                      >
-                        Resend
-                      </button>
-                    )}
-                  </div>
-                  {showEmailConfirm && (
-                    <div className="modal-backdrop">
-                      <div className="modal-card">
-                        <h3>Send Report?</h3>
-                        <p>We will email the report to <strong>{emailRecipient}</strong>.</p>
-                        <div className="modal-actions">
-                          <button className="futuristic-btn" onClick={confirmEmailBatchReport} disabled={loading}>
-                            Confirm
-                          </button>
-                          <button className="retry-btn futuristic-btn" onClick={() => setShowEmailConfirm(false)} disabled={loading}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {emailStatus && (
-                    <div className="email-status">
-                      {emailStatus}
-                    </div>
-                  )}
-                </div>
 
                 {jobStatus.error && (
                   <div className="error-message">

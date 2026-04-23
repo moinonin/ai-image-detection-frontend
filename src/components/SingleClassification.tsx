@@ -38,6 +38,7 @@ const SingleClassification: React.FC = () => {
   const reportFormat: ReportFormat = 'pdf';
   const [result, setResult] = useState<SingleClassificationResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<any>(null);
@@ -154,11 +155,11 @@ const SingleClassification: React.FC = () => {
   };
 
   const handleDownloadPDF = async (): Promise<void> => {
-    if (!result?.analysis) return;
-
-    setLoading(true);
+    if (!result) return;
+    setIsDownloadingPdf(true);
+    
     try {
-      console.log('Downloading PDF using API service method...');
+      console.log('Downloading PDF with existing results...', result);
       
       const pdfBlob = await classificationService.downloadImagePDFFromResult(result.analysis);
       
@@ -182,7 +183,7 @@ const SingleClassification: React.FC = () => {
       console.error('PDF download failed:', error);
       setError(`PDF download failed: ${error.message}`);
     } finally {
-      setLoading(false);
+      setIsDownloadingPdf(false);
     }
   };
 
@@ -312,7 +313,7 @@ const SingleClassification: React.FC = () => {
         </div>
 
         <div className="contact-support">
-          <p>Need help choosing? <a href="/about">Contact our support team</a></p>
+          <p>Need help choosing? <a href="/team">Contact our team</a></p>
         </div>
       </div>
     </div>
@@ -534,10 +535,10 @@ const SingleClassification: React.FC = () => {
                     <button
                       className="pdf-btn futuristic-btn"
                       onClick={handleDownloadPDF}
-                      disabled={loading}
+                      disabled={isDownloadingPdf}
                     >
                       <span className="btn-icon">📄</span>
-                      {loading ? 'Generating PDF...' : 'Download PDF'}
+                      {isDownloadingPdf ? 'Generating PDF...' : 'Download PDF'}
                     </button>
                   </div>
                 )}

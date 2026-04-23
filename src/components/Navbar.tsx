@@ -152,8 +152,8 @@ const Navbar: React.FC = () => {
             </Link>
           </li>
           <li>
-            <Link to="/about" className={isActive('/about')} onClick={closeMenu}>
-              About
+            <Link to="/team" className={isActive('/team')} onClick={closeMenu}>
+              Team
             </Link>
           </li>
           {user && (
