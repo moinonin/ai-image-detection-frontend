@@ -8,6 +8,21 @@ export interface User {
   is_active: boolean;
 }
 
+export interface ApiKey {
+  id: string;
+  name: string;
+  key_prefix: string;
+  is_active: boolean;
+  created_at: string;
+  last_used_at: string | null;
+  expires_at: string | null;
+}
+
+export interface ApiKeyCreateResponse {
+  api_key: ApiKey;
+  raw_key: string;
+}
+
 export interface AuthResponse {
   access_token: string;
   token_type: string;

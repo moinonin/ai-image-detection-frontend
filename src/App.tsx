@@ -22,6 +22,7 @@ import ProvenanceVerify from './components/ProvenanceVerify';
 import ProvenanceIssueCertificate from './components/ProvenanceIssueCertificate';
 import ProvenanceRegistryRecord from './components/ProvenanceRegistryRecord';
 import ProvenanceRegistryDashboard from './components/ProvenanceRegistryDashboard';
+import Downloads from './components/Downloads';
 import './App.css';
 import Resources from './components/Resources';
 import Footer from './components/Footer';
@@ -53,6 +54,7 @@ const App: React.FC = () => {
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/compliance" element={<Compliance />} />
+                <Route path="/downloads" element={<Downloads />} />
               </Route>
 
               <Route element={<ProtectedLayout />}>

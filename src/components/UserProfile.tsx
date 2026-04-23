@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { authService, classificationService } from '../services/api';
-import { CurrentUsageResponse, SubscriptionStatus, CancelResponse } from '../types';
+import { CurrentUsageResponse, SubscriptionStatus, CancelResponse, ApiKey } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
 
@@ -26,6 +26,13 @@ const UserProfile: React.FC = () => {
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
+
+  // API Keys state
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [apiKeyLoading, setApiKeyLoading] = useState(false);
+  const [newKeyName, setNewKeyName] = useState('');
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
+  const [showKeyModal, setShowKeyModal] = useState(false);
 
   // Fetch current usage data (same as batch classification)
   useEffect(() => {
@@ -94,6 +101,59 @@ const UserProfile: React.FC = () => {
       console.error('❌ Failed to refresh subscription data:', error);
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const fetchApiKeys = async () => {
+    try {
+      setApiKeyLoading(true);
+      const keys = await authService.getApiKeys();
+      setApiKeys(keys);
+    } catch (error) {
+      console.error('Error fetching API keys:', error);
+    } finally {
+      setApiKeyLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'api-keys') {
+      fetchApiKeys();
+    }
+  }, [activeTab]);
+
+  const handleCreateApiKey = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeyName.trim()) return;
+
+    try {
+      setApiKeyLoading(true);
+      const response = await authService.createApiKey(newKeyName);
+      setGeneratedKey(response.raw_key);
+      setShowKeyModal(true);
+      setNewKeyName('');
+      fetchApiKeys();
+    } catch (error: any) {
+      setMessage(`Error creating API key: ${error.message}`);
+    } finally {
+      setApiKeyLoading(false);
+    }
+  };
+
+  const handleRevokeApiKey = async (keyId: string) => {
+    if (!window.confirm('Are you sure you want to revoke this API key? This action cannot be undone and any applications using this key will stop working.')) {
+      return;
+    }
+
+    try {
+      setApiKeyLoading(true);
+      await authService.revokeApiKey(keyId);
+      setMessage('API key revoked successfully');
+      fetchApiKeys();
+    } catch (error: any) {
+      setMessage(`Error revoking API key: ${error.message}`);
+    } finally {
+      setApiKeyLoading(false);
     }
   };
   // Get current plan from usage data (primary source)
@@ -264,8 +324,15 @@ const UserProfile: React.FC = () => {
             onClick={() => setActiveTab('subscription')}
           >
             Subscription & Usage
-          </button>
-          <button 
+            </button>
+            <button
+            className={`tab-button ${activeTab === 'api-keys' ? 'active' : ''}`}
+            onClick={() => setActiveTab('api-keys')}
+            >
+            API Keys
+            </button>
+            <button
+ 
             className={`tab-button ${activeTab === 'password' ? 'active' : ''}`}
             onClick={() => setActiveTab('password')}
           >
@@ -469,6 +536,106 @@ const UserProfile: React.FC = () => {
               {message && (
                 <div className={`message ${message.includes('successfully') ? 'success' : 'error'}`}>
                   {message}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'api-keys' && (
+            <div className="api-keys-section">
+              <div className="info-card">
+                <h3>Programmatic Access</h3>
+                <p>Generate API keys to integrate VeriForensic with your own applications and scripts.</p>
+                
+                <form onSubmit={handleCreateApiKey} className="create-key-form">
+                  <div className="form-group">
+                    <label htmlFor="keyName">Key Name</label>
+                    <div className="input-with-button">
+                      <input
+                        type="text"
+                        id="keyName"
+                        placeholder="e.g., My Python Script"
+                        value={newKeyName}
+                        onChange={(e) => setNewKeyName(e.target.value)}
+                        disabled={apiKeyLoading}
+                      />
+                      <button type="submit" className="primary-button" disabled={apiKeyLoading || !newKeyName.trim()}>
+                        {apiKeyLoading ? 'Generating...' : 'Generate Key'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+
+                <div className="keys-list">
+                  <h4>Your API Keys</h4>
+                  {apiKeys.length === 0 ? (
+                    <p className="no-data">You haven't generated any API keys yet.</p>
+                  ) : (
+                    <div className="table-responsive">
+                      <table className="keys-table">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Prefix</th>
+                            <th>Created</th>
+                            <th>Last Used</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {apiKeys.map(key => (
+                            <tr key={key.id}>
+                              <td>{key.name}</td>
+                              <td><code>{key.key_prefix}...</code></td>
+                              <td>{new Date(key.created_at).toLocaleDateString()}</td>
+                              <td>{key.last_used_at ? new Date(key.last_used_at).toLocaleDateString() : 'Never'}</td>
+                              <td>
+                                <button 
+                                  onClick={() => handleRevokeApiKey(key.id)}
+                                  className="revoke-button"
+                                  disabled={apiKeyLoading}
+                                >
+                                  Revoke
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {showKeyModal && generatedKey && (
+                <div className="modal-overlay">
+                  <div className="modal-content key-reveal-modal">
+                    <h3>API Key Generated Successfully!</h3>
+                    <p className="warning-text">
+                      <strong>IMPORTANT:</strong> Copy this key now. For security reasons, you won't be able to see it again.
+                    </p>
+                    <div className="key-display-box">
+                      <code>{generatedKey}</code>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedKey);
+                          alert('Key copied to clipboard!');
+                        }}
+                        className="copy-button"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setShowKeyModal(false);
+                        setGeneratedKey(null);
+                      }}
+                      className="close-button"
+                    >
+                      I have saved my key
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

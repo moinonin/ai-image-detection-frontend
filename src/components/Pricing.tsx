@@ -298,10 +298,10 @@ const Pricing: React.FC = () => {
       <div className="sdk-integration-strip">
         <div>
           <p className="eyebrow">Custom integrations</p>
-          <h3>Build on VeriForensic</h3>
+          <h3>Build on top of VeriForensic</h3>
         </div>
         <div className="sdk-actions">
-          <a className="secondary-action" href="/ns-stego/BUILDING/index.html">Download SDK</a>
+          <a className="secondary-action" href="/downloads">Downloads</a>
           <a className="secondary-action" href="/ns-stego/API_SPEC/index.html">API docs</a>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse, ProvenanceIssueCertificateInput, ProvenanceIssueCertificateResponse, ProvenanceRegistryListResponse, ProvenanceRegistryRecord, ProvenanceVerifyResponse } from '../types';
+import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse, ProvenanceIssueCertificateInput, ProvenanceIssueCertificateResponse, ProvenanceRegistryListResponse, ProvenanceRegistryRecord, ProvenanceVerifyResponse, ApiKey, ApiKeyCreateResponse } from '../types';
 import { usageService } from '../services/usageService';
 
 type ReportFormat = 'json' | 'pdf';
@@ -1364,6 +1364,23 @@ class ApiService {
       console.error('Error fetching models:', error);
       throw error;
     }
+  }
+
+  async getApiKeys(): Promise<ApiKey[]> {
+    return this.request<ApiKey[]>('/api/v1/auth/api-keys');
+  }
+
+  async createApiKey(name: string): Promise<ApiKeyCreateResponse> {
+    return this.request<ApiKeyCreateResponse>('/api/v1/auth/api-keys', {
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  async revokeApiKey(keyId: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/v1/auth/api-keys/${keyId}`, {
+      method: 'DELETE',
+    });
   }
 }
 
