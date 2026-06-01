@@ -377,7 +377,7 @@ const SingleClassification: React.FC = () => {
               <input
                 type="file"
                 id="file-upload"
-                accept="image/*"
+                accept="image/*,.svg,image/svg+xml"
                 onChange={handleFileChange}
                 className="file-input"
                 style={{ display: 'none' }}

@@ -110,6 +110,39 @@ const stegoSnippet = [
 ];
 
 const Downloads: React.FC = () => {
+  const emailVerifierDownloads = [
+    {
+      title: 'Gmail Extension',
+      icon: '✉️',
+      description: 'Verifier package for Gmail users who need provenance checks inside webmail workflows.',
+      filename: 'gmail-extension.zip',
+      href: '/downloads/addons/gmail-extension.zip',
+      button: 'Download Gmail Extension',
+      color: '#0ea5e9',
+      hoverColor: '#0284c7',
+    },
+    {
+      title: 'Outlook Add-in',
+      icon: '📨',
+      description: 'Verifier add-in package for Outlook-based review and recipient workflows.',
+      filename: 'outlook-addin.zip',
+      href: '/downloads/addons/outlook-addin.zip',
+      button: 'Download Outlook Add-in',
+      color: '#2563eb',
+      hoverColor: '#1d4ed8',
+    },
+    {
+      title: 'Thunderbird Add-on',
+      icon: '🧩',
+      description: 'Installable Thunderbird add-on package for local email provenance verification.',
+      filename: 'thunderbird-addon.xpi',
+      href: '/downloads/addons/thunderbird-addon.xpi',
+      button: 'Download Thunderbird Add-on',
+      color: '#7c3aed',
+      hoverColor: '#6d28d9',
+    },
+  ];
+
   return (
     <div className="downloads-page" style={{ padding: '60px 40px', maxWidth: '1000px', margin: '0 auto', minHeight: '80vh' }}>
       <div style={{ textAlign: 'center', marginBottom: '50px' }}>
@@ -339,6 +372,62 @@ const Downloads: React.FC = () => {
           
           <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#475569' }}>Quick start snippet:</p>
           <SyntaxCodeBlock tokens={stegoSnippet} />
+        </div>
+      </div>
+
+      <div style={{ marginTop: '80px' }}>
+        <h2 style={{ fontSize: '1.8rem', borderBottom: '2px solid #e2e8f0', paddingBottom: '10px', marginBottom: '30px', color: '#1e293b' }}>Email Verifier Extensions</h2>
+        <p style={{ color: '#475569', marginBottom: '20px', fontSize: '1.05rem', lineHeight: '1.6' }}>Download recipient-side verifier packages for email provenance checks in common mailbox clients.</p>
+
+        <div className="downloads-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '30px',
+        }}>
+          {emailVerifierDownloads.map((item) => (
+            <div key={item.filename} className="download-card" style={{
+              border: '1px solid #e2e8f0',
+              borderRadius: '12px',
+              padding: '30px',
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03)',
+              background: '#ffffff',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+                <span style={{ fontSize: '32px', marginRight: '15px' }}>{item.icon}</span>
+                <h3 style={{ margin: 0, fontSize: '1.4rem', color: '#1e293b' }}>{item.title}</h3>
+              </div>
+              <p style={{ color: '#475569', fontSize: '15px', marginBottom: '25px', lineHeight: '1.5', flexGrow: 1 }}>
+                {item.description}
+              </p>
+              <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', fontSize: '13px', background: '#f8fafc', color: '#334155', padding: '12px', borderRadius: '6px', marginBottom: '25px', wordBreak: 'break-all', border: '1px solid #e2e8f0' }}>
+                {item.filename}
+              </div>
+              <a
+                href={item.href}
+                download
+                className="download-btn"
+                style={{
+                  display: 'inline-block',
+                  background: item.color,
+                  color: 'white',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  width: '100%',
+                  textAlign: 'center',
+                  transition: 'background 0.2s',
+                  boxSizing: 'border-box'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.background = item.hoverColor}
+                onMouseOut={(e) => e.currentTarget.style.background = item.color}
+              >
+                {item.button}
+              </a>
+            </div>
+          ))}
         </div>
       </div>
       

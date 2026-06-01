@@ -718,7 +718,7 @@ class ApiService {
       (error as any).showUpgrade = true;
       throw error;
     }
-    const MAX_FILE_SIZE_MB = 0.5;
+    const MAX_FILE_SIZE_MB = 10;
     const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
     
     const oversizedFiles = files.filter(file => file.size > MAX_FILE_SIZE_BYTES);
@@ -729,7 +729,7 @@ class ApiService {
           accepted: files.length - oversizedFiles.length,
           rejected: oversizedFiles.length,
           total_uploaded_MB: files.reduce((acc, file) => acc + (file.size / (1024 * 1024)), 0),
-          max_size: 5,
+          max_size: 10,
           max_file_size_MB: MAX_FILE_SIZE_MB
         },
         details: files.map(file => ({
