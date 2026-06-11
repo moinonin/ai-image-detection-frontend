@@ -22,6 +22,8 @@ import ProvenanceVerify from './components/ProvenanceVerify';
 import ProvenanceIssueCertificate from './components/ProvenanceIssueCertificate';
 import ProvenanceRegistryRecord from './components/ProvenanceRegistryRecord';
 import ProvenanceRegistryDashboard from './components/ProvenanceRegistryDashboard';
+import OrganizationManagement from './components/OrganizationManagement';
+import OrganizationInvitationAccept from './components/OrganizationInvitationAccept';
 import Downloads from './components/Downloads';
 import './App.css';
 import Resources from './components/Resources';
@@ -55,6 +57,7 @@ const App: React.FC = () => {
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/compliance" element={<Compliance />} />
                 <Route path="/downloads" element={<Downloads />} />
+                <Route path="/organization/invitations/accept" element={<OrganizationInvitationAccept />} />
               </Route>
 
               <Route element={<ProtectedLayout />}>
@@ -63,6 +66,7 @@ const App: React.FC = () => {
                 <Route path="/videos" element={<VideoClassification />} />
                 <Route path="/provenance/issue-certificate" element={<ProvenanceIssueCertificate />} />
                 <Route path="/provenance/registry" element={<ProvenanceRegistryDashboard />} />
+                <Route path="/organization" element={<OrganizationManagement />} />
                 <Route path="/profile" element={<UserProfile />} />
                 <Route path="/admin/email" element={<AdminEmailHealth />} />
               </Route>
@@ -110,9 +114,16 @@ const StaticDocsRedirect: React.FC = () => {
 
 const ProtectedLayout: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    const returnTo = `${location.pathname}${location.search}`;
+    return (
+      <Navigate
+        to={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+        replace
+      />
+    );
   }
 
   return (

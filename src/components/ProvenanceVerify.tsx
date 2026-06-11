@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 import { classificationService } from '../services/api';
 import { ProvenanceStatus, ProvenanceVerifyResponse } from '../types';
 
-type VerifyMode = 'signature' | 'email' | 'certificate';
-
 function deriveStatus(result: ProvenanceVerifyResponse | null): ProvenanceStatus {
   if (!result) return 'unknown';
 
@@ -96,9 +94,6 @@ function StatusBadge({ status }: { status: ProvenanceStatus }) {
 }
 
 const ProvenanceVerify: React.FC = () => {
-  const [mode, setMode] = useState<VerifyMode>('signature');
-  const [signatureToken, setSignatureToken] = useState('');
-  const [rawEmail, setRawEmail] = useState('');
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
   const [result, setResult] = useState<ProvenanceVerifyResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -109,34 +104,14 @@ const ProvenanceVerify: React.FC = () => {
     setError(null);
   };
 
-  const handleModeChange = (nextMode: VerifyMode) => {
-    setMode(nextMode);
-    resetResult();
-  };
-
-  const handleEmailFile = async (file?: File) => {
-    if (!file) return;
-    const text = await file.text();
-    setRawEmail(text);
-  };
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
     resetResult();
 
     try {
-      let response: ProvenanceVerifyResponse;
-      if (mode === 'signature') {
-        if (!signatureToken.trim()) throw new Error('Paste a signature token first.');
-        response = await classificationService.verifyProvenanceSignature(signatureToken.trim());
-      } else if (mode === 'email') {
-        if (!rawEmail.trim()) throw new Error('Paste or upload an email first.');
-        response = await classificationService.verifyProvenanceEmail(rawEmail);
-      } else {
-        if (!certificateFile) throw new Error('Choose a PDF or DOCX certificate first.');
-        response = await classificationService.verifyProvenanceCertificate(certificateFile);
-      }
+      if (!certificateFile) throw new Error('Choose a PDF or DOCX certificate first.');
+      const response = await classificationService.verifyProvenanceCertificate(certificateFile);
 
       setResult(response);
     } catch (err: any) {
@@ -152,77 +127,28 @@ const ProvenanceVerify: React.FC = () => {
   return (
     <div className="provenance-service">
       <section className="page-header">
-        <h1>Verify Provenance</h1>
-        <p>Check embedded proof and, for registered documents, confirm whether the issuer record is still active.</p>
+        <h1>Verify Certificate</h1>
+        <p>Upload a stamped PDF or DOCX to check its embedded proof and current registry status.</p>
       </section>
 
-      <div className="provenance-tabs" role="tablist" aria-label="Provenance verification modes">
-        <button className={mode === 'signature' ? 'active' : ''} onClick={() => handleModeChange('signature')} type="button">
-          Signature token
-        </button>
-        <button className={mode === 'email' ? 'active' : ''} onClick={() => handleModeChange('email')} type="button">
-          Raw email
-        </button>
-        <button className={mode === 'certificate' ? 'active' : ''} onClick={() => handleModeChange('certificate')} type="button">
-          Certificate
-        </button>
-      </div>
-
       <form className="upload-form provenance-form" onSubmit={handleSubmit}>
-        {mode === 'signature' && (
-          <div className="form-group">
-            <label htmlFor="signature-token">Signature token</label>
-            <textarea
-              id="signature-token"
-              value={signatureToken}
-              onChange={(event) => setSignatureToken(event.target.value)}
-              placeholder="v1c..."
-              rows={5}
-            />
-          </div>
-        )}
-
-        {mode === 'email' && (
-          <>
-            <div className="form-group">
-              <label htmlFor="email-upload">Upload .eml file</label>
-              <input
-                id="email-upload"
-                className="model-select"
-                type="file"
-                accept=".eml,message/rfc822,text/plain"
-                onChange={(event) => handleEmailFile(event.target.files?.[0])}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="raw-email">Raw email</label>
-              <textarea
-                id="raw-email"
-                value={rawEmail}
-                onChange={(event) => setRawEmail(event.target.value)}
-                placeholder="Headers, blank line, body"
-                rows={12}
-              />
-            </div>
-          </>
-        )}
-
-        {mode === 'certificate' && (
-          <div className="form-group">
-            <label htmlFor="certificate-file">Certificate file</label>
-            <input
-              id="certificate-file"
-              className="model-select"
-              type="file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(event) => setCertificateFile(event.target.files?.[0] || null)}
-            />
-            {certificateFile && <p className="form-help">Selected: {certificateFile.name}</p>}
-          </div>
-        )}
+        <div className="form-group">
+          <label htmlFor="certificate-file">Certificate file</label>
+          <input
+            id="certificate-file"
+            className="model-select"
+            type="file"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            onChange={(event) => {
+              setCertificateFile(event.target.files?.[0] || null);
+              resetResult();
+            }}
+          />
+          {certificateFile && <p className="form-help">Selected: {certificateFile.name}</p>}
+        </div>
 
         <button className="analyze-btn" type="submit" disabled={loading}>
-          {loading ? 'Verifying...' : 'Verify'}
+          {loading ? 'Verifying...' : 'Verify Certificate'}
         </button>
       </form>
 

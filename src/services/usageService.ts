@@ -1,7 +1,10 @@
 // Create a new file: services/usageService.ts
 import { CurrentUsageResponse, PlanLimitsResponse } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
+const API_BASE_URL =
+  import.meta.env.VITE_PROVENANCE_API_URL ||
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:8008';
 
 class UsageService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

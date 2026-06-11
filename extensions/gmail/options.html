@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>VeriForensic Email Verifier</title>
+    <style>
+      body { max-width: 560px; padding: 20px; font: 14px/1.5 Arial, sans-serif; }
+      label { display: block; margin-bottom: 6px; font-weight: 600; }
+      input { box-sizing: border-box; width: 100%; padding: 9px; }
+      button { margin-top: 12px; padding: 9px 16px; }
+      #status { margin-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>Verifier settings</h1>
+    <label for="apiBase">VeriForensic API</label>
+    <input id="apiBase" type="url" />
+    <button id="save" type="button">Save</button>
+    <div id="status" aria-live="polite"></div>
+    <script src="options.js"></script>
+  </body>
+</html>

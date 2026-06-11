@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
+const API_BASE_URL =
+  import.meta.env.VITE_PROVENANCE_API_URL ||
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:8008';
 
 interface PolarProduct {
   id: string;
@@ -71,6 +74,16 @@ const Pricing: React.FC = () => {
 
   // THIS CHECKOUT LOGIC WAS WORKING - it successfully redirected to Polar
   const handleSubscribe = async (product: PolarProduct) => {
+    if (!user) {
+      window.location.href = '/register?redirect=/pricing';
+      return;
+    }
+
+    if (product.name.toLowerCase() === 'free') {
+      window.location.href = '/resources';
+      return;
+    }
+
     setRedirectingProduct(product.id);
     setError(null);
     
@@ -122,17 +135,8 @@ const Pricing: React.FC = () => {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setError(`Failed to get checkout URL: ${errorMessage}`);
       
-      // Fallback after a delay
-      setTimeout(() => {
-        const fallbackUrl = generateDirectPolarUrl(product.id);
-        console.log('🔄 Using fallback URL:', fallbackUrl);
-        window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
-      }, 2000);
     } finally {
-      // Don't reset redirecting state immediately if we're waiting for fallback
-      if (!error) {
-        setTimeout(() => setRedirectingProduct(null), 3000);
-      }
+      setRedirectingProduct(null);
     }
   };
 
@@ -226,7 +230,7 @@ const Pricing: React.FC = () => {
 
         <div className="pricing-card featured">
           <h3>Pro</h3>
-          <p className="price">$299/month</p>
+          <p className="price">$75/month</p>
           <ul>
             <li><strong>{professionalProduct ? professionalProduct.limits.images : 500} image analyses</strong> per month</li>
             <li><strong>{professionalProduct ? professionalProduct.limits.videos : 50} video analyses</strong> per month</li>
@@ -261,7 +265,7 @@ const Pricing: React.FC = () => {
 
         <div className="pricing-card">
           <h3>Team</h3>
-          <p className="price">$499/month</p>
+          <p className="price">$199/month</p>
           <ul>
             <li><strong>{teamProduct ? teamProduct.limits.images : 2000} image analyses</strong> per month</li>
             <li><strong>{teamProduct ? teamProduct.limits.videos : 200} video analyses</strong> per month</li>

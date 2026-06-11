@@ -2,6 +2,7 @@ export type ReportFormat = 'json' | 'pdf';
 
 export interface User {
   id: string;
+  account_id?: string;
   username: string;
   email: string;
   full_name?: string;
@@ -302,6 +303,57 @@ export interface ProvenanceRegistryListResponse {
   items: ProvenanceRegistryRecord[];
   limit: number;
   offset: number;
+}
+
+export type OrganizationRole = 'owner' | 'admin' | 'member';
+
+export interface OrganizationSummary {
+  id: string;
+  name?: string;
+  slug?: string;
+  email?: string;
+  subscription_plan_type?: string;
+  subscription_status?: string;
+  role: OrganizationRole;
+}
+
+export interface OrganizationMember {
+  id: string;
+  user_id: string;
+  role: OrganizationRole;
+  username: string;
+  email: string;
+  full_name?: string | null;
+  is_active: boolean;
+}
+
+export interface OrganizationInvitation {
+  id: string;
+  account_id: string;
+  email: string;
+  role: Exclude<OrganizationRole, 'owner'>;
+  status: 'pending' | 'accepted' | 'revoked' | 'expired';
+  invited_by: string;
+  expires_at: string;
+  created_at: string;
+}
+
+export interface OrganizationInvitationCreated extends OrganizationInvitation {
+  accept_url: string;
+  delivery: 'sent' | 'failed' | 'not_configured';
+}
+
+export interface OrganizationDetail extends OrganizationSummary {
+  seat_limit: number;
+  member_count: number;
+  pending_invitation_count: number;
+  available_seats: number;
+  members: OrganizationMember[];
+  pending_invitations?: OrganizationInvitation[];
+}
+
+export interface OrganizationListResponse {
+  organizations: OrganizationSummary[];
 }
 
 // Video Analysis Response with Cache Support

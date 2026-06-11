@@ -1,9 +1,10 @@
-import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse, ProvenanceIssueCertificateInput, ProvenanceIssueCertificateResponse, ProvenanceRegistryListResponse, ProvenanceRegistryRecord, ProvenanceVerifyResponse, ApiKey, ApiKeyCreateResponse } from '../types';
+import { User, AuthResponse, ClassificationResult, SingleClassificationResponse, ModelInfo, VideoClassificationResponse, BatchJobResponse, VerifyResetTokenResponse, CurrentUsageResponse, PlanLimitsResponse, BatchClassificationResponse, ProvenanceIssueCertificateInput, ProvenanceIssueCertificateResponse, ProvenanceRegistryListResponse, ProvenanceRegistryRecord, ProvenanceVerifyResponse, ApiKey, ApiKeyCreateResponse, OrganizationDetail, OrganizationInvitationCreated, OrganizationListResponse, OrganizationRole } from '../types';
 import { usageService } from '../services/usageService';
 
 type ReportFormat = 'json' | 'pdf';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const PROVENANCE_API_BASE_URL = import.meta.env.VITE_PROVENANCE_API_URL || API_BASE_URL;
 
 class ApiService {
   private async throwResponseError(response: Response, fallbackMessage: string): Promise<never> {
@@ -49,7 +50,11 @@ class ApiService {
     throw error;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    baseUrl: string = API_BASE_URL
+  ): Promise<T> {
     const token = localStorage.getItem('token');
     
     const headers: HeadersInit = {
@@ -65,13 +70,13 @@ class ApiService {
     };
 
     console.log('API Request:', {
-      url: `${API_BASE_URL}${endpoint}`,
+      url: `${baseUrl}${endpoint}`,
       method: config.method,
       headers: config.headers,
       body: config.body
     });
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    const response = await fetch(`${baseUrl}${endpoint}`, config);
     
     if (!response.ok) {
       console.error('API Error:', response.status, endpoint);
@@ -87,7 +92,7 @@ class ApiService {
     formData.append('username', username);
     formData.append('password', password);
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+    const response = await fetch(`${PROVENANCE_API_BASE_URL}/api/v1/auth/login`, {
       method: 'POST',
       body: formData,
     });
@@ -103,36 +108,36 @@ class ApiService {
     return this.request<User>('/api/v1/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   async getCurrentUser(): Promise<User> {
-    return this.request<User>('/api/v1/auth/me');
+    return this.request<User>('/api/v1/auth/me', {}, PROVENANCE_API_BASE_URL);
   }
 
   async logout(): Promise<void> {
-    return this.request('/api/v1/auth/logout', { method: 'POST' });
+    return this.request('/api/v1/auth/logout', { method: 'POST' }, PROVENANCE_API_BASE_URL);
   }
 
   async forgotPassword(email: string): Promise<void> {
     return this.request('/api/v1/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
     return this.request('/api/v1/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ token, new_password: newPassword }),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   async verifyResetToken(token: string): Promise<VerifyResetTokenResponse> {
     return this.request<VerifyResetTokenResponse>('/api/v1/auth/verify-reset-token', {
       method: 'POST',
       body: JSON.stringify({ token }),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
@@ -145,7 +150,7 @@ class ApiService {
     });
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/change-password`, {
+      const response = await fetch(`${PROVENANCE_API_BASE_URL}/api/v1/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -201,7 +206,7 @@ class ApiService {
     const token = localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/products/${encodeURIComponent(productId)}/limits`, {
+      const response = await fetch(`${PROVENANCE_API_BASE_URL}/api/v1/products/${encodeURIComponent(productId)}/limits`, {
         method: 'GET',
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
@@ -240,7 +245,11 @@ class ApiService {
     current_plan: string;
     can_upgrade: boolean;
   }> {
-    return this.request(`/api/v1/subscriptions/plans?account_id=${accountId}`);
+    return this.request(
+      `/api/v1/subscriptions/plans?account_id=${accountId}`,
+      {},
+      PROVENANCE_API_BASE_URL
+    );
   }
 
   async upgradeAccount(accountId: string, subscriptionPlanType: string): Promise<{
@@ -256,7 +265,7 @@ class ApiService {
         account_id: accountId,
         subscription_plan_type: subscriptionPlanType
       }),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   async getCurrentPlan(accountId: string): Promise<{
@@ -270,7 +279,11 @@ class ApiService {
       analysis_types: string[];
     };
   }> {
-    return this.request(`/api/v1/subscriptions/${accountId}/current-plan`);
+    return this.request(
+      `/api/v1/subscriptions/${accountId}/current-plan`,
+      {},
+      PROVENANCE_API_BASE_URL
+    );
   }
 
   async completeUpgrade(
@@ -288,30 +301,30 @@ class ApiService {
         polar_product_id: payload.polarProductId,
         checkout_session_id: payload.checkoutSessionId,
       }),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   // Product methods (for backward compatibility - remove these if not needed)
   async getProducts(): Promise<{ products: any[] }> {
-    return this.request('/api/v1/products');
+    return this.request('/api/v1/products', {}, PROVENANCE_API_BASE_URL);
   }
 
   async getFreeTier(): Promise<any> {
-    return this.request('/api/v1/products/free-tier');
+    return this.request('/api/v1/products/free-tier', {}, PROVENANCE_API_BASE_URL);
   }
 
   async verifyProvenanceSignature(tokenValue: string): Promise<ProvenanceVerifyResponse> {
     return this.request<ProvenanceVerifyResponse>('/api/v1/ns-stego/verify-signature', {
       method: 'POST',
       body: JSON.stringify({ token: tokenValue }),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   async verifyProvenanceEmail(raw: string): Promise<ProvenanceVerifyResponse> {
     return this.request<ProvenanceVerifyResponse>('/api/v1/ns-stego/verify-email', {
       method: 'POST',
       body: JSON.stringify({ raw }),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   async verifyProvenanceCertificate(file: File): Promise<ProvenanceVerifyResponse> {
@@ -319,7 +332,7 @@ class ApiService {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry/verify`, {
+    const response = await fetch(`${PROVENANCE_API_BASE_URL}/api/v1/provenance/registry/verify`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -359,7 +372,7 @@ class ApiService {
       formData.append('account_id', metadata.account_id);
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry/issue`, {
+    const response = await fetch(`${PROVENANCE_API_BASE_URL}/api/v1/provenance/registry/issue`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -390,7 +403,7 @@ class ApiService {
   }
 
   async getProvenanceRegistryRecord(documentId: string): Promise<ProvenanceRegistryRecord> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry/${encodeURIComponent(documentId)}`, {
+    const response = await fetch(`${PROVENANCE_API_BASE_URL}/api/v1/provenance/registry/${encodeURIComponent(documentId)}`, {
       method: 'GET',
       credentials: 'include',
     });
@@ -410,7 +423,7 @@ class ApiService {
     }
     const query = params.toString() ? `?${params.toString()}` : '';
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry${query}`, {
+    const response = await fetch(`${PROVENANCE_API_BASE_URL}/api/v1/provenance/registry${query}`, {
       method: 'GET',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -428,7 +441,7 @@ class ApiService {
   async revokeProvenanceRegistryRecord(documentId: string, reason: string): Promise<ProvenanceRegistryRecord> {
     const token = localStorage.getItem('token');
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/provenance/registry/${encodeURIComponent(documentId)}/revoke`, {
+    const response = await fetch(`${PROVENANCE_API_BASE_URL}/api/v1/provenance/registry/${encodeURIComponent(documentId)}/revoke`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -456,7 +469,11 @@ class ApiService {
       params.append('customer_email', customerEmail);
     }
     
-    return this.request(`/api/v1/products/${productId}/checkout?${params.toString()}`);
+    return this.request(
+      `/api/v1/products/${productId}/checkout?${params.toString()}`,
+      {},
+      PROVENANCE_API_BASE_URL
+    );
   }
   // IMPROVED: Check if user has remaining quota for a specific analysis type
   async checkUsageQuota(analysisType: 'image' | 'video'): Promise<{
@@ -1391,20 +1408,101 @@ class ApiService {
   }
 
   async getApiKeys(): Promise<ApiKey[]> {
-    return this.request<ApiKey[]>('/api/v1/auth/api-keys');
+    return this.request<ApiKey[]>('/api/v1/auth/api-keys', {}, PROVENANCE_API_BASE_URL);
   }
 
   async createApiKey(name: string): Promise<ApiKeyCreateResponse> {
     return this.request<ApiKeyCreateResponse>('/api/v1/auth/api-keys', {
       method: 'POST',
       body: JSON.stringify({ name }),
-    });
+    }, PROVENANCE_API_BASE_URL);
   }
 
   async revokeApiKey(keyId: string): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/api/v1/auth/api-keys/${keyId}`, {
       method: 'DELETE',
-    });
+    }, PROVENANCE_API_BASE_URL);
+  }
+
+  async listOrganizations(): Promise<OrganizationListResponse> {
+    return this.request<OrganizationListResponse>(
+      '/api/v1/organizations',
+      {},
+      PROVENANCE_API_BASE_URL
+    );
+  }
+
+  async getOrganization(accountId: string): Promise<OrganizationDetail> {
+    return this.request<OrganizationDetail>(
+      `/api/v1/organizations/${encodeURIComponent(accountId)}`,
+      {},
+      PROVENANCE_API_BASE_URL
+    );
+  }
+
+  async createOrganizationInvitation(
+    accountId: string,
+    email: string,
+    role: Exclude<OrganizationRole, 'owner'>
+  ): Promise<OrganizationInvitationCreated> {
+    return this.request<OrganizationInvitationCreated>(
+      `/api/v1/organizations/${encodeURIComponent(accountId)}/invitations`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, role }),
+      },
+      PROVENANCE_API_BASE_URL
+    );
+  }
+
+  async revokeOrganizationInvitation(
+    accountId: string,
+    invitationId: string
+  ): Promise<{ message: string }> {
+    return this.request<{ message: string }>(
+      `/api/v1/organizations/${encodeURIComponent(accountId)}/invitations/${encodeURIComponent(invitationId)}`,
+      { method: 'DELETE' },
+      PROVENANCE_API_BASE_URL
+    );
+  }
+
+  async acceptOrganizationInvitation(
+    tokenValue: string
+  ): Promise<{ message: string; membership: Record<string, any> }> {
+    return this.request<{ message: string; membership: Record<string, any> }>(
+      '/api/v1/organization-invitations/accept',
+      {
+        method: 'POST',
+        body: JSON.stringify({ token: tokenValue }),
+      },
+      PROVENANCE_API_BASE_URL
+    );
+  }
+
+  async updateOrganizationMemberRole(
+    accountId: string,
+    userId: string,
+    role: Exclude<OrganizationRole, 'owner'>
+  ): Promise<{ message: string; role: string }> {
+    return this.request<{ message: string; role: string }>(
+      `/api/v1/organizations/${encodeURIComponent(accountId)}/members/${encodeURIComponent(userId)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ role }),
+      },
+      PROVENANCE_API_BASE_URL
+    );
+  }
+
+  async removeOrganizationMember(
+    accountId: string,
+    userId: string
+  ): Promise<{ message: string }> {
+    return this.request<{ message: string }>(
+      `/api/v1/organizations/${encodeURIComponent(accountId)}/members/${encodeURIComponent(userId)}`,
+      { method: 'DELETE' },
+      PROVENANCE_API_BASE_URL
+    );
   }
 }
 
@@ -1438,5 +1536,6 @@ export const generatePDFReport = async (results: any[], reportType: string = 'in
 
 export const authService = new ApiService();
 export const classificationService = new ApiService();
+export const organizationService = new ApiService();
 export const getModels = ApiService.getModels;
 export { usageService };

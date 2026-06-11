@@ -3,7 +3,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { authService, classificationService } from '../services/api';
 import { CurrentUsageResponse, SubscriptionStatus, CancelResponse, ApiKey } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8008';
+const API_BASE_URL =
+  import.meta.env.VITE_PROVENANCE_API_URL ||
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:8008';
+
+const authHeaders = (): HeadersInit => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth();
@@ -55,12 +63,13 @@ const UserProfile: React.FC = () => {
   // Fetch subscription status
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
-      if (!user?.id) return;
+      if (!user?.account_id) return;
       
       try {
         setSubscriptionLoading(true);
         const response = await fetch(
-          `${API_BASE_URL}/api/v1/accounts/${user.id}/subscription-status`
+          `${API_BASE_URL}/api/v1/accounts/${user.account_id}/subscription-status`,
+          { headers: authHeaders() }
         );
         
         if (response.ok) {
@@ -77,7 +86,7 @@ const UserProfile: React.FC = () => {
     };
 
     fetchSubscriptionStatus();
-  }, [user?.id]);
+  }, [user?.account_id]);
   const refreshSubscriptionData = async () => {
     setRefreshing(true);
     try {
@@ -86,9 +95,10 @@ const UserProfile: React.FC = () => {
       setCurrentUsageData(usage);
       
       // Refresh subscription status
-      if (user?.id) {
+      if (user?.account_id) {
         const response = await fetch(
-          `${API_BASE_URL}/api/v1/accounts/${user.id}/subscription-status`
+          `${API_BASE_URL}/api/v1/accounts/${user.account_id}/subscription-status`,
+          { headers: authHeaders() }
         );
         if (response.ok) {
           const subscriptionData = await response.json();
@@ -249,7 +259,7 @@ const UserProfile: React.FC = () => {
   };
 
   const handleCancelSubscription = async () => {
-    if (!user?.id || !subscription?.polar_subscription_id) return;
+    if (!user?.account_id || !subscription?.polar_subscription_id) return;
     
     if (!window.confirm(
       'Are you sure you want to cancel your subscription? You will be downgraded to the free tier immediately.'
@@ -262,11 +272,12 @@ const UserProfile: React.FC = () => {
       setMessage('');
       
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/accounts/${user.id}/cancel-subscription`,
+        `${API_BASE_URL}/api/v1/accounts/${user.account_id}/cancel-subscription`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...authHeaders(),
           },
         }
       );
@@ -281,7 +292,8 @@ const UserProfile: React.FC = () => {
       
       // Refresh subscription status and usage data
       const statusResponse = await fetch(
-        `${API_BASE_URL}/api/v1/accounts/${user.id}/subscription-status`
+        `${API_BASE_URL}/api/v1/accounts/${user.account_id}/subscription-status`,
+        { headers: authHeaders() }
       );
       if (statusResponse.ok) {
         const newStatus = await statusResponse.json();

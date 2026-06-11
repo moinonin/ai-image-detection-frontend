@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "VeriForensic Email Verifier for Gmail",
+  "version": "0.3.0",
+  "description": "Verify email and certificate provenance through the VeriForensic API.",
+  "permissions": ["storage", "permissions"],
+  "host_permissions": [
+    "https://mail.google.com/*",
+    "https://imageclassifi.fly.dev/*"
+  ],
+  "optional_host_permissions": ["https://*/*", "http://localhost/*", "http://127.0.0.1/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
+  "action": {
+    "default_title": "Verify email provenance"
+  }
+}

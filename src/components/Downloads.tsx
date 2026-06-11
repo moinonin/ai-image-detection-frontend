@@ -431,19 +431,15 @@ const Downloads: React.FC = () => {
         </div>
 
         <div style={{ marginTop: '30px', padding: '26px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-          <h4 style={{ margin: '0 0 14px 0', color: '#0f172a', fontSize: '1.15rem' }}>Manual Extension Installation</h4>
+          <h4 style={{ margin: '0 0 14px 0', color: '#0f172a', fontSize: '1.15rem' }}>Manual Installation</h4>
           <p style={{ margin: '0 0 16px 0', color: '#475569', fontSize: '14px', lineHeight: '1.6' }}>
-            These verifier extensions are installed manually. Download the package, unzip it on your computer, then load the extracted folder from your browser extension settings.
+            <strong>Gmail:</strong> Download and unzip the package. Open <code>chrome://extensions</code> or <code>edge://extensions</code>, enable <strong>Developer mode</strong>, select <strong>Load unpacked</strong>, then choose the extracted folder.
           </p>
-          <ol style={{ margin: 0, paddingLeft: '20px', color: '#475569', fontSize: '14px', lineHeight: '1.7' }}>
-            <li>Download the Gmail or Outlook extension package.</li>
-            <li>Unzip the downloaded file to a local folder.</li>
-            <li>Open your browser extension management page, such as <code>chrome://extensions</code> or <code>edge://extensions</code>.</li>
-            <li>Enable <strong>Developer mode</strong>.</li>
-            <li>Click <strong>Load unpacked</strong>, select the unzipped extension folder, and confirm.</li>
-          </ol>
-          <p style={{ margin: '16px 0 0 0', color: '#475569', fontSize: '14px', lineHeight: '1.6' }}>
-            For Thunderbird, open Add-ons Manager, choose install from file, and select the downloaded <code>.xpi</code> package.
+          <p style={{ margin: '0 0 16px 0', color: '#475569', fontSize: '14px', lineHeight: '1.6' }}>
+            <strong>Outlook:</strong> Unzip the package and host its task-pane files over HTTPS. Update <code>SourceLocation</code> in <code>manifest.xml</code>, then upload that manifest through Outlook's custom add-in interface.
+          </p>
+          <p style={{ margin: 0, color: '#475569', fontSize: '14px', lineHeight: '1.6' }}>
+            <strong>Thunderbird:</strong> Open Add-ons Manager, choose <strong>Install Add-on From File</strong>, and select the downloaded <code>.xpi</code> package.
           </p>
         </div>
       </div>

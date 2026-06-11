@@ -29,20 +29,21 @@ const Footer: React.FC = () => {
           <div className="footer-section">
             <h4>Provenance</h4>
             <ul className="footer-links">
-              <li><Link to="/provenance/verify">Verify Provenance</Link></li>
+              <li><Link to="/provenance/verify">Verify Certificate</Link></li>
               <li><Link to="/provenance/issue-certificate">Issue Certificate</Link></li>
               <li><Link to="/provenance/registry">Issuer Registry</Link></li>
+              <li><Link to="/organization">Organization</Link></li>
             </ul>
           </div>
 
-          {/* Training & Resources */}
+          {/* Documentation & Resources */}
           <div className="footer-section">
-            <h4>Verification Tools</h4>
+            <h4>Resources</h4>
             <ul className="footer-links">
-              <li><Link to="/resources#media-analysis-tools">Media Analysis</Link></li>
-              <li><Link to="/single">Single Image</Link></li>
-              <li><Link to="/batch">Batch Images</Link></li>
-              <li><Link to="/videos">Video Analysis</Link></li>
+              <li><Link to="/resources">Resource Center</Link></li>
+              <li><a href="/ns-stego/index.html">Documentation</a></li>
+              <li><Link to="/downloads">Downloads</Link></li>
+              <li><Link to="/pricing">Pricing</Link></li>
             </ul>
           </div>
 

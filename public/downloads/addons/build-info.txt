@@ -1,2 +1,2 @@
-stamp=20260302-012420
-git_sha=7f7a18d
+stamp=20260611-143958
+source=extensions/

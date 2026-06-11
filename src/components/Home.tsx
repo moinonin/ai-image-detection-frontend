@@ -87,9 +87,9 @@ const Home: React.FC = () => {
               <p>Verify authenticity with tamper-evident logs, chain-of-custody, and evidence-grade reporting.</p>
             </div>
             <div className="value-card">
-              <div className="value-icon">🧪</div>
-              <h3>Detection as a Backstop</h3>
-              <p>AI detection remains available for unprovenanced media and legacy workflows.</p>
+              <div className="value-icon">↻</div>
+              <h3>Lifecycle Status</h3>
+              <p>Registry records preserve active, revoked, expired, and superseded document states.</p>
             </div>
           </div>
         </div>
@@ -251,11 +251,11 @@ const Home: React.FC = () => {
       {/* Final CTA */}
       <section className="final-cta">
         <div className="cta-content">
-          <h2>Start Your Media Analysis Journey</h2>
-          <p>Join professionals who use our tools as part of their comprehensive media verification workflow</p>
+          <h2>Verify Before You Trust</h2>
+          <p>Upload a certificate to check its embedded proof and current registry status.</p>
           <div className="cta-buttons">
-            <Link to="/resources" className="cta-button primary" onClick={scrollToTop}>
-              Try Analysis Tools
+            <Link to="/provenance/verify" className="cta-button primary" onClick={scrollToTop}>
+              Verify Certificate
             </Link>
             <Link to="/pricing" className="cta-button secondary" onClick={scrollToTop}>
               View Plans

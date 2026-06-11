@@ -2888,3 +2888,382 @@ body {
   height: 100%;
   transition: width 0.5s ease-out;
 }
+
+/* Team organization management */
+.organization-page {
+  margin: 0 auto;
+  max-width: 1180px;
+}
+
+.organization-page .page-header,
+.organization-accept-panel {
+  text-align: center;
+}
+
+.organization-page .page-header h1,
+.organization-accept-panel h1 {
+  color: var(--vf-blue);
+  font-size: 2.75rem;
+  font-weight: 400;
+  line-height: 1.15;
+  margin: 0 0 1rem;
+}
+
+.organization-page .page-header p,
+.organization-accept-panel > p {
+  color: var(--vf-muted);
+  line-height: 1.6;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 680px;
+}
+
+.organization-switcher {
+  border-bottom: 1px solid var(--vf-border);
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 360px);
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+}
+
+.organization-switcher label {
+  color: var(--vf-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.organization-switcher select,
+.organization-invite-form select,
+.organization-table select {
+  background: var(--vf-input-bg);
+  border: 1px solid transparent;
+  border-bottom-color: var(--vf-border-strong);
+  border-radius: 0;
+  color: var(--vf-text);
+  min-height: 3rem;
+  padding: 0 1rem;
+}
+
+.organization-switcher select:focus,
+.organization-invite-form select:focus,
+.organization-table select:focus {
+  border-color: var(--vf-blue);
+  box-shadow: inset 0 0 0 1px var(--vf-blue);
+  outline: 2px solid var(--vf-blue);
+  outline-offset: -2px;
+}
+
+.organization-heading,
+.organization-section-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.organization-heading {
+  border-bottom: 1px solid var(--vf-border);
+  padding: 0 0 2rem;
+}
+
+.organization-heading h2,
+.organization-section-heading h2,
+.organization-notice h2 {
+  color: var(--vf-text);
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+.organization-heading p,
+.organization-section-heading span,
+.organization-empty {
+  color: var(--vf-muted);
+  margin: 0;
+}
+
+.organization-seat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 3rem;
+}
+
+.organization-seat-grid article {
+  background: var(--vf-surface);
+  border-bottom: 1px solid var(--vf-border);
+  border-right: 1px solid var(--vf-border);
+  min-height: 9rem;
+  padding: 1.5rem;
+}
+
+.organization-seat-grid article:first-child {
+  border-left: 1px solid var(--vf-border);
+}
+
+.organization-seat-grid strong {
+  color: var(--vf-text);
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 400;
+  line-height: 1;
+  margin-bottom: 1.75rem;
+}
+
+.organization-seat-grid span {
+  color: var(--vf-muted);
+  font-size: 0.875rem;
+}
+
+.organization-section {
+  border-top: 1px solid var(--vf-border);
+  padding: 2.5rem 0 3rem;
+}
+
+.organization-section-heading {
+  margin-bottom: 1.5rem;
+}
+
+.organization-invite-form {
+  align-items: end;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(260px, 1fr) minmax(180px, 0.4fr) auto;
+}
+
+.organization-invite-form .form-group {
+  margin: 0;
+}
+
+.organization-invite-form input {
+  min-height: 3rem;
+}
+
+.primary-action {
+  align-items: center;
+  background: var(--vf-blue);
+  border: 1px solid var(--vf-blue);
+  border-radius: 0;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.75rem 1.25rem;
+  text-decoration: none;
+}
+
+.primary-action:hover {
+  background: var(--vf-blue-hover);
+  border-color: var(--vf-blue-hover);
+  color: #ffffff;
+}
+
+.primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.invitation-created {
+  background: var(--vf-input-bg);
+  border-left: 4px solid var(--vf-success);
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+}
+
+.invitation-created p {
+  color: var(--vf-muted);
+  margin: 0.3rem 0 0;
+}
+
+.invitation-created code {
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border);
+  color: var(--vf-text);
+  overflow-wrap: anywhere;
+  padding: 0.75rem;
+}
+
+.invitation-created .secondary-action {
+  justify-self: start;
+}
+
+.organization-table-wrap {
+  border: 1px solid var(--vf-border);
+  overflow-x: auto;
+}
+
+.organization-table {
+  border-collapse: collapse;
+  min-width: 720px;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.organization-table th,
+.organization-table td {
+  border-bottom: 1px solid var(--vf-border);
+  color: var(--vf-text);
+  padding: 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.organization-table th {
+  background: var(--vf-input-bg);
+  color: var(--vf-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.organization-table tr:last-child td {
+  border-bottom: none;
+}
+
+.organization-table td:first-child strong,
+.organization-table td:first-child span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.organization-table td:first-child span {
+  color: var(--vf-muted);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.organization-role {
+  border: 1px solid var(--vf-border-strong);
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.4rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.organization-role.owner {
+  border-color: var(--vf-blue);
+  color: var(--vf-blue);
+}
+
+.organization-role.admin {
+  border-color: var(--vf-success);
+  color: var(--vf-success);
+}
+
+.text-danger-action {
+  background: transparent;
+  border: none;
+  color: var(--vf-danger);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 0;
+}
+
+.text-danger-action:hover {
+  text-decoration: underline;
+}
+
+.text-danger-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.organization-notice {
+  background: var(--vf-surface);
+  border: 1px solid var(--vf-border);
+  border-left: 4px solid var(--vf-blue);
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+}
+
+.organization-notice.warning {
+  border-left-color: var(--vf-warning);
+}
+
+.organization-notice.error {
+  border-left-color: var(--vf-danger);
+}
+
+.organization-notice.success {
+  border-left-color: var(--vf-success);
+}
+
+.organization-notice p {
+  color: var(--vf-muted);
+  line-height: 1.55;
+  margin: 0 0 1rem;
+}
+
+.organization-accept-page {
+  align-items: flex-start;
+  display: flex;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 4rem 1rem;
+}
+
+.organization-accept-panel {
+  max-width: 680px;
+  width: 100%;
+}
+
+.organization-accept-panel > .primary-action,
+.organization-accept-panel > button {
+  margin-top: 1rem;
+}
+
+@media (max-width: 800px) {
+  .organization-page .page-header h1,
+  .organization-accept-panel h1 {
+    font-size: 2.25rem;
+  }
+
+  .organization-seat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .organization-seat-grid article:nth-child(3) {
+    border-left: 1px solid var(--vf-border);
+  }
+
+  .organization-invite-form {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .organization-heading,
+  .organization-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .organization-heading .secondary-action {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .organization-seat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .organization-seat-grid article,
+  .organization-seat-grid article:nth-child(3) {
+    border-left: 1px solid var(--vf-border);
+  }
+}
+
+/* Certificate verification is the only public verification workflow. */
+.provenance-service .page-header:after {
+  content: none;
+  display: none;
+}

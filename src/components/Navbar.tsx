@@ -146,16 +146,25 @@ const Navbar: React.FC = () => {
               </Link>
             </li>
           )}
+          {user && (
+            <li>
+              <Link to="/organization" className={isActive('/organization')} onClick={closeMenu}>
+                Organization
+              </Link>
+            </li>
+          )}
           <li>
             <Link to="/pricing" className={isActive('/pricing')} onClick={closeMenu}>
               Pricing
             </Link>
           </li>
-          <li>
-            <Link to="/team" className={isActive('/team')} onClick={closeMenu}>
-              Team
-            </Link>
-          </li>
+          {!user && (
+            <li>
+              <Link to="/team" className={isActive('/team')} onClick={closeMenu}>
+                Team
+              </Link>
+            </li>
+          )}
           {user && (
             <li>
               <Link to="/profile" className={isActive('/profile')} onClick={closeMenu}>
